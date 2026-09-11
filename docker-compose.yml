@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: depaso
+      POSTGRES_PASSWORD: depaso
+      POSTGRES_DB: depaso
+    ports:
+      - "5432:5432"
+    volumes:
+      - depaso_postgres_data:/var/lib/postgresql/data
+
+volumes:
+  depaso_postgres_data:

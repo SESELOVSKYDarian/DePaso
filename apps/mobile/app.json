@@ -1,0 +1,41 @@
+{
+  "expo": {
+    "name": "DePaso",
+    "slug": "depaso",
+    "scheme": "depaso",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "icon": "./assets/images/icon.png",
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#F7FAF8"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "La usamos para calcular rutas, desvíos y comercios cercanos mientras usás DePaso. No te seguimos fuera de la app."
+        }
+      ]
+    ],
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "ar.com.depaso.mobile"
+    },
+    "android": {
+      "package": "ar.com.depaso.mobile",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#F7FAF8"
+      }
+    },
+    "web": {
+      "favicon": "./assets/images/icon.png"
+    }
+  }
+}

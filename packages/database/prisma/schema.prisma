@@ -1,0 +1,505 @@
+// DePaso — schema de base de datos.
+// Fuente: master prompt sección 70 (lista mínima de entidades) + docs/development/DATABASE.md.
+// Alcance de lanzamiento: sólo Mar del Plata (sección 42) — no se modela jerarquía
+// geográfica más allá de `city` en StoreBranch, para no sobre-diseñar antes de expandir.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum PlaceType {
+  HOME
+  WORK
+  STUDY
+  GYM
+  FAMILY
+  CUSTOM
+}
+
+enum ProductPreferenceType {
+  EXACT
+  PREFERRED
+  ANY
+}
+
+enum StorePreferenceType {
+  REQUIRED
+  PREFERRED
+}
+
+enum PriceSourceType {
+  OFFICIAL
+  STORE
+  COMMUNITY
+  ESTIMATED
+}
+
+/// Estados de confianza del precio — docs/legal-functional/BUSINESS-RULES.md (p.6):
+/// Informado / Confirmado / Discutido / En revisión / Vencido.
+enum PriceStatus {
+  VERIFIED
+  COMMUNITY_CONFIRMED
+  DISPUTED
+  IN_REVIEW
+  STALE
+  LOW_CONFIDENCE
+}
+
+enum ConfidenceLevel {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum OptimizationMode {
+  BALANCED
+  CHEAPEST
+  FASTEST
+}
+
+enum TransportMode {
+  CAR
+  MOTORCYCLE
+  BICYCLE
+  WALK
+  PUBLIC_TRANSPORT
+}
+
+enum ConsentType {
+  TERMS
+  PRIVACY
+  LOCATION
+  MARKETING
+}
+
+enum ModerationEventType {
+  REPORT_HIDDEN
+  REPORT_WEIGHTED_DOWN
+  REPORT_REJECTED
+  USER_SUSPENDED
+  USER_APPEALED
+  PRICE_SENT_TO_REVIEW
+}
+
+enum PlanLabel {
+  BALANCED
+  FASTEST
+  CHEAPEST
+}
+
+// ---------------------------------------------------------------------------
+// Cuenta, consentimiento, privacidad
+// ---------------------------------------------------------------------------
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String
+  displayName  String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  /// Borrado lógico — retención según docs/legal-functional/LEGAL.md (p.15).
+  deletedAt    DateTime?
+
+  profile             UserProfile?
+  consents            UserConsent[]
+  sessions             Session[]
+  places               UserPlace[]
+  shoppingLists        ShoppingList[]
+  productPreferences   ProductPreference[]
+  storePreferences     StorePreference[]
+  savedRouteContexts   SavedRouteContext[]
+  optimizationRuns     OptimizationRun[]
+  priceReports         PriceReport[]
+  trustScore           UserTrustScore?
+
+  @@map("users")
+}
+
+model UserProfile {
+  userId            String  @id
+  user               User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Declaración de edad (sección 61 del master prompt) — sin verificación adicional en el MVP.
+  ageConfirmed18Plus Boolean @default(false)
+  marketingOptIn     Boolean @default(false)
+
+  @@map("user_profiles")
+}
+
+/// Evidencia de aceptación de T&C/Privacidad/Ubicación/Marketing — requisito de
+/// trazabilidad obligatorio (docs/legal-functional/FUNCTIONAL.md).
+model UserConsent {
+  id              String      @id @default(uuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type            ConsentType
+  documentVersion String
+  accepted        Boolean
+  acceptedAt      DateTime    @default(now())
+
+  @@index([userId, type])
+  @@map("user_consents")
+}
+
+/// Sesión de auth propia (docs/development/DECISIONS.md, 2026-09-11 — auth sobre Prisma,
+/// no Supabase). Se guarda el hash del token, no el token en texto plano — un dump de la
+/// tabla no alcanza para robar sesiones activas. "Sesión persistente" (sección 10 del
+/// master prompt); TTL de 30 días es elección MVP, no definida en la documentación.
+model Session {
+  id         String    @id @default(uuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash  String    @unique
+  createdAt  DateTime  @default(now())
+  expiresAt  DateTime
+  revokedAt  DateTime?
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+// ---------------------------------------------------------------------------
+// Lugares del usuario
+// ---------------------------------------------------------------------------
+
+model UserPlace {
+  id         String    @id @default(uuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String
+  type       PlaceType
+  address    String
+  latitude   Float
+  longitude  Float
+  isFavorite Boolean   @default(false)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([userId])
+  @@map("user_places")
+}
+
+model SavedRouteContext {
+  id               String   @id @default(uuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name             String
+  /// IDs de UserPlace en orden — sin tabla puente porque el orden es parte del significado
+  /// y la cardinalidad es chica (contexto de un día, sección 33-35).
+  waypointPlaceIds String[]
+  createdAt        DateTime @default(now())
+
+  @@index([userId])
+  @@map("saved_route_contexts")
+}
+
+// ---------------------------------------------------------------------------
+// Catálogo: marca, producto, variante, alias
+// ---------------------------------------------------------------------------
+
+model Brand {
+  id       String    @id @default(uuid())
+  name     String    @unique
+  products Product[]
+
+  @@map("brands")
+}
+
+model Product {
+  id       String    @id @default(uuid())
+  brandId  String?
+  brand    Brand?    @relation(fields: [brandId], references: [id])
+  name     String
+  category String
+  variants ProductVariant[]
+  preferences ProductPreference[]
+
+  @@index([category])
+  @@map("products")
+}
+
+model ProductVariant {
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name      String
+  ean       String?  @unique
+  unit      String
+  unitSize  Float
+
+  aliases ProductAlias[]
+  prices  Price[]
+
+  @@index([productId])
+  @@map("product_variants")
+}
+
+/// Soporta búsqueda tolerante a variaciones ("coca", "coca cola", "coca 2 litros") — sección 37.
+model ProductAlias {
+  id               String         @id @default(uuid())
+  productVariantId String
+  productVariant   ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
+  alias            String
+
+  @@index([alias])
+  @@map("product_aliases")
+}
+
+// ---------------------------------------------------------------------------
+// Comercios y sucursales
+// ---------------------------------------------------------------------------
+
+model Store {
+  id      String        @id @default(uuid())
+  name    String
+  branches StoreBranch[]
+
+  @@map("stores")
+}
+
+model StoreBranch {
+  id        String  @id @default(uuid())
+  storeId   String
+  store     Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  name      String
+  address   String
+  latitude  Float
+  longitude Float
+  /// Alcance de lanzamiento sólo Mar del Plata (sección 42) — campo simple, sin jerarquía
+  /// geográfica completa todavía.
+  city      String  @default("Mar del Plata")
+
+  prices             Price[]
+  priceReports       PriceReport[]
+  storePreferences   StorePreference[]
+  optimizationStops  OptimizationPlanStop[]
+
+  @@index([storeId])
+  @@map("store_branches")
+}
+
+// ---------------------------------------------------------------------------
+// Precios y comunidad
+// ---------------------------------------------------------------------------
+
+model Price {
+  id               String          @id @default(uuid())
+  productVariantId String
+  productVariant   ProductVariant  @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
+  storeBranchId    String
+  storeBranch      StoreBranch     @relation(fields: [storeBranchId], references: [id], onDelete: Cascade)
+  price            Decimal         @db.Decimal(12, 2)
+  currency         String          @default("ARS")
+  sourceType       PriceSourceType
+  sourceReference  String?
+  reportedAt       DateTime        @default(now())
+  validFrom        DateTime        @default(now())
+  confidence       ConfidenceLevel
+  status           PriceStatus     @default(VERIFIED)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  history PriceHistory[]
+
+  @@index([productVariantId, storeBranchId])
+  @@map("prices")
+}
+
+/// Nunca se sobreescribe sin histórico (regla obligatoria, BUSINESS-RULES.md p.7).
+model PriceHistory {
+  id               String      @id @default(uuid())
+  priceId          String
+  price            Price       @relation(fields: [priceId], references: [id], onDelete: Cascade)
+  productVariantId String
+  storeBranchId    String
+  amount           Decimal     @db.Decimal(12, 2)
+  status           PriceStatus
+  changedAt        DateTime    @default(now())
+  changeReason     String
+
+  @@index([priceId])
+  @@map("price_history")
+}
+
+model PriceReport {
+  id                String      @id @default(uuid())
+  userId            String
+  user              User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productVariantId  String
+  storeBranchId     String
+  storeBranch       StoreBranch @relation(fields: [storeBranchId], references: [id], onDelete: Cascade)
+  reportedPrice     Decimal     @db.Decimal(12, 2)
+  requiresPromotion Boolean     @default(false)
+  promotionNote     String?
+  photoEvidenceUrl  String?
+  goodFaithDeclared Boolean     @default(false)
+  createdAt         DateTime    @default(now())
+
+  moderationEvents CommunityModerationEvent[]
+
+  @@index([productVariantId, storeBranchId, createdAt])
+  @@map("price_reports")
+}
+
+model UserTrustScore {
+  userId            String   @id
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Nunca se expone públicamente el valor exacto (BUSINESS-RULES.md p.7).
+  score              Float    @default(0.5)
+  reportsSubmitted   Int      @default(0)
+  reportsConfirmed   Int      @default(0)
+  lastUpdatedAt      DateTime @updatedAt
+
+  @@map("user_trust_scores")
+}
+
+model CommunityModerationEvent {
+  id                  String              @id @default(uuid())
+  type                ModerationEventType
+  targetPriceReportId String?
+  targetPriceReport   PriceReport?        @relation(fields: [targetPriceReportId], references: [id])
+  targetUserId        String?
+  reason              String
+  createdAt           DateTime            @default(now())
+  createdByAdminId    String?
+
+  @@index([targetPriceReportId])
+  @@map("community_moderation_events")
+}
+
+// ---------------------------------------------------------------------------
+// Listas y preferencias
+// ---------------------------------------------------------------------------
+
+model ShoppingList {
+  id         String    @id @default(uuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name       String
+  archivedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  items            ShoppingListItem[]
+  optimizationRuns OptimizationRun[]
+
+  @@index([userId])
+  @@map("shopping_lists")
+}
+
+model ShoppingListItem {
+  id             String       @id @default(uuid())
+  shoppingListId String
+  shoppingList   ShoppingList @relation(fields: [shoppingListId], references: [id], onDelete: Cascade)
+  productId      String
+  quantity       Int          @default(1)
+  note           String?
+
+  @@index([shoppingListId])
+  @@map("shopping_list_items")
+}
+
+model ProductPreference {
+  id               String                @id @default(uuid())
+  userId           String
+  user             User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId        String
+  product          Product               @relation(fields: [productId], references: [id], onDelete: Cascade)
+  type             ProductPreferenceType
+  preferredBrandId String?
+
+  @@unique([userId, productId])
+  @@map("product_preferences")
+}
+
+model StorePreference {
+  id            String              @id @default(uuid())
+  userId        String
+  user          User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category      String
+  type          StorePreferenceType
+  storeBranchId String
+  storeBranch   StoreBranch         @relation(fields: [storeBranchId], references: [id], onDelete: Cascade)
+
+  @@index([userId, category])
+  @@map("store_preferences")
+}
+
+// ---------------------------------------------------------------------------
+// Optimización
+// ---------------------------------------------------------------------------
+
+model OptimizationRun {
+  id             String           @id @default(uuid())
+  userId         String
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shoppingListId String
+  shoppingList   ShoppingList     @relation(fields: [shoppingListId], references: [id], onDelete: Cascade)
+  mode           OptimizationMode
+  transportMode  TransportMode
+  createdAt      DateTime         @default(now())
+
+  plans OptimizationPlan[]
+
+  @@index([userId])
+  @@map("optimization_runs")
+}
+
+model OptimizationPlan {
+  id                      String          @id @default(uuid())
+  optimizationRunId       String
+  optimizationRun         OptimizationRun @relation(fields: [optimizationRunId], references: [id], onDelete: Cascade)
+  rank                    Int
+  label                   PlanLabel
+  totalProductCost        Decimal         @db.Decimal(12, 2)
+  estimatedTravelCost     Decimal         @db.Decimal(12, 2)
+  estimatedEffectiveCost  Decimal         @db.Decimal(12, 2)
+  additionalDistanceMeters Int
+  additionalTimeSeconds    Int
+  numberOfStops            Int
+  missingProductIds        String[]
+  priceConfidence           ConfidenceLevel
+  estimatedSavings          Decimal         @db.Decimal(12, 2)
+  explanation                String
+
+  stops OptimizationPlanStop[]
+
+  @@index([optimizationRunId])
+  @@map("optimization_plans")
+}
+
+model OptimizationPlanStop {
+  id                 String           @id @default(uuid())
+  optimizationPlanId String
+  optimizationPlan   OptimizationPlan @relation(fields: [optimizationPlanId], references: [id], onDelete: Cascade)
+  order              Int
+  storeBranchId      String
+  storeBranch        StoreBranch      @relation(fields: [storeBranchId], references: [id])
+
+  items OptimizationPlanItem[]
+
+  @@index([optimizationPlanId])
+  @@map("optimization_plan_stops")
+}
+
+model OptimizationPlanItem {
+  id                      String               @id @default(uuid())
+  optimizationPlanStopId  String
+  optimizationPlanStop    OptimizationPlanStop @relation(fields: [optimizationPlanStopId], references: [id], onDelete: Cascade)
+  productId               String
+  productVariantId        String
+  quantity                Int
+  unitPrice                Decimal              @db.Decimal(12, 2)
+
+  @@index([optimizationPlanStopId])
+  @@map("optimization_plan_items")
+}

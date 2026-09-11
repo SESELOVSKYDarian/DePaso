@@ -1,0 +1,14 @@
+{
+  "name": "@depaso/config",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "files": [
+    "tsconfig",
+    "eslint"
+  ],
+  "dependencies": {
+    "@eslint/js": "^9.17.0",
+    "typescript-eslint": "^8.19.0"
+  }
+}
