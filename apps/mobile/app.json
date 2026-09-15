@@ -36,6 +36,12 @@
     },
     "web": {
       "favicon": "./assets/images/icon.png"
+    },
+    "owner": "parahacer",
+    "extra": {
+      "eas": {
+        "projectId": "a45d8dda-7b98-47b8-a4bb-49b9f3e4c90b"
+      }
     }
   }
 }
