@@ -1400,12 +1400,14 @@ nuevos (`optimization-runs`, `price-reports`, `prices`, `users`, todos con `take
 - `GET /api/admin/store-branches` → `take: 200`
 - `GET /api/stores/branches` (lectura pública para preferencias, Fase 10) → `take: 500`
 
-Hoy el volumen real es bajo (3 sucursales de SEPA Mayorista), así que esto no es un bug que
-se manifieste todavía — es prevención real antes de que SEPA Minorista (Fase 12, pendiente)
-multiplique el volumen. De paso se confirmó que la consulta más caliente del sistema
-(`POST /api/optimization`, precios por lista+recorrido) ya resuelve todo en un solo
-`findMany` por lote (`WHERE productVariantId IN (...)`), no un query por producto — sin
-patrón N+1 que corregir ahí.
+**Corrección (ver "Corrección real" más abajo): esta sección asumió por error que el
+volumen de sucursales/precios era bajo (sólo Mayorista) — en realidad SEPA Minorista ya
+estaba conectado desde la Sesión 10, así que el `take` agregado no era prevención a
+futuro, ya estaba corrigiendo un problema real presente con 53+ sucursales y ~211k
+precios en la base en ese mismo momento.** De paso se confirmó que la consulta más
+caliente del sistema (`POST /api/optimization`, precios por lista+recorrido) ya resuelve
+todo en un solo `findMany` por lote (`WHERE productVariantId IN (...)`), no un query por
+producto — sin patrón N+1 que corregir ahí.
 
 ### Fase 24 — Accesibilidad
 
@@ -1458,3 +1460,55 @@ de `apps/mobile`.
 - Fase 26 (build Android/iOS) sigue bloqueada por falta de Android Studio/Xcode/EAS en este
   entorno — ver la respuesta específica dada al usuario sobre qué haría falta para poder
   probarla.
+
+## Sesión 20 — primer commit real, EAS Build, refresco de SEPA Minorista, y una corrección
+
+### Corrección real (no oculta)
+
+Al responder sobre por qué la app "todavía no tenía datos reales", afirmé que **SEPA
+Minorista nunca se había conectado** — eso era **incorrecto**. Ya estaba conectado desde la
+Sesión 10 (2026-09-13): 53 sucursales reales de Mar del Plata, 211.110 precios reales.
+Me guié por la tabla resumen de `IMPLEMENTATION-PLAN.md` (Fase 11/12), que había quedado
+desactualizada desde esa sesión y seguía diciendo "Minorista pendiente" — no crucé ese
+resumen contra el detalle real en este mismo archivo (Sesión 10) antes de afirmarlo. Ya
+corregido: Fase 11/12 en `IMPLEMENTATION-PLAN.md` y la nota de Fase 22 de la Sesión 19 de
+arriba, que había heredado el mismo error.
+
+Lo que sí fue trabajo real de esta sesión: corrí `pnpm data:sepa:import --retail` de nuevo,
+lo que trajo un **snapshot más nuevo** del feed (resource `9dc06241-...`, 2026-09-15) — no
+la primera conexión, un refresco con datos más actuales. Resultado real verificado contra
+la base: **231.119 precios totales** (229.729 `OFFICIAL_SEPA`), **71.946 productos**,
+**80 sucursales reales en 41 comercios**. 0 precios rechazados en esta corrida; 1 anomalía
+real (`comercio.csv vacío o ausente` para un comercio puntual un día — comportamiento ya
+anticipado en `docs/data/SEPA.md`, no un bug nuevo).
+
+### Primer commit real del proyecto
+
+Todo el trabajo acumulado desde el scaffold inicial (`DePasoInicio`) — Fases 1-25 completas
+— nunca se había commiteado. Se hizo un commit único con todo el estado actual (223
+archivos), más 2 commits chicos de esta sesión (Fase 21/22/24/25, y la config de EAS).
+Los 3 pusheados a `origin/master` (`https://github.com/SESELOVSKYDarian/DePaso`).
+
+### EAS Build configurado y vinculado
+
+`apps/mobile/eas.json` (perfiles `development`/`preview`/`production`), scripts
+`build:dev`/`build:preview`/`build:production`, `eas-cli`+`expo-dev-client` como
+dependencias, y `docs/development/EAS-BUILD-SETUP.md` con el paso a paso. El usuario corrió
+`eas init` con su propia cuenta (team "parahacer's team", proyecto "DePaso") — el
+`projectId` real (`a45d8dda-7b98-47b8-a4bb-49b9f3e4c90b`) y `owner: "parahacer"` quedaron
+commiteados en `app.json` para que no haga falta re-vincular.
+
+### Verificación real
+
+`pnpm --filter @depaso/mobile run typecheck` limpio después de linkear el `projectId`.
+Conteos de la base confirmados por consulta directa (Prisma), no sólo por el log del
+import.
+
+### Pendiente real (no oculto)
+
+- El primer build de EAS (`eas build --profile development --platform android`) todavía no
+  se corrió — el usuario lo tiene que disparar con su cuenta, no se puede hacer desde este
+  entorno.
+- Batching de inserts en el import de SEPA sigue sin implementarse (sección 27 del pedido
+  original) — cada precio es su propio find+create/update secuencial; aceptable al volumen
+  actual (231k filas corrieron igual), pero no escala indefinidamente.
