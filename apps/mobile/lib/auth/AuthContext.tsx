@@ -15,11 +15,18 @@ interface AuthContextValue {
   onboardingSeen: boolean;
   user: AuthUserResponse | null;
   isAuthenticated: boolean;
+  /** `false` sólo tras un `register()` recién hecho, hasta completar el setup posterior
+   * (verificación/ubicación/lugares/intereses). Un `login()` de una cuenta existente entra
+   * directo (`true`) — ese flujo es sólo para cuentas nuevas. Es estado de sesión, no
+   * persistido: si la app se cierra a mitad del setup, al reabrir cae directo a `(tabs)`. */
+  postSignupDone: boolean;
   completeOnboarding: () => Promise<void>;
+  completePostSignup: () => void;
   register: (body: RegisterRequest) => Promise<void>;
   login: (body: LoginRequest) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
+  deleteAccount: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -28,6 +35,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [isBootstrapping, setIsBootstrapping] = useState(true);
   const [onboardingSeen, setOnboardingSeenState] = useState(false);
   const [user, setUser] = useState<AuthUserResponse | null>(null);
+  const [postSignupDone, setPostSignupDone] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -60,15 +68,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setOnboardingSeenState(true);
   }, []);
 
+  const completePostSignup = useCallback(() => setPostSignupDone(true), []);
+
   const register = useCallback(async (body: RegisterRequest) => {
     const result = await authClient.register(body);
     await setStoredToken(result.token);
+    setPostSignupDone(false);
     setUser(result.user);
   }, []);
 
   const login = useCallback(async (body: LoginRequest) => {
     const result = await authClient.login(body);
     await setStoredToken(result.token);
+    setPostSignupDone(true);
     setUser(result.user);
   }, []);
 
@@ -77,6 +89,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await authClient.logout();
     } finally {
       await clearStoredToken();
+      setPostSignupDone(true);
       setUser(null);
     }
   }, []);
@@ -86,19 +99,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(me);
   }, []);
 
+  /** El DELETE ya revoca la sesión server-side (apps/api/app/api/auth/account) — no hace
+   * falta un logout() aparte, sólo limpiar el estado local. */
+  const deleteAccount = useCallback(async () => {
+    await authClient.deleteAccount();
+    await clearStoredToken();
+    setPostSignupDone(true);
+    setUser(null);
+  }, []);
+
   const value = useMemo<AuthContextValue>(
     () => ({
       isBootstrapping,
       onboardingSeen,
       user,
       isAuthenticated: user !== null,
+      postSignupDone,
       completeOnboarding,
+      completePostSignup,
       register,
       login,
       logout,
       refreshUser,
+      deleteAccount,
     }),
-    [isBootstrapping, onboardingSeen, user, completeOnboarding, register, login, logout, refreshUser]
+    [
+      isBootstrapping,
+      onboardingSeen,
+      user,
+      postSignupDone,
+      completeOnboarding,
+      completePostSignup,
+      register,
+      login,
+      logout,
+      refreshUser,
+      deleteAccount,
+    ]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

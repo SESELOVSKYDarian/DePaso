@@ -10,7 +10,9 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@depaso/api-client": "workspace:*",
     "@depaso/design-tokens": "workspace:*",
+    "@depaso/validation": "workspace:*",
     "next": "^15.1.3",
     "react": "19.2.3",
     "react-dom": "19.2.3"

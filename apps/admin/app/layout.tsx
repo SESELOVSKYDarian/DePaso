@@ -1,5 +1,7 @@
 import { colors } from "@depaso/design-tokens";
 import type { ReactNode } from "react";
+import { AdminShell } from "@/components/AdminShell";
+import { AdminAuthProvider } from "@/lib/AdminAuthContext";
 
 export const metadata = { title: "DePaso Admin" };
 
@@ -14,7 +16,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           fontFamily: "system-ui, sans-serif",
         }}
       >
-        {children}
+        <AdminAuthProvider>
+          <AdminShell>{children}</AdminShell>
+        </AdminAuthProvider>
       </body>
     </html>
   );

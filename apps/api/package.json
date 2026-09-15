@@ -11,6 +11,8 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@depaso/community": "workspace:*",
+    "@depaso/data-sources-mapbox": "workspace:*",
     "@depaso/database": "workspace:*",
     "@depaso/domain": "workspace:*",
     "@depaso/optimization": "workspace:*",

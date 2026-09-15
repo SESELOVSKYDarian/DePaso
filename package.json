@@ -13,7 +13,9 @@
     "typecheck": "turbo run typecheck",
     "lint": "turbo run lint",
     "test": "turbo run test",
-    "clean": "turbo run clean"
+    "clean": "turbo run clean",
+    "data:sepa:inspect": "pnpm --filter @depaso/data-sources-sepa run sepa:inspect",
+    "data:sepa:import": "pnpm --filter @depaso/data-sources-sepa run sepa:import"
   },
   "devDependencies": {
     "turbo": "^2.3.3",

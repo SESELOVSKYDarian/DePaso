@@ -48,9 +48,19 @@ export interface UserPreferencesInput {
 
 export interface StoreProductOffer {
   productId: string;
+  /** Variante concreta detrás del precio — opcional para no romper callers que sólo
+   * conocen el producto agregado (ej. tests). Cuando está, el plan resultante la propaga
+   * hasta `PlanStopItem` para que el cliente pueda reportar ese precio puntual. */
+  productVariantId?: string;
   brandId: string | null;
   price: number;
   confidence: ConfidenceLevel;
+  /** `Price.sourceType` real (string ancho a propósito — el motor no depende del enum
+   * completo de Prisma, sólo lo propaga). Junto con `reportedAt`, arma la divulgación
+   * obligatoria de cada precio (BUSINESS-RULES.md p.9: Fuente + Recencia). */
+  sourceType?: string;
+  /** ISO 8601 — última vez que se observó este precio. */
+  reportedAt?: string;
 }
 
 export interface StoreCandidateInput {
@@ -85,9 +95,16 @@ export interface OptimizeInput {
 
 export interface PlanStopItem {
   productId: string;
+  productVariantId?: string;
   productName: string;
   quantity: number;
   unitPrice: number;
+  /** Divulgación obligatoria por precio (BUSINESS-RULES.md p.9: "Monto, Sucursal, Fuente,
+   * Recencia, Confianza, Aviso" — Sucursal ya la da `PlanStop`). Opcionales por el mismo
+   * motivo que `productVariantId`: no romper callers que arman ofertas sin esta data (tests). */
+  sourceType?: string;
+  reportedAt?: string;
+  confidence?: ConfidenceLevel;
 }
 
 export interface PlanStop {

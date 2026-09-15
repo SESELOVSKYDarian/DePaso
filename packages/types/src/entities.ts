@@ -12,6 +12,7 @@ import type {
   PriceSourceType,
   PriceStatus,
   ProductPreferenceType,
+  Role,
   StorePreferenceType,
   TransportMode,
   ConsentType,
@@ -21,6 +22,7 @@ export interface User {
   id: string;
   email: string;
   displayName: string | null;
+  role: Role;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;

@@ -53,7 +53,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   bulletDot: {
-    color: colors.brand.route,
+    color: colors.text.secondary,
     fontSize: 15,
   },
   bulletText: {

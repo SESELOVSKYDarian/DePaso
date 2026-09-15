@@ -18,7 +18,10 @@ export function BottomSheet({ visible, onClose, children }: BottomSheetProps) {
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel="Cerrar">
-        <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
+        {/* accessible=false: este Pressable sólo existe para frenar la propagación del tap
+         * y cerrar el sheet — sin esto, un lector de pantalla lo enfoca como un control sin
+         * label antes de llegar al contenido real de adentro. */}
+        <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()} accessible={false}>
           {children}
         </Pressable>
       </Pressable>

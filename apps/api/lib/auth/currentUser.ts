@@ -37,6 +37,7 @@ export async function toAuthUserResponse(userId: string): Promise<AuthUserRespon
     email: user.email,
     displayName: user.displayName,
     marketingOptIn: user.profile?.marketingOptIn ?? false,
+    role: user.role,
     createdAt: user.createdAt.toISOString(),
   };
 }

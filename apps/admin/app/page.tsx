@@ -1,41 +1,47 @@
 import Image from "next/image";
+import Link from "next/link";
 import { colors } from "@depaso/design-tokens";
 
-const SECTIONS = [
-  "Dashboard",
-  "Usuarios",
-  "Productos",
-  "Marcas",
-  "Comercios",
-  "Sucursales",
-  "Precios",
-  "Histórico de precios",
-  "Reportes comunitarios",
-  "Precios disputados",
-  "Moderación",
-  "Confianza de usuarios",
-  "Optimization Runs",
-  "Configuración",
-];
+const PENDING = ["Productos (catálogo)", "Marcas", "Histórico de precios (lectura)"];
 
 /**
- * Scaffold mínimo bootable del panel admin (sección 7 del master prompt). Las pantallas
- * reales de moderación/gestión necesitan auth + @depaso/database funcionando — quedan para
- * la Fase 20 (ver docs/development/IMPLEMENTATION-PLAN.md). Esto sólo confirma que la app
- * levanta y tiene el mapa de secciones previsto.
+ * Dashboard del panel admin (sección 7 del master prompt). Fase 11/12 (comercios/
+ * sucursales/precios), Fase 13-14 (reportes y moderación) y Fase 20 (usuarios,
+ * optimization runs) tienen CRUD/lectura real — ver
+ * `docs/development/IMPLEMENTATION-PLAN.md`. "Configuración" quedó NO DEFINIDO: ninguna
+ * doc especifica qué debería tener, así que no se armó una pantalla con ajustes
+ * inventados.
  */
 export default function AdminHome() {
   return (
-    <main style={{ maxWidth: 720, margin: "0 auto", padding: "48px 24px" }}>
+    <main style={{ maxWidth: 720 }}>
       <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
         <Image src="/logo-isotipo.png" alt="Isotipo DePaso" width={32} height={32} priority />
         <h1 style={{ fontSize: 24, margin: 0 }}>DePaso — Admin</h1>
       </div>
-      <p style={{ color: colors.text.secondary }}>
-        Panel administrativo. Secciones previstas (Fase 20, aún no implementadas):
-      </p>
+
+      <p style={{ color: colors.text.secondary }}>Secciones con CRUD/lectura real:</p>
       <ul>
-        {SECTIONS.map((section) => (
+        <li>
+          <Link href="/stores">Comercios y sucursales</Link>
+        </li>
+        <li>
+          <Link href="/prices">Precios</Link>
+        </li>
+        <li>
+          <Link href="/price-reports">Reportes comunitarios y moderación</Link>
+        </li>
+        <li>
+          <Link href="/users">Usuarios</Link>
+        </li>
+        <li>
+          <Link href="/optimization-runs">Optimization runs</Link>
+        </li>
+      </ul>
+
+      <p style={{ color: colors.text.secondary, marginTop: 24 }}>Secciones previstas, aún no implementadas:</p>
+      <ul>
+        {PENDING.map((section) => (
           <li key={section} style={{ color: colors.text.muted, marginBottom: 4 }}>
             {section}
           </li>

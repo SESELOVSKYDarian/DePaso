@@ -76,9 +76,13 @@ export function resolveComboOffers(
     const stop = stopsByBranch.get(chosen.store.storeBranchId)!;
     stop.items.push({
       productId: item.productId,
+      ...(chosen.offer.productVariantId ? { productVariantId: chosen.offer.productVariantId } : {}),
       productName: item.productName,
       quantity: item.quantity,
       unitPrice: chosen.offer.price,
+      confidence: chosen.offer.confidence,
+      ...(chosen.offer.sourceType ? { sourceType: chosen.offer.sourceType } : {}),
+      ...(chosen.offer.reportedAt ? { reportedAt: chosen.offer.reportedAt } : {}),
     });
 
     totalProductCost += chosen.offer.price * item.quantity;

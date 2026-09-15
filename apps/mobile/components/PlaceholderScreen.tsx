@@ -33,9 +33,8 @@ const styles = StyleSheet.create({
     paddingTop: spacing.xl,
   },
   title: {
-    fontFamily: typography.title.fontFamily,
-    fontWeight: typography.title.fontWeight as "600",
-    fontSize: typography.title.fontSize,
+    fontFamily: typography.screenTitle.fontFamily,
+    fontSize: 20,
     color: colors.text.primary,
     marginBottom: spacing.xs,
   },

@@ -12,14 +12,14 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: colors.brand.navy,
-        tabBarInactiveTintColor: colors.text.muted,
+        tabBarActiveTintColor: colors.brand.accentDark,
+        tabBarInactiveTintColor: colors.text.secondary,
         tabBarStyle: {
           backgroundColor: colors.surface.primary,
           borderTopColor: colors.border.subtle,
         },
         tabBarLabelStyle: {
-          fontFamily: typography.caption.fontFamily,
+          fontFamily: typography.body.fontFamily,
           fontSize: 11,
         },
       }}

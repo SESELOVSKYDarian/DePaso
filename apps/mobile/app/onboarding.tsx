@@ -1,71 +1,63 @@
-import { useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { router } from "expo-router";
+import { Image, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import Animated, { FadeIn } from "react-native-reanimated";
 import { colors, radii, spacing, typography } from "@depaso/design-tokens";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { useAuth } from "@/lib/auth/AuthContext";
 
 /**
- * Onboarding breve (sección 29 del master prompt — "no crear un onboarding de 12
- * pantallas"): 3 slides que explican el diferencial (desvío, no sólo precio), la
- * privacidad de ubicación, y el rol de la comunidad en los precios.
+ * Bienvenida (depaso-bienvenida en Figma). El documento de producto pide un onboarding
+ * breve, no de varias pantallas (sección 29 / docs/brand-product/UX-UI.md) — el Figma sólo
+ * diseñó esta única pantalla, así que no se inventan slides adicionales.
  */
-const SLIDES = [
-  {
-    title: "Encontrá lo que realmente te conviene",
-    body: "DePaso no busca sólo el precio más bajo. Mira tu recorrido de hoy y te dice qué compra tiene sentido en el camino.",
-  },
-  {
-    title: "Tu ubicación, sólo cuando la necesitás",
-    body: "Te la pedimos recién cuando vas a buscar tu mejor compra. No guardamos un historial de tus movimientos.",
-  },
-  {
-    title: "Precios con ayuda de la comunidad",
-    body: "Mostramos de dónde sale cada precio y hace cuánto se actualizó. Si algo cambió, cualquiera puede reportarlo.",
-  },
-] as const;
-
 export default function OnboardingScreen() {
   const { completeOnboarding } = useAuth();
-  const [index, setIndex] = useState(0);
-  const isLast = index === SLIDES.length - 1;
-  const slide = SLIDES[index]!;
+
+  const goTo = async (path: "/(auth)/register" | "/(auth)/login") => {
+    await completeOnboarding();
+    router.replace(path);
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
-      <View style={styles.dots}>
-        {SLIDES.map((s, i) => (
-          <View key={s.title} style={[styles.dot, i === index ? styles.dotActive : null]} />
-        ))}
+      <View style={styles.content}>
+        <Image
+          source={require("../assets/images/logo-wordmark.png")}
+          style={styles.wordmark}
+          resizeMode="contain"
+        />
+        <Image
+          source={require("../assets/images/bienvenida.png")}
+          style={styles.illustration}
+          resizeMode="contain"
+        />
+        <Text style={styles.title}>Tu compra,{"\n"}en el camino.</Text>
+        <Text style={styles.subtitle}>
+          Encontrá los mejores precios en los comercios que te quedan de paso.
+        </Text>
       </View>
 
-      <Animated.View key={index} entering={FadeIn.duration(220)} style={styles.content}>
-        <Text style={styles.title}>{slide.title}</Text>
-        <Text style={styles.body}>{slide.body}</Text>
-      </Animated.View>
-
-      <View style={styles.actions}>
-        {!isLast ? (
-          <AnimatedPressable
-            accessibilityLabel="Omitir introducción"
-            haptic={false}
-            onPress={() => void completeOnboarding()}
-            style={styles.skipButton}
-          >
-            <Text style={styles.skipLabel}>Omitir</Text>
-          </AnimatedPressable>
-        ) : (
-          <View style={styles.skipButton} />
-        )}
+      <View style={styles.footer}>
+        <View style={styles.dots}>
+          <View style={[styles.dot, styles.dotActive]} />
+          <View style={styles.dot} />
+          <View style={styles.dot} />
+        </View>
 
         <AnimatedPressable
-          accessibilityLabel={isLast ? "Empezar" : "Siguiente"}
-          onPress={() => (isLast ? void completeOnboarding() : setIndex((i) => i + 1))}
+          accessibilityLabel="Comenzar"
+          onPress={() => void goTo("/(auth)/register")}
           style={styles.primaryButton}
         >
-          <Text style={styles.primaryLabel}>{isLast ? "Empezar" : "Siguiente"}</Text>
+          <Text style={styles.primaryLabel}>Comenzar</Text>
         </AnimatedPressable>
+
+        <Text style={styles.loginRow}>
+          Ya tengo una cuenta.{" "}
+          <Text style={styles.loginLink} onPress={() => void goTo("/(auth)/login")}>
+            Iniciar sesión
+          </Text>
+        </Text>
       </View>
     </SafeAreaView>
   );
@@ -77,68 +69,78 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface.base,
     paddingHorizontal: spacing.lg,
   },
-  dots: {
-    flexDirection: "row",
-    gap: spacing.xxs,
-    marginTop: spacing.lg,
-  },
-  dot: {
-    width: 24,
-    height: 4,
-    borderRadius: radii.full,
-    backgroundColor: colors.border.subtle,
-  },
-  dotActive: {
-    backgroundColor: colors.brand.navy,
-  },
   content: {
     flex: 1,
+    alignItems: "center",
     justifyContent: "center",
   },
+  wordmark: {
+    width: 160,
+    height: 54,
+    marginBottom: spacing.lg,
+  },
+  illustration: {
+    width: "100%",
+    height: 220,
+    marginBottom: spacing.lg,
+  },
   title: {
-    fontFamily: typography.display.fontFamily,
-    fontSize: 30,
-    lineHeight: 36,
+    fontFamily: typography.screenTitle.fontFamily,
+    fontSize: 32,
+    lineHeight: 38,
     color: colors.text.primary,
+    textAlign: "center",
     marginBottom: spacing.sm,
   },
-  body: {
-    fontFamily: typography.bodyRegular.fontFamily,
-    fontSize: typography.bodyRegular.fontSize,
-    lineHeight: typography.bodyRegular.lineHeight,
+  subtitle: {
+    fontFamily: typography.subtitle.fontFamily,
+    fontSize: 14,
+    lineHeight: 21,
     color: colors.text.secondary,
+    textAlign: "center",
+    maxWidth: 300,
   },
-  actions: {
-    flexDirection: "row",
+  footer: {
     alignItems: "center",
-    justifyContent: "space-between",
     paddingBottom: spacing.lg,
     gap: spacing.md,
   },
-  skipButton: {
-    minHeight: 44,
-    minWidth: 80,
-    alignItems: "flex-start",
-    justifyContent: "center",
+  dots: {
+    flexDirection: "row",
+    gap: spacing.xxs,
   },
-  skipLabel: {
-    fontFamily: typography.body.fontFamily,
-    fontSize: 15,
-    color: colors.text.muted,
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: colors.border.strong,
+  },
+  dotActive: {
+    backgroundColor: colors.brand.navy,
+    width: 18,
   },
   primaryButton: {
-    flex: 1,
+    alignSelf: "stretch",
     backgroundColor: colors.brand.navy,
-    borderRadius: radii.lg,
+    borderRadius: radii.full,
     paddingVertical: spacing.sm,
     alignItems: "center",
     justifyContent: "center",
-    minHeight: 44,
+    minHeight: 50,
   },
   primaryLabel: {
-    fontFamily: typography.title.fontFamily,
-    fontWeight: "600",
+    fontFamily: typography.buttonLabel.fontFamily,
     fontSize: 16,
     color: colors.text.onNavy,
+  },
+  loginRow: {
+    fontFamily: typography.body.fontFamily,
+    fontSize: 13,
+    color: colors.text.secondary,
+  },
+  loginLink: {
+    color: colors.text.secondary,
+    fontWeight: "700",
+    textDecorationLine: "underline",
   },
 });

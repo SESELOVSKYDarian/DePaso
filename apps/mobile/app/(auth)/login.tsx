@@ -159,6 +159,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontFamily: typography.body.fontFamily,
     fontSize: 14,
-    color: colors.brand.route,
+    color: colors.text.secondary,
+    textDecorationLine: "underline",
   },
 });

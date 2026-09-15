@@ -1,0 +1,27 @@
+{
+  "name": "@depaso/data-sources-sepa",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "sepa:inspect": "tsx scripts/inspect.ts",
+    "sepa:import": "tsx scripts/import.ts"
+  },
+  "dependencies": {
+    "@depaso/database": "workspace:*",
+    "@depaso/geo": "workspace:*",
+    "adm-zip": "^0.5.16"
+  },
+  "devDependencies": {
+    "@types/adm-zip": "^0.5.7",
+    "@types/node": "^22.10.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}

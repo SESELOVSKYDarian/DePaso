@@ -1,3 +1,4 @@
+import { ApiError } from "@depaso/api-client";
 import * as Location from "expo-location";
 import { router, useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
@@ -7,23 +8,35 @@ import type { PlaceType } from "@depaso/types";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { Checkbox } from "@/components/Checkbox";
 import { FormField } from "@/components/FormField";
+import { geocodeClient } from "@/lib/apiClient";
 import { PLACE_TYPES, PLACE_TYPE_META } from "@/lib/placeTypes";
 import { usePlaces } from "@/lib/places/PlacesContext";
 
+const GEOCODING_NOT_CONFIGURED_MESSAGE =
+  "La geocodificación real todavía no está configurada — ver docs/development/GEOCODING-SETUP.md.";
+
+/**
+ * Geocoding real vía `apps/api` (Fase 28) — no `Location.geocodeAsync` directo. Esa API
+ * nativa no tiene implementación en Expo Web (siempre falla ahí) y depende del geocoder
+ * del SO en dispositivo real; pasar por el servidor funciona igual en los tres.
+ */
 async function geocodeAddress(address: string): Promise<{ latitude: number; longitude: number } | null> {
-  const results = await Location.geocodeAsync(address);
-  const first = results[0];
-  return first ? { latitude: first.latitude, longitude: first.longitude } : null;
+  try {
+    return await geocodeClient.forward({ address });
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return null; // dirección no encontrada, no un error de config
+    throw err;
+  }
 }
 
 export default function PlaceFormScreen() {
-  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { id, type: presetType } = useLocalSearchParams<{ id?: string; type?: PlaceType }>();
   const { places, createPlace, updatePlace, removePlace } = usePlaces();
   const existing = useMemo(() => places.find((p) => p.id === id), [places, id]);
   const isEditing = existing !== undefined;
 
-  const [name, setName] = useState(existing?.name ?? "");
-  const [type, setType] = useState<PlaceType>(existing?.type ?? "CUSTOM");
+  const [name, setName] = useState(existing?.name ?? (presetType ? PLACE_TYPE_META[presetType].label : ""));
+  const [type, setType] = useState<PlaceType>(existing?.type ?? presetType ?? "CUSTOM");
   const [address, setAddress] = useState(existing?.address ?? "");
   const [isFavorite, setIsFavorite] = useState(existing?.isFavorite ?? false);
   const [nameError, setNameError] = useState<string | undefined>();
@@ -40,14 +53,18 @@ export default function PlaceFormScreen() {
         return;
       }
       const position = await Location.getCurrentPositionAsync({});
-      const [place] = await Location.reverseGeocodeAsync({
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-      });
-      if (place) {
-        const parts = [place.street, place.streetNumber, place.city].filter(Boolean);
-        setAddress(parts.join(" ") || `${position.coords.latitude}, ${position.coords.longitude}`);
+      const { latitude, longitude } = position.coords;
+      try {
+        const { address: resolved } = await geocodeClient.reverse({ latitude, longitude });
+        setAddress(resolved);
         setAddressError(undefined);
+      } catch (err) {
+        if (err instanceof ApiError && err.status === 503) {
+          setAddress(`${latitude}, ${longitude}`);
+          setAddressError(GEOCODING_NOT_CONFIGURED_MESSAGE);
+        } else {
+          setAddress(`${latitude}, ${longitude}`);
+        }
       }
     } catch {
       setAddressError("No pudimos obtener tu ubicación actual.");
@@ -85,8 +102,16 @@ export default function PlaceFormScreen() {
         await createPlace({ name, type, address, isFavorite, ...coords });
       }
       router.back();
-    } catch {
-      setAddressError("No pudimos guardar el lugar. Probá de nuevo.");
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 503) {
+        setAddressError(GEOCODING_NOT_CONFIGURED_MESSAGE);
+      } else if (err instanceof ApiError) {
+        setAddressError("No pudimos guardar el lugar. Probá de nuevo.");
+      } else {
+        // Error de red/conexión, no de la API — mismo criterio que route-context/index.tsx:
+        // no mostrar el mismo mensaje que un error real del servidor.
+        setAddressError("No pudimos conectar con el servidor. Revisá tu conexión e intentá de nuevo.");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -235,7 +260,8 @@ const styles = StyleSheet.create({
     fontFamily: typography.body.fontFamily,
     fontSize: 14,
     fontWeight: "600",
-    color: colors.brand.route,
+    color: colors.text.secondary,
+    textDecorationLine: "underline",
   },
   favoriteRow: {
     marginBottom: spacing.lg,

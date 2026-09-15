@@ -42,6 +42,7 @@ export async function POST(request: NextRequest) {
       email: user.email,
       displayName: user.displayName,
       marketingOptIn: user.profile?.marketingOptIn ?? false,
+      role: user.role,
       createdAt: user.createdAt.toISOString(),
     },
     token: session.token,

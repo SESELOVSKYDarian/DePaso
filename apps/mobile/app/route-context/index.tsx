@@ -1,25 +1,36 @@
+import { Ionicons } from "@expo/vector-icons";
+import { ApiError } from "@depaso/api-client";
 import * as Location from "expo-location";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { colors, radii, spacing, typography } from "@depaso/design-tokens";
 import type { RouteContextResponse } from "@depaso/validation";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { BottomSheet } from "@/components/BottomSheet";
 import { Button } from "@/components/Button";
-import { Card } from "@/components/Card";
 import { Dialog } from "@/components/Dialog";
 import { FormField } from "@/components/FormField";
+import { SelectCheckbox } from "@/components/SelectCheckbox";
 import { useToast } from "@/components/Toast";
-import { routeContextClient } from "@/lib/apiClient";
+import { geocodeClient, routeContextClient } from "@/lib/apiClient";
 import { PLACE_TYPE_META } from "@/lib/placeTypes";
 import { usePlaces } from "@/lib/places/PlacesContext";
 import { useTodayRoute, type TodayWaypoint } from "@/lib/routeContext/TodayRouteContext";
 
+const GEOCODING_NOT_CONFIGURED_MESSAGE =
+  "La geocodificación real todavía no está configurada — ver docs/development/GEOCODING-SETUP.md.";
+
+/** Geocoding real vía `apps/api` (Fase 28) — ver `apps/mobile/app/places/form.tsx`, mismo
+ * criterio: `Location.geocodeAsync` no funciona en Expo Web. */
 async function geocodeAddress(address: string) {
-  const results = await Location.geocodeAsync(address);
-  const first = results[0];
-  return first ? { latitude: first.latitude, longitude: first.longitude } : null;
+  try {
+    return await geocodeClient.forward({ address });
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return null;
+    throw err;
+  }
 }
 
 export default function RouteContextScreen() {
@@ -47,7 +58,6 @@ export default function RouteContextScreen() {
   }, []);
 
   const selectedPlaceIds = new Set(waypoints.map((w) => w.placeId).filter(Boolean));
-  const availablePlaces = places.filter((p) => !selectedPlaceIds.has(p.id));
 
   const addWaypoint = (waypoint: TodayWaypoint) => setWaypoints((prev) => [...prev, waypoint]);
   const removeWaypoint = (key: string) => setWaypoints((prev) => prev.filter((w) => w.key !== key));
@@ -62,6 +72,14 @@ export default function RouteContextScreen() {
       longitude: place.longitude,
       emoji: PLACE_TYPE_META[place.type].emoji,
     });
+  };
+
+  const togglePlace = (place: (typeof places)[number]) => {
+    if (selectedPlaceIds.has(place.id)) {
+      removeWaypoint(place.id);
+    } else {
+      addSavedPlace(place);
+    }
   };
 
   const addCurrentLocation = async () => {
@@ -106,6 +124,18 @@ export default function RouteContextScreen() {
       setTempAddress("");
       setTempError(undefined);
       setAskSaveDialog(waypoint);
+    } catch (err) {
+      if (err instanceof ApiError && err.status === 503) {
+        setTempError(GEOCODING_NOT_CONFIGURED_MESSAGE);
+      } else if (err instanceof ApiError) {
+        setTempError("No pudimos ubicar esa dirección. Probá de nuevo.");
+      } else {
+        // No es un error de la API (404/503) sino de red/conexión — el servidor puede estar
+        // caído o inalcanzable. Bug real encontrado probando el flujo completo: antes esto
+        // mostraba el mismo mensaje que "dirección no encontrada", lo que hacía parecer que
+        // el geocoding fallaba cuando en realidad no había servidor al otro lado.
+        setTempError("No pudimos conectar con el servidor. Revisá tu conexión e intentá de nuevo.");
+      }
     } finally {
       setIsGeocoding(false);
     }
@@ -148,8 +178,23 @@ export default function RouteContextScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <View style={styles.navHeader}>
+        <AnimatedPressable accessibilityLabel="Volver" haptic={false} onPress={() => router.back()} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={22} color={colors.text.primary} />
+        </AnimatedPressable>
+        <View>
+          <Text style={styles.navTitle}>¿Por dónde vas a andar hoy?</Text>
+          <Text style={styles.navSubtitle}>Contanos tu ruta.</Text>
+        </View>
+      </View>
+
       <ScrollView contentContainerStyle={styles.content}>
+        <View style={styles.mapBanner}>
+          <Ionicons name="map-outline" size={28} color={colors.brand.route} />
+          <Text style={styles.mapBannerText}>Seleccioná los lugares que vas a visitar y armamos la mejor ruta.</Text>
+        </View>
+
         {presets.length > 0 ? (
           <>
             <Text style={styles.sectionTitle}>Tus recorridos guardados</Text>
@@ -169,66 +214,89 @@ export default function RouteContextScreen() {
           </>
         ) : null}
 
-        <Text style={styles.sectionTitle}>Tu recorrido de hoy</Text>
-        <Card>
-          {waypoints.length === 0 ? (
+        <View style={styles.listHeaderRow}>
+          <Text style={styles.sectionTitle}>Mis lugares</Text>
+          <Text style={styles.editLink} onPress={() => router.push("/places")}>
+            Editar
+          </Text>
+        </View>
+        <View style={styles.placesList}>
+          {places.length === 0 ? (
             <Text style={styles.emptyHint}>
-              Todavía no elegiste ningún lugar. Agregá los que vas a visitar hoy, en orden.
+              Todavía no guardaste ningún lugar. Agregá el de hoy más abajo o guardá uno en Mis lugares.
             </Text>
           ) : (
-            <View style={styles.waypointsList}>
-              {waypoints.map((w, i) => (
-                <View key={w.key} style={styles.waypointRow}>
-                  <Text style={styles.waypointOrder}>{i + 1}</Text>
-                  <Text style={styles.waypointEmoji}>{w.emoji}</Text>
-                  <Text style={styles.waypointName} numberOfLines={1}>
-                    {w.name}
-                  </Text>
-                  <AnimatedPressable
-                    accessibilityLabel={`Quitar ${w.name}`}
-                    haptic={false}
-                    onPress={() => removeWaypoint(w.key)}
-                    style={styles.removeButton}
-                  >
-                    <Text style={styles.removeLabel}>×</Text>
-                  </AnimatedPressable>
-                </View>
-              ))}
-            </View>
+            places.map((place) => {
+              const meta = PLACE_TYPE_META[place.type];
+              const checked = selectedPlaceIds.has(place.id);
+              return (
+                <AnimatedPressable
+                  key={place.id}
+                  accessibilityLabel={`${checked ? "Quitar" : "Agregar"} ${place.name} del recorrido de hoy`}
+                  haptic={false}
+                  onPress={() => togglePlace(place)}
+                  style={styles.placeRow}
+                >
+                  <Text style={styles.placeEmoji}>{meta.emoji}</Text>
+                  <View style={styles.placeText}>
+                    <Text style={styles.placeName}>{place.name}</Text>
+                    <Text style={styles.placeAddress} numberOfLines={1}>
+                      {place.address}
+                    </Text>
+                  </View>
+                  <SelectCheckbox checked={checked} />
+                </AnimatedPressable>
+              );
+            })
           )}
-        </Card>
 
-        <Text style={styles.sectionTitle}>Agregar a tu recorrido</Text>
-        <View style={styles.chipsWrap}>
           <AnimatedPressable
             accessibilityLabel="Agregar ubicación actual"
             haptic={false}
             onPress={() => void addCurrentLocation()}
-            style={styles.addChip}
+            style={styles.placeRow}
           >
-            <Text style={styles.addChipLabel}>📍 Ubicación actual</Text>
+            <Ionicons name="navigate-outline" size={18} color={colors.text.secondary} />
+            <Text style={styles.placeName}>Ubicación actual</Text>
           </AnimatedPressable>
-          {availablePlaces.map((place) => (
-            <AnimatedPressable
-              key={place.id}
-              accessibilityLabel={`Agregar ${place.name}`}
-              haptic={false}
-              onPress={() => addSavedPlace(place)}
-              style={styles.addChip}
-            >
-              <Text style={styles.addChipLabel}>
-                {PLACE_TYPE_META[place.type].emoji} {place.name}
-              </Text>
-            </AnimatedPressable>
-          ))}
+
           <AnimatedPressable
             accessibilityLabel="Agregar lugar de hoy"
             onPress={() => setAddSheetVisible(true)}
-            style={[styles.addChip, styles.addChipDashed]}
+            style={styles.addStopRow}
           >
-            <Text style={styles.addChipLabel}>+ Agregar lugar de hoy</Text>
+            <Ionicons name="add" size={16} color={colors.brand.route} />
+            <Text style={styles.addStopLabel}>Agregar lugar de hoy</Text>
           </AnimatedPressable>
         </View>
+
+        {waypoints.length > 0 ? (
+          <>
+            <Text style={styles.sectionTitle}>Tu ruta de hoy</Text>
+            <View style={styles.placesList}>
+              {waypoints.map((w, i) => (
+                <View key={w.key} style={styles.waypointRow}>
+                  <Text style={styles.waypointNumber}>{i + 1}</Text>
+                  <Text style={styles.placeEmoji}>{w.emoji}</Text>
+                  <View style={styles.placeText}>
+                    <Text style={styles.placeName}>{w.name}</Text>
+                    <Text style={styles.placeAddress} numberOfLines={1}>
+                      {w.address}
+                    </Text>
+                  </View>
+                  <AnimatedPressable
+                    accessibilityLabel={`Quitar ${w.name} de la ruta de hoy`}
+                    haptic={false}
+                    onPress={() => removeWaypoint(w.key)}
+                    style={styles.removeWaypointButton}
+                  >
+                    <Ionicons name="close" size={16} color={colors.text.secondary} />
+                  </AnimatedPressable>
+                </View>
+              ))}
+            </View>
+          </>
+        ) : null}
 
         {waypoints.some((w) => w.placeId) ? (
           savingPresetName === null ? (
@@ -256,7 +324,22 @@ export default function RouteContextScreen() {
       </ScrollView>
 
       <View style={styles.footer}>
-        <Button label="Listo" onPress={handleDone} disabled={waypoints.length === 0} />
+        {waypoints.length > 0 ? (
+          <AnimatedPressable accessibilityLabel="Confirmar recorrido de hoy" onPress={handleDone} style={styles.summaryCard}>
+            <Text style={styles.summaryLabel}>TU RUTA DE HOY</Text>
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryRoute} numberOfLines={1}>
+                {waypoints.map((w) => w.name).join("  →  ")}
+              </Text>
+              <Ionicons name="chevron-forward" size={18} color={colors.text.onNavy} />
+            </View>
+            <Text style={styles.summaryMeta}>
+              {waypoints.length} {waypoints.length === 1 ? "parada" : "paradas"}
+            </Text>
+          </AnimatedPressable>
+        ) : (
+          <Button label="Listo" onPress={handleDone} disabled />
+        )}
       </View>
 
       <BottomSheet visible={addSheetVisible} onClose={() => setAddSheetVisible(false)}>
@@ -292,7 +375,7 @@ export default function RouteContextScreen() {
           setAskSaveDialog(null);
         }}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -301,18 +384,56 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.surface.base,
   },
+  navHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+  },
+  backButton: {
+    width: 32,
+    height: 32,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  navTitle: {
+    fontFamily: typography.screenTitle.fontFamily,
+    fontSize: 20,
+    color: colors.text.primary,
+  },
+  navSubtitle: {
+    fontFamily: typography.subtitle.fontFamily,
+    fontSize: 12,
+    color: colors.text.secondary,
+  },
   content: {
     padding: spacing.lg,
+    paddingTop: 0,
     paddingBottom: spacing.xxxl,
+    gap: spacing.md,
+  },
+  mapBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    backgroundColor: colors.surface.base,
+    borderWidth: 1,
+    borderColor: colors.border.subtle,
+    borderRadius: radii.xl,
+    padding: spacing.sm + 2,
+  },
+  mapBannerText: {
+    flex: 1,
+    fontFamily: typography.subtitle.fontFamily,
+    fontSize: 13,
+    lineHeight: 18,
+    color: colors.text.secondary,
   },
   sectionTitle: {
-    fontFamily: typography.caption.fontFamily,
-    fontSize: 13,
-    fontWeight: "600",
-    color: colors.text.muted,
-    textTransform: "uppercase",
-    marginTop: spacing.lg,
-    marginBottom: spacing.xs,
+    fontFamily: typography.itemTitle.fontFamily,
+    fontSize: 14,
+    color: colors.text.primary,
   },
   presetsRow: {
     flexDirection: "row",
@@ -328,74 +449,98 @@ const styles = StyleSheet.create({
   },
   presetLabel: {
     fontFamily: typography.body.fontFamily,
-    fontWeight: "600",
     fontSize: 14,
     color: colors.text.primary,
   },
   emptyHint: {
-    fontFamily: typography.bodyRegular.fontFamily,
+    fontFamily: typography.subtitle.fontFamily,
     fontSize: 14,
     lineHeight: 20,
     color: colors.text.secondary,
   },
-  waypointsList: {
+  listHeaderRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  editLink: {
+    fontFamily: typography.subtitle.fontFamily,
+    fontSize: 13,
+    color: colors.text.secondary,
+    textDecorationLine: "underline",
+  },
+  placesList: {
     gap: spacing.sm,
+  },
+  placeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    backgroundColor: colors.surface.primary,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    borderColor: colors.border.subtle,
+    padding: spacing.md - 2,
+    minHeight: 44,
+  },
+  placeEmoji: {
+    fontSize: 18,
+  },
+  placeText: {
+    flex: 1,
+  },
+  placeName: {
+    flex: 1,
+    fontFamily: typography.itemTitle.fontFamily,
+    fontSize: 14,
+    color: colors.text.primary,
+  },
+  placeAddress: {
+    fontFamily: typography.caption.fontFamily,
+    fontSize: 11,
+    color: colors.text.secondary,
+    marginTop: 1,
   },
   waypointRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.xs,
+    gap: spacing.sm,
+    backgroundColor: colors.surface.primary,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    borderColor: colors.border.subtle,
+    padding: spacing.md - 2,
+    minHeight: 44,
   },
-  waypointOrder: {
-    fontFamily: typography.caption.fontFamily,
-    fontSize: 12,
-    fontWeight: "700",
-    color: colors.text.muted,
-    width: 16,
+  waypointNumber: {
+    width: 20,
+    textAlign: "center",
+    fontFamily: typography.itemTitle.fontFamily,
+    fontSize: 13,
+    color: colors.text.secondary,
   },
-  waypointEmoji: {
-    fontSize: 18,
-  },
-  waypointName: {
-    flex: 1,
-    fontFamily: typography.body.fontFamily,
-    fontWeight: "500",
-    fontSize: 15,
-    color: colors.text.primary,
-  },
-  removeButton: {
-    minWidth: 32,
-    minHeight: 32,
+  removeWaypointButton: {
+    width: 32,
+    height: 32,
     alignItems: "center",
     justifyContent: "center",
   },
-  removeLabel: {
-    fontSize: 18,
-    color: colors.text.muted,
-  },
-  chipsWrap: {
+  addStopRow: {
     flexDirection: "row",
-    flexWrap: "wrap",
+    alignItems: "center",
     gap: spacing.xs,
-  },
-  addChip: {
     backgroundColor: colors.surface.primary,
-    borderRadius: radii.full,
+    borderRadius: radii.lg,
     borderWidth: 1,
-    borderColor: colors.border.subtle,
-    paddingVertical: spacing.xs,
-    paddingHorizontal: spacing.md,
-    minHeight: 40,
-    justifyContent: "center",
-  },
-  addChipDashed: {
     borderStyle: "dashed",
-    borderColor: colors.border.strong,
+    borderColor: colors.border.subtle,
+    padding: spacing.md - 2,
+    minHeight: 44,
   },
-  addChipLabel: {
-    fontFamily: typography.body.fontFamily,
-    fontSize: 14,
-    color: colors.text.primary,
+  addStopLabel: {
+    fontFamily: typography.itemTitle.fontFamily,
+    fontSize: 13,
+    color: colors.text.secondary,
   },
   savePresetTrigger: {
     marginTop: spacing.lg,
@@ -418,6 +563,36 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.border.subtle,
     backgroundColor: colors.surface.base,
+  },
+  summaryCard: {
+    backgroundColor: colors.brand.navy,
+    borderRadius: radii.xl,
+    padding: spacing.md,
+  },
+  summaryLabel: {
+    fontFamily: typography.itemTitle.fontFamily,
+    fontSize: 11,
+    letterSpacing: 1.3,
+    textTransform: "uppercase",
+    color: "rgba(255,255,255,0.6)",
+  },
+  summaryRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.xs,
+    marginTop: spacing.xxs,
+  },
+  summaryRoute: {
+    flex: 1,
+    fontFamily: typography.itemTitle.fontFamily,
+    fontSize: 14,
+    color: colors.text.onNavy,
+  },
+  summaryMeta: {
+    fontFamily: typography.subtitle.fontFamily,
+    fontSize: 11,
+    color: "#94A3B8",
+    marginTop: spacing.xxs,
   },
   sheetTitle: {
     fontFamily: typography.title.fontFamily,

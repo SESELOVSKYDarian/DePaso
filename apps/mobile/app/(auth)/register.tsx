@@ -1,71 +1,16 @@
-import { ApiError } from "@depaso/api-client";
 import { colors, radii, spacing, typography } from "@depaso/design-tokens";
-import { MIN_AGE_YEARS, PASSWORD_MIN_LENGTH } from "@depaso/domain";
-import { Link } from "expo-router";
-import { useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Link, router } from "expo-router";
+import { Image, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AuthHero } from "@/components/AuthHero";
-import { Button } from "@/components/Button";
-import { Checkbox } from "@/components/Checkbox";
-import { PillInput } from "@/components/PillInput";
+import { ProgressHeader } from "@/components/ProgressHeader";
 import { SocialButton } from "@/components/SocialButton";
 import { useToast } from "@/components/Toast";
-import { useAuth } from "@/lib/auth/AuthContext";
 
-function registerErrorMessage(error: unknown): string {
-  if (error instanceof ApiError && error.status === 409) {
-    return "Ya existe una cuenta con ese email.";
-  }
-  if (error instanceof ApiError && error.status === 429) {
-    return "Demasiados intentos. Probá de nuevo en unos minutos.";
-  }
-  return "No pudimos crear la cuenta. Revisá tu conexión e intentá de nuevo.";
-}
-
-export default function RegisterScreen() {
-  const { register } = useAuth();
+/** Selector de método de registro (depaso-crea-cuenta en Figma). El formulario real vive
+ * en `register-email.tsx` — separarlo del selector matchea el flujo de Figma en vez del
+ * formulario único que había antes acá. */
+export default function CreateAccountScreen() {
   const { show: showToast } = useToast();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [ageConfirmed, setAgeConfirmed] = useState(false);
-  const [acceptTerms, setAcceptTerms] = useState(false);
-  const [acceptPrivacy, setAcceptPrivacy] = useState(false);
-  const [marketingOptIn, setMarketingOptIn] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleSubmit = async () => {
-    const nextFieldErrors: Record<string, string> = {};
-    if (!email) nextFieldErrors.email = "Ingresá tu email.";
-    if (password.length < PASSWORD_MIN_LENGTH) {
-      nextFieldErrors.password = `La contraseña necesita al menos ${PASSWORD_MIN_LENGTH} caracteres.`;
-    }
-    if (!ageConfirmed) nextFieldErrors.age = "Tenés que declarar que sos mayor de edad.";
-    if (!acceptTerms) nextFieldErrors.terms = "Tenés que aceptar los Términos y Condiciones.";
-    if (!acceptPrivacy) nextFieldErrors.privacy = "Tenés que leer la Política de Privacidad.";
-
-    setFieldErrors(nextFieldErrors);
-    if (Object.keys(nextFieldErrors).length > 0) return;
-
-    setError(null);
-    setIsSubmitting(true);
-    try {
-      await register({
-        email,
-        password,
-        ageConfirmed18Plus: true,
-        acceptTerms: true,
-        acceptPrivacyNotice: true,
-        marketingOptIn,
-      });
-    } catch (err) {
-      setError(registerErrorMessage(err));
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const handleSocial = (provider: "Google" | "Apple") => {
     showToast(`Crear cuenta con ${provider} todavía no está conectado (falta configurar credenciales OAuth).`, "info");
@@ -73,99 +18,42 @@ export default function RegisterScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
-      <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          <AuthHero title="Creá tu cuenta" subtitle="Te toma un minuto." />
+      <View style={styles.header}>
+        <ProgressHeader progress={0.2} onBack={() => router.back()} />
+      </View>
 
-          <View style={styles.socialGroup}>
-            <SocialButton provider="google" onPress={() => handleSocial("Google")} />
-            <SocialButton provider="apple" onPress={() => handleSocial("Apple")} />
-          </View>
+      <View style={styles.content}>
+        <Text style={styles.title}>Creá tu cuenta</Text>
+        <Text style={styles.subtitle}>Elegí la opción que prefieras para empezar</Text>
 
-          <View style={styles.divider}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerLabel}>o con tu email</Text>
-            <View style={styles.dividerLine} />
-          </View>
-
-          <PillInput
-            icon="mail-outline"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoComplete="email"
-            placeholder="Email"
-            error={fieldErrors.email}
+        <View style={styles.socialGroup}>
+          <SocialButton provider="google" onPress={() => handleSocial("Google")} />
+          <SocialButton provider="apple" onPress={() => handleSocial("Apple")} />
+          <SocialButton
+            provider="email"
+            onPress={() => router.push("/(auth)/register-email")}
           />
-          <PillInput
-            icon="lock-closed-outline"
-            value={password}
-            onChangeText={setPassword}
-            isPassword
-            autoComplete="password-new"
-            placeholder="Contraseña"
-            error={fieldErrors.password}
-          />
+        </View>
 
-          <View style={styles.checkboxCard}>
-            <Checkbox
-              checked={ageConfirmed}
-              onToggle={setAgeConfirmed}
-              accessibilityLabel="Declaro ser mayor de edad"
-              error={fieldErrors.age}
-            >
-              <Text style={styles.checkboxLabel}>Declaro tener {MIN_AGE_YEARS} años o más.</Text>
-            </Checkbox>
+        <View style={styles.divider}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerLabel}>o</Text>
+          <View style={styles.dividerLine} />
+        </View>
 
-            <Checkbox
-              checked={acceptTerms}
-              onToggle={setAcceptTerms}
-              accessibilityLabel="Acepto los Términos y Condiciones"
-              error={fieldErrors.terms}
-            >
-              <Text style={styles.checkboxLabel}>
-                Acepto los{" "}
-                <Link href="/legal/terms" style={styles.inlineLink}>
-                  Términos y Condiciones
-                </Link>{" "}
-                de DePaso.
-              </Text>
-            </Checkbox>
-
-            <Checkbox
-              checked={acceptPrivacy}
-              onToggle={setAcceptPrivacy}
-              accessibilityLabel="Leí la Política de Privacidad"
-              error={fieldErrors.privacy}
-            >
-              <Text style={styles.checkboxLabel}>
-                Conocé cómo tratamos tus datos en la{" "}
-                <Link href="/legal/privacy" style={styles.inlineLink}>
-                  Política de Privacidad
-                </Link>
-                .
-              </Text>
-            </Checkbox>
-
-            <Checkbox checked={marketingOptIn} onToggle={setMarketingOptIn} accessibilityLabel="Quiero recibir novedades y promociones">
-              <Text style={styles.checkboxLabel}>Quiero recibir novedades y promociones.</Text>
-            </Checkbox>
-          </View>
-
-          {error ? <Text style={styles.errorBanner}>{error}</Text> : null}
-
-          <Button
-            label={isSubmitting ? "Creando cuenta..." : "Crear cuenta"}
-            onPress={() => void handleSubmit()}
-            disabled={isSubmitting}
-            style={styles.pillButton}
-          />
-
-          <Link href="/(auth)/login" style={styles.link}>
-            ¿Ya tenés cuenta? Iniciá sesión
+        <Text style={styles.loginRow}>
+          Ya tengo una cuenta.{" "}
+          <Link href="/(auth)/login" style={styles.loginLink}>
+            Iniciar sesión
           </Link>
-        </ScrollView>
-      </KeyboardAvoidingView>
+        </Text>
+
+        <Image
+          source={require("../../assets/images/ahorraravanzar.png")}
+          style={styles.illustration}
+          resizeMode="contain"
+        />
+      </View>
     </SafeAreaView>
   );
 }
@@ -175,10 +63,27 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.surface.base,
   },
+  header: {
+    paddingHorizontal: spacing.lg,
+  },
   content: {
-    padding: spacing.lg,
-    flexGrow: 1,
-    justifyContent: "center",
+    flex: 1,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.xl,
+  },
+  title: {
+    fontFamily: typography.screenTitle.fontFamily,
+    fontSize: 24,
+    color: colors.text.primary,
+    textAlign: "center",
+  },
+  subtitle: {
+    fontFamily: typography.subtitle.fontFamily,
+    fontSize: 14,
+    color: colors.text.secondary,
+    textAlign: "center",
+    marginTop: spacing.xxs,
+    marginBottom: spacing.xl,
   },
   socialGroup: {
     gap: spacing.sm,
@@ -195,45 +100,24 @@ const styles = StyleSheet.create({
     backgroundColor: colors.border.subtle,
   },
   dividerLabel: {
-    fontFamily: typography.caption.fontFamily,
-    fontSize: 13,
-    color: colors.text.muted,
+    fontFamily: typography.body.fontFamily,
+    fontSize: 12,
+    color: colors.text.secondary,
   },
-  checkboxCard: {
-    backgroundColor: colors.surface.primary,
-    borderRadius: radii.md,
-    borderWidth: 1,
-    borderColor: colors.border.subtle,
-    padding: spacing.md,
-    gap: spacing.xs,
-    marginTop: spacing.xs,
-    marginBottom: spacing.md,
-  },
-  checkboxLabel: {
-    fontFamily: typography.bodyRegular.fontFamily,
-    fontSize: 14,
-    lineHeight: 20,
-    color: colors.text.primary,
-  },
-  inlineLink: {
-    color: colors.brand.route,
-    fontWeight: "600",
-  },
-  errorBanner: {
-    fontFamily: typography.caption.fontFamily,
-    fontSize: 13,
-    color: colors.state.error,
-    marginBottom: spacing.sm,
-    textAlign: "center",
-  },
-  pillButton: {
-    borderRadius: radii.full,
-  },
-  link: {
-    marginTop: spacing.xl,
+  loginRow: {
     textAlign: "center",
     fontFamily: typography.body.fontFamily,
     fontSize: 14,
-    color: colors.brand.route,
+    color: colors.text.secondary,
+  },
+  loginLink: {
+    fontFamily: typography.body.fontFamily,
+    color: colors.text.primary,
+    textDecorationLine: "underline",
+  },
+  illustration: {
+    flex: 1,
+    width: "100%",
+    marginTop: spacing.xl,
   },
 });

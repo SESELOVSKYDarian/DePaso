@@ -50,7 +50,7 @@ export function Button({
       ) : (
         <>
           {icon}
-          <Text style={[styles.label, { color: TEXT_COLOR[variant] }]}>{label}</Text>
+          <Text style={[styles.label, { color: TEXT_COLOR[variant], fontFamily: LABEL_FONT[variant] }]}>{label}</Text>
         </>
       )}
     </AnimatedPressable>
@@ -65,12 +65,25 @@ const VARIANT_STYLES: Record<ButtonVariant, StyleProp<ViewStyle>> = {
   danger: { backgroundColor: colors.surface.primary, borderWidth: 1, borderColor: colors.state.error },
 };
 
+/** `ghost` usa `text.secondary`, no `brand.route` — el azul ruta (#6290C3, contraste ≈3.3:1
+ * sobre blanco) no cumple como texto de botón (BRAND.md p.12: "no debe usarse como texto
+ * chico... reservarlo para íconos, rutas, bordes o texto grande"). */
 const TEXT_COLOR: Record<ButtonVariant, string> = {
   primary: colors.text.onNavy,
   secondary: colors.text.primary,
-  ghost: colors.brand.route,
+  ghost: colors.text.secondary,
   lime: colors.text.onLime,
   danger: colors.state.error,
+};
+
+/** Fredoka SemiBold sólo para el CTA principal (navy) — el resto de variantes usa
+ * Montserrat SemiBold, igual que en Figma ("Ingresar dirección manualmente", etc). */
+const LABEL_FONT: Record<ButtonVariant, string> = {
+  primary: typography.buttonLabel.fontFamily,
+  secondary: typography.body.fontFamily,
+  ghost: typography.body.fontFamily,
+  lime: typography.buttonLabel.fontFamily,
+  danger: typography.body.fontFamily,
 };
 
 const styles = StyleSheet.create({
@@ -80,7 +93,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: spacing.xs,
     minHeight: 44,
-    borderRadius: radii.lg,
+    borderRadius: radii.full,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
   },
@@ -88,8 +101,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   label: {
-    fontFamily: typography.title.fontFamily,
-    fontWeight: "600",
+    fontFamily: typography.buttonLabel.fontFamily,
     fontSize: 16,
   },
 });

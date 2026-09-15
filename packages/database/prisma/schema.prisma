@@ -25,6 +25,14 @@ enum PlaceType {
   CUSTOM
 }
 
+/// Rol de cuenta — sección "Autorización: RBAC" de docs/legal-functional/LEGAL.md (p.15/97).
+/// Sólo distingue USER/ADMIN; el detalle fino de RBAC ("soporte no ve ubicaciones por
+/// defecto") queda NO DEFINIDO hasta que exista un rol de soporte real (Fase 20+).
+enum Role {
+  USER
+  ADMIN
+}
+
 enum ProductPreferenceType {
   EXACT
   PREFERRED
@@ -36,11 +44,42 @@ enum StorePreferenceType {
   PREFERRED
 }
 
+/// `OFFICIAL`/`STORE`/`COMMUNITY`/`ESTIMATED` son los valores originales (Fase 1). Los
+/// agregados de abajo son de la ingestión SEPA real (docs/data/SEPA.md) — se agregan en
+/// vez de renombrar para no romper datos ya cargados (Fase 12, carga manual admin).
 enum PriceSourceType {
   OFFICIAL
   STORE
   COMMUNITY
   ESTIMATED
+  /// Sistema Electrónico de Publicidad de Precios Argentinos — fuente oficial primaria.
+  OFFICIAL_SEPA
+  RETAILER_ONLINE
+  RECEIPT
+  MANUAL_ADMIN
+}
+
+/// Fuente de un `DataImportRun` — hoy sólo SEPA; separado de `PriceSourceType` porque un
+/// import puede fallar sin haber escrito ningún `Price` todavía.
+enum ImportSourceType {
+  SEPA_MINORISTA
+  SEPA_MAYORISTA
+}
+
+enum ImportRunStatus {
+  RUNNING
+  SUCCESS
+  FAILED
+  PARTIAL
+}
+
+/// Sección 68: no perder históricos de una sucursal cerrada — nunca se borra, sólo cambia
+/// de estado.
+enum StoreBranchStatus {
+  ACTIVE
+  POSSIBLY_INACTIVE
+  INACTIVE
+  CLOSED
 }
 
 /// Estados de confianza del precio — docs/legal-functional/BUSINESS-RULES.md (p.6):
@@ -105,6 +144,10 @@ model User {
   email        String    @unique
   passwordHash String
   displayName  String?
+  /// Ver enum `Role` — MFA para ADMIN es un requisito legal pendiente (LEGAL.md p.97,
+  /// NO DEFINIDO todavía qué proveedor de MFA usar), documentado como brecha conocida en
+  /// DECISIONS.md en vez de simularlo.
+  role         Role      @default(USER)
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   /// Borrado lógico — retención según docs/legal-functional/LEGAL.md (p.15).
@@ -219,11 +262,15 @@ model Product {
   brandId  String?
   brand    Brand?    @relation(fields: [brandId], references: [id])
   name     String
+  /// Sección 8 — nombre normalizado (lowercase, sin acentos, espacios colapsados) para
+  /// matching tolerante a variaciones sin depender sólo de EAN.
+  normalizedName String?
   category String
   variants ProductVariant[]
   preferences ProductPreference[]
 
   @@index([category])
+  @@index([normalizedName])
   @@map("products")
 }
 
@@ -233,6 +280,11 @@ model ProductVariant {
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   name      String
   ean       String?  @unique
+  /// `true` sólo si `ean` pasó la validación de checksum GTIN (8/12/13/14 dígitos) — el
+  /// campo `productos_ean` de SEPA repite el mismo valor de `id_producto` sin indicar si es
+  /// un EAN real o un código interno del comercio (corrección al supuesto original,
+  /// docs/data/SEPA.md); no confiar en el nombre del campo, validar el dígito verificador.
+  eanConfirmed Boolean @default(false)
   unit      String
   unitSize  Float
 
@@ -258,12 +310,54 @@ model ProductAlias {
 // Comercios y sucursales
 // ---------------------------------------------------------------------------
 
+/// Razón social/CUIT (docs/data/SEPA.md) — separado de `Store` (la "bandera" comercial:
+/// Vea/Disco/Jumbo son 3 `Store` bajo 1 `StoreCompany` "Cencosud S.A.", confirmado contra
+/// el feed real de SEPA). `Store` no se renombra a evitar romper la Fase 11 (admin CRUD ya
+/// construido) — esto es una extensión aditiva, `companyId` nullable.
+model StoreCompany {
+  id              String         @id @default(uuid())
+  cuit            String         @unique
+  legalName       String
+  source          ImportSourceType?
+  sourceUpdatedAt DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  brands Store[]
+
+  @@map("store_companies")
+}
+
 model Store {
   id      String        @id @default(uuid())
   name    String
-  branches StoreBranch[]
+  /// Nullable — las `Store` cargadas a mano (Fase 11, antes de esta migración) no tienen
+  /// empresa asociada todavía.
+  companyId String?
+  company   StoreCompany? @relation(fields: [companyId], references: [id])
+  /// `id_bandera` de SEPA — junto con `companyId` identifica una bandera de forma estable
+  /// entre corridas de import (sección 24, "nunca requerir deploy para un comercio nuevo").
+  externalSepaBrandId String?
+  normalizedName      String?
 
+  branches StoreBranch[]
+  aliases  StoreAlias[]
+
+  @@unique([companyId, externalSepaBrandId])
   @@map("stores")
+}
+
+/// Ejemplo: "Carrefour Market" / "Market Carrefour" / "Carrefour" deben resolver a la misma
+/// `Store` (sección 24).
+model StoreAlias {
+  id              String @id @default(uuid())
+  storeId         String
+  store           Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
+  alias           String
+  normalizedAlias String
+
+  @@index([normalizedAlias])
+  @@map("store_aliases")
 }
 
 model StoreBranch {
@@ -278,13 +372,73 @@ model StoreBranch {
   /// geográfica completa todavía.
   city      String  @default("Mar del Plata")
 
+  /// IDs de SEPA (sección 5) — la terna identifica una sucursal de forma estable entre
+  /// corridas de import. Nullable: sucursales cargadas a mano no tienen estos IDs.
+  externalSepaCommerceId String?
+  externalSepaBrandId    String?
+  externalSepaBranchId   String?
+  street                 String?
+  streetNumber           String?
+  postalCode             String?
+  province               String?
+  /// Horario por día, tal como lo publica SEPA — forma libre (`{ "lunes": "08:00 a 21:30" }`),
+  /// no se modela un horario estructurado todavía (no lo pide ninguna fase actual).
+  openingHours           Json?
+  source                 ImportSourceType?
+  sourceUpdatedAt        DateTime?
+  /// Sección 68 — nunca se borra una sucursal por no aparecer en un import; se marca.
+  status                 StoreBranchStatus @default(ACTIVE)
+  marketRegionId         String?
+  marketRegion           MarketRegion?     @relation(fields: [marketRegionId], references: [id])
+  createdAt              DateTime          @default(now())
+  updatedAt              DateTime          @default(now()) @updatedAt
+
   prices             Price[]
   priceReports       PriceReport[]
   storePreferences   StorePreference[]
   optimizationStops  OptimizationPlanStop[]
+  dataIssues         BranchDataIssue[]
 
+  @@unique([externalSepaCommerceId, externalSepaBrandId, externalSepaBranchId])
   @@index([storeId])
+  @@index([marketRegionId])
   @@map("store_branches")
+}
+
+/// Sección 43 — SEPA vs. locator oficial no coinciden: registrar, nunca pisar en silencio.
+model BranchDataIssue {
+  id            String      @id @default(uuid())
+  storeBranchId String
+  storeBranch   StoreBranch @relation(fields: [storeBranchId], references: [id], onDelete: Cascade)
+  type          String
+  detail        String
+  resolvedAt    DateTime?
+  createdAt     DateTime    @default(now())
+
+  @@index([storeBranchId])
+  @@map("branch_data_issues")
+}
+
+/// Scope geográfico como configuración, no `if city === "Mar del Plata"` (sección 62).
+/// Permite agregar otra región (Fase futura, sección 63) sin migrar el schema de nuevo.
+model MarketRegion {
+  id              String   @id @default(uuid())
+  slug            String   @unique
+  name            String
+  province        String
+  country         String   @default("Argentina")
+  enabled         Boolean  @default(true)
+  minLatitude     Float
+  maxLatitude     Float
+  minLongitude    Float
+  maxLongitude    Float
+  /// Variantes normalizadas de `sucursales_localidad` que cuentan como "dentro" (sección
+  /// 15 — SEPA trae "Mar del Plata"/"MAR DEL PLATA"/"Mar Del Plata" inconsistente).
+  localityAliases String[]
+
+  branches StoreBranch[]
+
+  @@map("market_regions")
 }
 
 // ---------------------------------------------------------------------------
@@ -298,9 +452,19 @@ model Price {
   storeBranchId    String
   storeBranch      StoreBranch     @relation(fields: [storeBranchId], references: [id], onDelete: Cascade)
   price            Decimal         @db.Decimal(12, 2)
+  /// Promociones tal como las publica la fuente (sección 9) — nunca se aplican solas sin
+  /// validar sus condiciones (BUSINESS-RULES.md p.10); se muestran como alternativa.
+  promoPrice1       Decimal?        @db.Decimal(12, 2)
+  promoDescription1 String?
+  promoPrice2       Decimal?        @db.Decimal(12, 2)
+  promoDescription2 String?
   currency         String          @default("ARS")
   sourceType       PriceSourceType
   sourceReference  String?
+  /// Clave externa de la fuente (ej. `id_comercio|id_bandera|id_sucursal|id_producto` de
+  /// SEPA) — permite que el import job identifique "ya vi esta observación" sin depender
+  /// sólo de `productVariantId`+`storeBranchId` (que puede matchear de forma aproximada).
+  sourceExternalId String?
   reportedAt       DateTime        @default(now())
   validFrom        DateTime        @default(now())
   confidence       ConfidenceLevel
@@ -311,6 +475,7 @@ model Price {
   history PriceHistory[]
 
   @@index([productVariantId, storeBranchId])
+  @@index([sourceExternalId])
   @@map("prices")
 }
 
@@ -374,6 +539,56 @@ model CommunityModerationEvent {
 
   @@index([targetPriceReportId])
   @@map("community_moderation_events")
+}
+
+// ---------------------------------------------------------------------------
+// Ingestión de datos (SEPA) — docs/data/SEPA.md, docs/data/IMPORT-PIPELINE.md
+// ---------------------------------------------------------------------------
+
+/// Sección 28 — idempotencia: un mismo recurso (`resourceId` de CKAN) no se reimporta dos
+/// veces. `fileHash` detecta si el contenido cambió aunque el recurso "rote" de URL.
+model DataImportRun {
+  id                   String           @id @default(uuid())
+  source               ImportSourceType
+  resourceId           String
+  resourceLastModified DateTime
+  fileHash             String
+  startedAt            DateTime         @default(now())
+  completedAt          DateTime?
+  status               ImportRunStatus  @default(RUNNING)
+  rowsRead             Int              @default(0)
+  rowsAccepted         Int              @default(0)
+  rowsRejected         Int              @default(0)
+  branchesDetected     Int              @default(0)
+  error                String?
+
+  anomalies ImportAnomaly[]
+
+  /// Por `fileHash`, no por `resourceId`: CKAN reusa el mismo `resourceId` para el mismo
+  /// slot de día de la semana (confirmado real — "Domingo" tiene el mismo id cada semana,
+  /// sólo cambia el contenido) — un unique por `resourceId` bloquearía reimportar la
+  /// semana siguiente. `fileHash` es lo que realmente identifica "ya importé este
+  /// contenido" (sección 28).
+  @@unique([source, fileHash])
+  @@index([source, resourceId])
+  @@map("data_import_runs")
+}
+
+/// Sección 29-30 — nunca borrar silenciosamente una fila con datos sospechosos; queda acá
+/// para revisión manual. `needsReview` distingue "rechazado" de "aceptado pero raro"
+/// (ej. una baja de precio extrema que puede ser una promo real, sección 30).
+model ImportAnomaly {
+  id          String        @id @default(uuid())
+  importRunId String
+  importRun   DataImportRun @relation(fields: [importRunId], references: [id], onDelete: Cascade)
+  type        String
+  rawRow      String
+  reason      String
+  needsReview Boolean       @default(false)
+  createdAt   DateTime      @default(now())
+
+  @@index([importRunId])
+  @@map("import_anomalies")
 }
 
 // ---------------------------------------------------------------------------

@@ -54,20 +54,24 @@ agregar producto, marcar producto comprado, confirmar reporte, finalizar compra.
 `AnimatedPressable` expone `haptic?: boolean` (default `true`) para poder desactivarlo en
 botones donde no aporta (ej. navegación simple entre tabs).
 
-## Momentos clave (implementación pendiente por fase — no en este pase)
+## Momentos clave
 
-| Momento | Sección | Fase que lo implementa |
-|---|---|---|
-| Entrada de Home (stagger sutil) | 21 | Fase 7-8 |
-| Agregar producto a la lista (fade + translate + spring) | 21 | Fase 9 |
-| Animación de optimización ("Analizando productos...") | 21 | Fase 15-16 |
-| Reveal del Top 3 (stagger + spring + micro-haptic) | 22-23 | Fase 16 |
-| Count-up del ahorro (300-600ms) | 23 | Fase 16 |
-| Dibujo progresivo de la ruta en el mapa | 24 | Fase 17 |
-| Bottom sheets nativos | 25 | Fase 6-19 (transversal) |
-| Shared transitions (producto→detalle, plan→mapa) | 26 | Cuando sea técnicamente estable, no forzado |
-| Checkboxes del modo compra (spring + haptic) | 68 | Fase 18 |
+| Momento | Sección | Fase que lo implementa | Estado |
+|---|---|---|---|
+| Entrada de Home (stagger sutil) | 21 | Fase 7-8 | **Hecho** — `app/(tabs)/index.tsx`, `FadeInDown.delay(index*70)` por sección, respeta Reduce Motion |
+| Agregar producto a la lista (fade + translate + spring) | 21 | Fase 9 | **Hecho** — `app/lists/[id].tsx`, `FadeInDown`/`FadeOutLeft` con `spring.soft` por fila del `FlatList` |
+| Animación de optimización ("Analizando productos...") | 21 | Fase 15-16 | **Hecho** — `app/optimization/index.tsx`, `AnalyzingIndicator` (pulso de opacidad `withRepeat`) mientras corre el motor |
+| Reveal del Top 3 (stagger + spring + micro-haptic) | 22-23 | Fase 16 | **Hecho** (Sesión 16) |
+| Count-up del ahorro (300-600ms) | 23 | Fase 16 | **Hecho** — `lib/useCountUp.ts` (ease-out cúbica, 500ms), usado en `PlanCard` |
+| Dibujo progresivo de la ruta en el mapa | 24 | Fase 17 | **Hecho** — `lib/map/buildRouteMapHtml.ts`, revela el polyline real en 900ms (ease-out), respeta `prefers-reduced-motion` |
+| Bottom sheets nativos | 25 | Fase 6-19 (transversal) | Hecho (componente base `BottomSheet`, Fase 2) |
+| Shared transitions (producto→detalle, plan→mapa) | 26 | Cuando sea técnicamente estable, no forzado | Pendiente — no forzado |
+| Checkboxes del modo compra (spring + haptic) | 68 | Fase 18 | **Hecho** — `app/purchase/index.tsx` |
 
-Este pase sólo implementó el nivel más bajo (tokens + un componente base con press
-feedback real) — los momentos de la tabla necesitan las pantallas correspondientes, que
-todavía no existen (ver `PROGRESS.md`).
+Verificado en esta sesión: typecheck+test 21/21 en verde, y de punta a punta en el
+navegador (Expo Web) con datos reales — Home con stagger visible, Top 3 con conteo del
+ahorro, Modo compra con checkbox animado, mapa con la ruta real dibujada. El dibujo
+progresivo del mapa además se verificó de forma determinística con un harness Node
+standalone (mocks de `mapboxgl`/`performance`/`requestAnimationFrame`) antes de confirmarlo
+visualmente, porque esa lógica vive dentro de un string HTML embebido en un WebView y no
+pasa por el typecheck de TypeScript del resto del proyecto.

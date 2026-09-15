@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useRef, useState, type ReactNode } from "react";
-import { Pressable, StyleSheet, Text } from "react-native";
+import { AccessibilityInfo, Pressable, StyleSheet, Text } from "react-native";
 import Animated, { FadeInDown, FadeOutDown } from "react-native-reanimated";
 import { colors, radii, spacing, typography } from "@depaso/design-tokens";
 
@@ -30,6 +30,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     nextId.current += 1;
     const id = nextId.current;
     setToast({ id, message, variant });
+    // Un toast aparece fuera del flujo de foco actual — sin esto, un lector de pantalla
+    // nunca se entera de que apareció (bug real de accesibilidad encontrado auditando
+    // Pressables sin accessibilityLabel: éste sí lo hereda del texto hijo, pero eso no
+    // alcanza si el usuario no está enfocado ahí cuando el toast se autodescarta).
+    AccessibilityInfo.announceForAccessibility(message);
     timeoutRef.current = setTimeout(() => {
       setToast((current) => (current?.id === id ? null : current));
     }, AUTO_DISMISS_MS);

@@ -281,3 +281,151 @@ política de commits de este entorno (CLAUDE.md global del usuario / instruccion
 sistema).
 
 **Consecuencias:** el usuario decide cuándo y qué commitear.
+
+---
+
+## 2026-09-13 — `apps/admin` con `role: ADMIN` + sesión reusada, sin MFA
+
+**Contexto:** Fase 11/12 (comercios/sucursales/precios) necesitan un panel admin con auth
+real — hasta acá `apps/admin` era sólo un scaffold. `docs/legal-functional/LEGAL.md` (p.97)
+pide explícitamente "MFA para administradores", pero no hay proveedor de MFA elegido ni
+decisión de producto sobre cuál (NO DEFINIDO).
+
+**Alternativas:** (a) no tocar `apps/admin` hasta que exista una decisión de MFA, (b)
+construir un sistema de roles/RBAC completo con MFA simulado, (c) agregar sólo
+`role: "ADMIN"` sobre la misma sesión de usuario ya existente (`Session`/`AuthProvider` de
+Fase 4), con el gate server-side (`requireAdmin`) y documentar la brecha de MFA.
+
+**Decisión:** (c). `User.role` (`USER`/`ADMIN`, default `USER`) + `requireAdmin()` en
+`apps/api/lib/auth/requireAdmin.ts` (reusa `getCurrentUser`, sólo agrega el chequeo de
+rol) + `packages/database/scripts/promote-admin.mjs` para promover una cuenta a mano (no
+hay alta de admin autoservicio).
+
+**Motivo:** (a) bloquea Fase 11/12 completas sin necesidad — el admin CRUD en sí no
+depende de la decisión de MFA, sólo la política de quién puede *ser* admin en producción.
+(b) sería simular una MFA real, lo cual es peor que no tenerla (falsa sensación de
+seguridad). (c) deja el control de acceso real (server-side, cada endpoint de
+`/api/admin/*` revalida el rol) funcionando hoy, con la brecha de MFA explícita en vez de
+oculta — mismo criterio que la recuperación de contraseña pendiente en Fase 4.
+
+**Consecuencias:** **no usar `apps/admin` con datos de producción reales hasta resolver
+MFA** (aviso repetido en la pantalla de login). Cuando exista una decisión de proveedor de
+MFA, se agrega como un paso extra en el flujo de login de `apps/admin`, sin tocar el modelo
+de datos (`role` ya está). El login de `apps/admin` reusa `/api/auth/login` — no hay
+endpoint de auth separado para admins.
+
+---
+
+## 2026-09-13 — CORS en `apps/api` por reflejo de `Origin`, sin allowlist fija
+
+**Contexto:** `apps/admin` corre en `localhost:3100` y llama a `apps/api` en
+`localhost:3000` desde el navegador — a diferencia de `apps/mobile` (React Native `fetch`
+no aplica CORS), esto sí lo necesita. Sin CORS, todo `POST`/`PATCH`/`DELETE` fallaba en el
+navegador con `net::ERR_FAILED` aunque el servidor respondiera bien (confirmado con
+`read_network_requests` durante la verificación de Fase 11/12: el `OPTIONS` preflight
+pasaba, el `POST` real nunca llegaba a loguearse en `apps/api`).
+
+**Alternativas:** (a) allowlist fija de orígenes (`localhost:3100`, `localhost:3002`,
+etc.), (b) reflejar el `Origin` de cada request (cualquier origen, con
+`Access-Control-Allow-Credentials: true`).
+
+**Decisión:** (b) — `apps/api/middleware.ts`, matcher `/api/:path*`.
+
+**Motivo:** no hay dominios de producción definidos todavía (Fase 27 "No empezado" en
+`docs/development/IMPLEMENTATION-PLAN.md`) — fijar un allowlist hoy sería inventar
+dominios que no existen. Reflejar el origen es el equivalente permisivo estándar para
+desarrollo/herramientas internas mientras no haya despliegue real.
+
+**Consecuencias:** cuando se decida el hosting/dominio real de `apps/admin`/`apps/web`
+(Fase 27), este middleware debería acotarse a un allowlist explícito — dejar el reflejo de
+origen en producción sería una superficie de CSRF más amplia de la necesaria para una API
+que ya protege cada endpoint con sesión (`Authorization: Bearer`), pero no es defensa en
+profundidad gratis.
+
+---
+
+## 2026-09-13 — Ingestión SEPA: Mayorista primero, schema aditivo (no rename), `fileHash` para idempotencia
+
+**Contexto:** el usuario pidió conectar DePaso a datos reales de precios/comercios, con
+SEPA (Sistema Electrónico de Publicidad de Precios Argentinos) como fuente primaria. La
+investigación real (no la especificación asumida) contra `datos.produccion.gob.ar` reveló
+varias diferencias con el pedido original — ver `docs/data/SEPA.md` para el detalle
+completo. Tres decisiones separadas, todas de la misma sesión:
+
+**(a) Mayorista antes que Minorista.** SEPA Minorista pesa ~325-337MB/día (nacional);
+Mayorista ~8-15MB/día. Se implementó y verificó el pipeline completo contra Mayorista
+primero — el usuario lo eligió explícitamente para validar la arquitectura entera (CKAN →
+descarga → ZIP anidado → parseo → scope geográfico → persistencia) contra datos reales sin
+necesitar streaming todavía. Minorista queda pendiente de una segunda pasada que sí
+implemente streaming real (sección 26 del pedido original).
+
+**(b) Migración aditiva de `Store`/`StoreBranch`, no un rename.** El schema real de SEPA
+separa razón social (`StoreCompany`, nueva) de bandera comercial (`Store`, ya existía desde
+Fase 11 — ej. Cencosud S.A. es 1 `StoreCompany` con 3 `Store`: Vea/Disco/Jumbo, confirmado
+real). Alternativa descartada: renombrar `Store`→`StoreBrand` como sugería el pedido
+original — se decidió NO hacerlo porque `apps/admin`/`apps/api` de Fase 11 (recién
+construidos la sesión anterior) ya usan `Store`/`StoreBranch` tal cual; agregar
+`companyId`/campos `externalSepa*` nullable logra el mismo modelo de datos sin romper ese
+código. Mismo criterio para `StoreBranch` (se le agregaron columnas, no se le cambió el
+nombre) y para `PriceSourceType` (se agregaron valores `OFFICIAL_SEPA`/`RETAILER_ONLINE`/
+`RECEIPT`/`MANUAL_ADMIN`, sin tocar los 4 originales).
+
+**(c) `DataImportRun` único por `(source, fileHash)`, no por `(source, resourceId)`.**
+Se detectó real (no hipotético) que CKAN reusa el mismo `resourceId` para el mismo slot de
+día de la semana ("Domingo" tiene el mismo id cada semana, sólo cambia el contenido). Un
+unique por `resourceId` habría bloqueado reimportar la semana siguiente — se corrigió antes
+de la primera corrida real con una segunda migración (`import_run_hash_unique`).
+
+**Verificación real:** `pnpm data:sepa:inspect --wholesale` (dry-run) y luego
+`pnpm data:sepa:import --wholesale` corrieron contra el feed vivo de SEPA Mayorista
+(2026-09-13): 6 comercios nacionales, 3 sucursales reales dentro de Mar del Plata (Makro,
+Maxiconsumo, Mayorista Yaguar — las tres coinciden con las semillas del pedido original),
+13.021 precios reales aceptados, 0 rechazados, confirmado consultando la base directamente
+(no sólo el log del import). `docs/data/SEPA.md` y `PROGRESS.md` tienen el detalle
+completo, incluyendo hallazgos que corrigen supuestos del pedido original (ej.
+`productos_ean` no es un booleano — repite `id_producto`).
+
+**Consecuencias:** `MarketRegion` (Mar del Plata) vive en la tabla `market_regions`, no
+hardcodeada — `GeoScopeService` (`@depaso/geo`, package nuevo y puro, sin dependencia de
+Prisma) la recibe como config. `StoreBranch.longitude` es `Float` no-nullable desde Fase 1
+(el motor de optimización asume coordenadas siempre presentes) pero SEPA trae longitud
+vacía con frecuencia real — se usa el centro de la región como aproximación explícita y se
+registra `BranchDataIssue` (`MISSING_COORDINATES`) en vez de escribir `0` en silencio (que
+cae frente a la costa de África). Pendiente real: conectar SEPA Minorista (streaming),
+geocodificar las sucursales con `BranchDataIssue` abierto, y decidir cuándo/cómo recalibrar
+el matching de producto sin EAN válido (hoy cae a nombre normalizado, con riesgo de
+duplicados ya anticipado por el propio pedido original).
+
+---
+
+## 2026-09-13 — Mapbox Geocoding API para geocodificación real (Fase 28)
+
+**Contexto:** probando el flujo completo de usuario en Expo Web, agregar un lugar con
+dirección escrita a mano siempre fallaba ("No pudimos ubicar esa dirección"). Causa real:
+`places/form.tsx`/`route-context/index.tsx` llamaban `Location.geocodeAsync`
+(`expo-location`, nativo) directo desde el cliente — esa API no tiene implementación en
+Expo Web (devuelve `[]` siempre ahí), y en Android real tampoco es una apuesta sólida a
+largo plazo (Google viene deprecando el `Geocoder` del sistema en varias versiones/OEMs).
+
+**Alternativas:** (a) Google Geocoding API, (b) Mapbox Geocoding API, (c) OpenStreetMap
+Nominatim (gratis, sin key, pero con política de uso de 1 req/seg y prohibición de uso
+productivo sin self-host).
+
+**Decisión:** Mapbox Geocoding API ("Temporary geocoding"), resuelto server-side
+(`POST /api/geocode`/`POST /api/geocode/reverse` en `apps/api`), no desde el cliente.
+
+**Motivo:** el usuario pidió explícitamente "la que tiene key gratis". Confirmado contra la
+documentación oficial de Mapbox (2026-09): 100.000 requests/mes gratis, **sin tarjeta de
+crédito** para ese tier (Google Geocoding API sí exige habilitar facturación/tarjeta incluso
+para quedarse dentro del crédito gratuito — más fricción para conseguir la key). Resolverlo
+server-side (no repetir el error de `expo-location`) hace que funcione igual en Expo Web,
+iOS y Android — no sólo tapa el síntoma de Fase 28, evita que vuelva a aparecer en producción.
+
+**Consecuencias:** `packages/data-sources/mapbox` implementa `GeocodingProvider`
+(`packages/domain/src/providers.ts`, interfaz ya existente desde Fase 1 — sin cambios ahí).
+Sin `MAPBOX_ACCESS_TOKEN` seteado, `/api/geocode` responde `503 GEOCODING_NOT_CONFIGURED`
+(verificado real) en vez de romper — el resto de la app sigue funcionando. El usuario debe
+crear su propia cuenta de Mapbox y pegar el token en `apps/api/.env.local` — paso a paso en
+`docs/development/GEOCODING-SETUP.md`. Si el volumen de producción superara 100k req/mes
+algún día, Mapbox cobra desde \$0.75 cada 1.000 adicionales (sin corte automático — convendría
+una alerta de uso en el dashboard de Mapbox antes de ese escenario).
