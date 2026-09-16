@@ -39,7 +39,6 @@ packages/database/generated/
 
 # expo / native
 apps/mobile/ios/
-apps/mobile/android/
 *.orig.*
 web-build/
 
