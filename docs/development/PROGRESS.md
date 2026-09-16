@@ -1512,3 +1512,72 @@ import.
 - Batching de inserts en el import de SEPA sigue sin implementarse (sección 27 del pedido
   original) — cada precio es su propio find+create/update secuencial; aceptable al volumen
   actual (231k filas corrieron igual), pero no escala indefinidamente.
+
+## Sesión 20 — Fase 26 real: build Android local con Android Studio (bug nativo de Windows resuelto)
+
+### Motivo
+
+El usuario decidió no usar EAS Build para el producto final — quiere todo con Android
+Studio. Pidió una vía local, gratis, para generar el `.apk`.
+
+### El problema real: `ninja` roto en Windows
+
+Instalé JDK 17 (Temurin) + Android SDK/NDK localmente y corrí `expo prebuild --platform
+android` + `gradlew assembleDebug`. El build nativo (Reanimated, Worklets,
+react-native-screens, expo-modules-core — todo lo que compila C++) fallaba siempre con:
+
+```
+ninja: error: manifest 'build.ninja' still dirty after 100 tries
+```
+
+Se probó, en orden, sin éxito:
+1. Menos paralelismo (`--max-workers=1`) — mismo error.
+2. Exclusiones de Windows Defender (agregadas por el usuario a mano, ya que tocar Defender
+   por código fue bloqueado correctamente por el clasificador de seguridad) — mismo error.
+3. Mover el proyecto entero a una ruta corta (`D:\VSPROJECTS\ESCUELA\7to4ta\Proyectos\DePaso`
+   → `D:\DePaso`, descartando longitud de ruta como causa — la ruta más corta seguía
+   fallando idéntico).
+4. El mismo error, ahora también reproducido **desde Android Studio** (no sólo CLI), tanto
+   para `arm64-v8a` como `x86_64` (emulador).
+
+Causa real identificada: no era ruta ni antivirus — es un bug documentado de `ninja`/CMake
+en Windows con los miles de **NTFS junctions** que `pnpm` crea por defecto en
+`node_modules` (su modo de deduplicación vía `.pnpm` + symlinks). Fix real: `.npmrc` con
+`node-linker=hoisted` (estructura plana, sin symlinks) + reinstalación completa. Confirmado
+real: `BUILD SUCCESSFUL`, `.apk` generado (192MB, debug) y entregado al usuario.
+
+### Efectos colaterales de la migración de infraestructura (todos encontrados y cerrados)
+
+- Mover la carpeta del proyecto con `robocopy` sin `/NP` generó un log de varios cientos de
+  MB que llenó `C:` a 0 bytes libres — detectado, log borrado, cache de Gradle y el SDK
+  reubicados a `D:` (tiene 700+ GB libres) para que no vuelva a pasar.
+- El primer intento de mover con `robocopy /MOVE` se cortó a mitad de camino (por lo del
+  disco lleno) — verificado que `.git` ya había migrado completo e íntegro antes de seguir;
+  se terminó de mover sólo lo que faltaba (`node_modules`) en vez de arriesgar re-copiar
+  todo.
+- El cambio a `node-linker=hoisted` rompió la resolución de `@prisma/client` en
+  `packages/database` (el cliente generado vive en `node_modules/@prisma/client`, quedó
+  desactualizado tras la reinstalación) — se regeneró con `pnpm run generate` y se confirmó
+  `pnpm turbo run typecheck test --force` en 22/22 de nuevo.
+- `apps/mobile/android` (generado por `expo prebuild`) estaba en `.gitignore` por defecto
+  (workflow "managed" de Expo). Como el usuario va a editar/compilar nativo directo en
+  Android Studio de ahora en más, se sacó del `.gitignore` y se commiteó tal cual generado
+  — decisión confirmada explícitamente con el usuario antes de hacerlo, no asumida.
+
+### Verificación real
+
+`pnpm turbo run typecheck test --force` → **22/22 OK** después de la reinstalación con
+`node-linker=hoisted` y de regenerar el cliente de Prisma. `gradlew assembleDebug` →
+`BUILD SUCCESSFUL in 9m 48s`, `.apk` real de 192MB confirmado en
+`apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk` y enviado al usuario.
+
+### Pendiente real (no oculto)
+
+- iOS sigue sin poder probarse — necesita Mac/Xcode, no disponible en ningún entorno usado
+  hasta ahora (ni este, ni la máquina Windows del usuario).
+- El build generado es `debug` (192MB, con herramientas de desarrollo incluidas) — un build
+  `release` real (más chico, firmado) queda para cuando el usuario esté listo para
+  distribuir de verdad, no antes.
+- EAS Build quedó configurado (Sesión 19) pero sin usarse — el usuario decidió priorizar
+  Android Studio para el producto final; EAS sigue disponible como alternativa si hace
+  falta un build en la nube más adelante.
