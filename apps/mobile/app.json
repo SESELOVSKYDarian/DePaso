@@ -21,7 +21,8 @@
         {
           "locationWhenInUsePermission": "La usamos para calcular rutas, desvíos y comercios cercanos mientras usás DePaso. No te seguimos fuera de la app."
         }
-      ]
+      ],
+      "./plugins/withMonorepoBuildFix.js"
     ],
     "ios": {
       "supportsTablet": false,
