@@ -1581,3 +1581,59 @@ real: `BUILD SUCCESSFUL`, `.apk` generado (192MB, debug) y entregado al usuario.
 - EAS Build quedó configurado (Sesión 19) pero sin usarse — el usuario decidió priorizar
   Android Studio para el producto final; EAS sigue disponible como alternativa si hace
   falta un build en la nube más adelante.
+
+## Sesión 21 — build release standalone real (sin expo-dev-client, sin pantalla de Metro)
+
+### Motivo
+
+El usuario instaló el `.apk` de la Sesión 20 y le apareció la pantalla de "Development
+Build" pidiendo conectarse a `http://localhost:8081`. Pidió sacar Expo "del todo".
+
+### Diagnóstico
+
+No era un bug de configuración — era el comportamiento esperado de un build **debug con
+`expo-dev-client`** (necesita un servidor Metro corriendo, por diseño). "Sacar Expo del
+todo" habría significado reescribir `expo-router`, `expo-location`, `expo-haptics`,
+`expo-secure-store`, etc. — meses de trabajo, no la solución real al problema. Se confirmó
+esto con el usuario antes de actuar (no se asumió su pedido literal): lo que necesitaba era
+un build **release** standalone (JS empaquetado adentro del `.apk`, sin depender de Metro),
+sacando sólo `expo-dev-client` (que no aporta nada al flujo de Android Studio).
+
+### Segundo bug real de infraestructura encontrado armando el release
+
+Sacar `expo-dev-client` + regenerar `apps/mobile/android` (`expo prebuild --clean`) y correr
+`gradlew assembleRelease` reveló un bug nuevo, nunca disparado antes porque los builds
+`debug` previos no llegan a empaquetar JS: `Error: Unable to resolve module
+./../../node_modules/expo-router/entry.js from D:\DePaso/.`. Reproducido fuera de Gradle
+(`npx expo export:embed --entry-file "../../node_modules/expo-router/entry.js"` desde
+`apps/mobile`, mismo error) para descartar que fuera un problema de Gradle específicamente.
+
+Causa real: **Expo CLI resuelve `--entry-file` (que el plugin de Gradle de React Native
+pasa como ruta relativa a la propiedad `root`) contra la raíz real del monorepo que
+detecta por workspace (`D:\DePaso`), no contra `apps/mobile`** — confirmado probando la
+misma bandera con una ruta relativa a la raíz real (`"node_modules/expo-router/entry.js"`,
+sin `../..`), que sí funcionó. Con `root` sin setear en `app/build.gradle` (o apuntando a
+`apps/mobile`, como se había puesto en un primer intento fallido), el path relativo que
+Gradle calculaba quedaba mal — un intento intermedio de arreglarlo agregando
+`workspaceRoot` a `watchFolders` en `metro.config.js` también falló, por la misma razón
+(Metro usa `watchFolders` como base para resolver rutas relativas de CLI, así que agregar
+la raíz ahí reproducía el mismo bug por otra vía). Arreglado en el lugar correcto:
+`root = file(workspaceRoot)` en `apps/mobile/android/app/build.gradle`, dejando
+`metro.config.js` sólo con `resolver.nodeModulesPaths` (necesario porque `node-linker
+hoisted` deja `expo-router` sólo en el `node_modules` raíz).
+
+### Verificación real
+
+`pnpm turbo run typecheck test --force` → 22/22 OK. `gradlew assembleRelease` → `BUILD
+SUCCESSFUL in 9m 49s`, `.apk` real de 73MB (vs. 192MB del debug — sin herramientas de
+desarrollo) en `apps/mobile/android/app/build/outputs/apk/release/app-release.apk`,
+entregado al usuario.
+
+### Pendiente real (no oculto)
+
+- El release usa el keystore de **debug** (generado por el template de RN, no apto para
+  Play Store) — firmar con un keystore real de producción queda para cuando el usuario
+  esté listo para publicar de verdad.
+- No se instaló/abrió el `.apk` release en un dispositivo real desde este entorno para
+  confirmar visualmente que ya no pide conectarse a Metro — el usuario lo tiene que probar
+  del lado suyo.
