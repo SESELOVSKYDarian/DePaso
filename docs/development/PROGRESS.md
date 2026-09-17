@@ -1637,3 +1637,66 @@ entregado al usuario.
 - No se instaló/abrió el `.apk` release en un dispositivo real desde este entorno para
   confirmar visualmente que ya no pide conectarse a Metro — el usuario lo tiene que probar
   del lado suyo.
+
+## Sesión 22 — el release instalaba pero crasheaba: 3 bugs reales más, verificados en emulador
+
+### Motivo
+
+El usuario instaló el `.apk` de la Sesión 21 (ya no pedía Metro) pero la app "sigue
+fallando" — no abría. Esta vez, en vez de pedirle logcat a mano, se levantó el emulador
+Android local (AVD "Resizable Experimental", ya creado por el usuario en Android Studio)
+en este mismo entorno, se instaló el `.apk` ahí, y se reprodujo el crash directamente con
+`adb logcat` — mucho más rápido que ida y vuelta con el usuario.
+
+### Bug 1 — versiones de Expo mal pineadas desde antes
+
+Primer crash real: `NoSuchMethodError: getDirectConverter(...)` en
+`expo.modules.font.FontLoaderModule`, al arrancar. `npx expo install --check` reveló que
+`expo-font@57.0.4` y `expo-splash-screen@57.0.9` estaban mal pineados desde mucho antes de
+esta sesión (deberían ser `~14.0.12` y `~31.0.13` para Expo SDK 54) — un desfasaje de
+versión mayor tan grande que nunca se había manifestado porque Expo Web y los builds debug
+con dev-client no ejercitan ese código nativo de la misma forma. Corregido con las
+versiones que Expo mismo recomienda; `expo prebuild --clean` regeneró
+`MainActivity.kt`/assets de splash acordes al `expo-splash-screen` real.
+
+### Bug 2 — "Error: No routes found" (mismo patrón de raíz que la Sesión 21, en otro lugar)
+
+Con el bug 1 resuelto, apareció "Error: No routes found" en el `ContextNavigator` de
+expo-router. Diagnosticado con un método más confiable que adivinar: se agregó un
+`console.log` temporal a `metro.config.js` para confirmar si el archivo se estaba
+cargando siquiera durante el build de Gradle — **no se cargaba, nunca**. Causa real:
+con `root = workspaceRoot` (fix de la Sesión 21), Expo CLI detecta el monorepo y busca
+`metro.config.js` en la raíz real (`D:\DePaso`), no en `apps/mobile` — al no encontrar
+uno ahí, cae silenciosamente al config por defecto de Metro, sin ningún error visible en
+el build. Arreglado agregando un `metro.config.js` en la raíz del monorepo que reexporta
+el real de `apps/mobile` (el único paquete que usa Metro en este monorepo).
+
+### Bug 3 — alias `@/` no resuelve desde la raíz del monorepo
+
+Con el `metro.config.js` correcto cargándose, apareció un tercer error:
+`Unable to resolve module @/components/ProgressHeader`. `babel-preset-expo` resuelve el
+alias `@/*` (definido en `tsconfig.json`) leyendo `process.cwd()` — que, por la misma
+razón que el Bug 2, es la raíz del monorepo, donde no hay ningún `tsconfig.json` con ese
+alias. Arreglado sin depender de esa detección: `resolver.resolveRequest` explícito en
+`apps/mobile/metro.config.js` que reescribe cualquier import `@/algo` a la ruta absoluta
+correcta antes de delegar al resolver por defecto.
+
+### Verificación real
+
+Cada uno de los 3 fixes se probó primero de forma aislada y rápida (`npx expo export:embed`
+manual, sin pasar por Gradle) antes de rebuildear el APK completo — evitó varios ciclos de
+~3-10 minutos de build innecesarios. El fix final se instaló y lanzó en el emulador Android
+local: `adb logcat` sin `FATAL EXCEPTION`, proceso vivo (`adb shell pidof`), y una captura
+de pantalla real confirmando la pantalla de onboarding de la app (logo, copy, botón
+"Comenzar" — no una pantalla en blanco). `pnpm turbo run typecheck test --force`: 22/22 OK.
+
+### Pendiente real (no oculto)
+
+- `apps/mobile/android/app/build.gradle` tiene un comentario explícito avisando que
+  `expo prebuild --clean` pisa el fix de `root`/`extraPackagerArgs` — hay que reaplicarlo
+  a mano si alguien vuelve a correr `--clean` (documentado en el propio archivo, no sólo
+  acá).
+- Sólo se probó en el emulador de este entorno, no en el celular real del usuario — le
+  queda instalar el `.apk` final y confirmar del lado suyo.
+- El release sigue usando el keystore de debug (no apto para Play Store) — pendiente para
+  cuando el usuario esté listo para publicar de verdad.
