@@ -3,12 +3,19 @@ apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 
 def projectRoot = rootDir.getAbsoluteFile().getParentFile().getAbsolutePath()
+def workspaceRoot = new File(projectRoot, "../..").getCanonicalPath()
 
 /**
  * This is the configuration block to customize your React Native Android app.
  * By default you don't need to apply any configuration, just uncomment the lines you need.
  */
 react {
+    // Expo CLI resuelve `--entry-file` (que el plugin de Gradle pasa como ruta relativa
+    // a `root`) contra la raiz real del monorepo detectada por workspace, no contra
+    // apps/mobile - bug real encontrado armando el build release: con `root` sin setear
+    // (o apuntando a apps/mobile) el path relativo calculado quedaba mal y Metro tiraba
+    // "Unable to resolve module ... from D:\DePaso/.". `root` tiene que ser la raiz real.
+    root = file(workspaceRoot)
     entryFile = file(["node", "-e", "require('expo/scripts/resolveAppEntry')", projectRoot, "android", "absolute"].execute(null, rootDir).text.trim())
     reactNativeDir = new File(["node", "--print", "require.resolve('react-native/package.json')"].execute(null, rootDir).text.trim()).getParentFile().getAbsoluteFile()
     hermesCommand = new File(["node", "--print", "require.resolve('react-native/package.json')"].execute(null, rootDir).text.trim()).getParentFile().getAbsolutePath() + "/sdks/hermesc/%OS-BIN%/hermesc"
