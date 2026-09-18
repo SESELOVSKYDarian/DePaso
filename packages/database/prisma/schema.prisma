@@ -4,7 +4,9 @@
 // geográfica más allá de `city` en StoreBranch, para no sobre-diseñar antes de expandir.
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // Motor para las funciones serverless de Vercel (Linux) además del nativo local.
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
