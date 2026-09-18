@@ -14,7 +14,7 @@ export const adminUserResponseSchema = z.object({
   id: z.string(),
   email: z.string(),
   displayName: z.string().nullable(),
-  role: z.enum(["USER", "ADMIN"]),
+  role: z.enum(["USER", "MERCHANT", "ADMIN"]),
   createdAt: z.string(),
   deletedAt: z.string().nullable(),
   trustScore: z

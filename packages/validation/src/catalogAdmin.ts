@@ -53,6 +53,7 @@ const priceSourceTypeSchema = z.enum([
   "RETAILER_ONLINE",
   "RECEIPT",
   "MANUAL_ADMIN",
+  "MERCHANT",
 ]);
 const confidenceLevelSchema = z.enum(["HIGH", "MEDIUM", "LOW"]);
 const priceStatusSchema = z.enum([

@@ -2,7 +2,9 @@ import {
   createAccountExportClient,
   createApiClient,
   createAuthClient,
+  createAdminMerchantClient,
   createConsentClient,
+  createMerchantClient,
   createGeocodeClient,
   createListsClient,
   createOptimizationClient,
@@ -39,3 +41,5 @@ export const priceReportsClient = createPriceReportsClient(client);
 export const accountExportClient = createAccountExportClient(client);
 export const routeComputeClient = createRouteComputeClient(client);
 export const mapConfigClient = createMapConfigClient(client);
+export const merchantClient = createMerchantClient(client);
+export const adminMerchantClient = createAdminMerchantClient(client);

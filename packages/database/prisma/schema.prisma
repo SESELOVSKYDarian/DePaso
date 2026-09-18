@@ -30,7 +30,15 @@ enum PlaceType {
 /// defecto") queda NO DEFINIDO hasta que exista un rol de soporte real (Fase 20+).
 enum Role {
   USER
+  MERCHANT
   ADMIN
+}
+
+/// Solicitud de un usuario común para pasar a rol MERCHANT; la resuelve un ADMIN.
+enum MerchantRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 enum ProductPreferenceType {
@@ -57,6 +65,8 @@ enum PriceSourceType {
   RETAILER_ONLINE
   RECEIPT
   MANUAL_ADMIN
+  /// Precio cargado por el dueño del comercio (rol MERCHANT).
+  MERCHANT
 }
 
 /// Fuente de un `DataImportRun` — hoy sólo SEPA; separado de `PriceSourceType` porque un
@@ -164,8 +174,34 @@ model User {
   optimizationRuns     OptimizationRun[]
   priceReports         PriceReport[]
   trustScore           UserTrustScore?
+  merchantRequests     MerchantRequest[] @relation("MerchantRequestApplicant")
+  reviewedMerchantRequests MerchantRequest[] @relation("MerchantRequestReviewer")
+  ownedBranches        StoreBranch[]
 
   @@map("users")
+}
+
+model MerchantRequest {
+  id              String                @id @default(uuid())
+  userId          String
+  user            User                  @relation("MerchantRequestApplicant", fields: [userId], references: [id], onDelete: Cascade)
+  businessName    String
+  address         String
+  phone           String?
+  note            String?
+  latitude        Float
+  longitude       Float
+  status          MerchantRequestStatus @default(PENDING)
+  reviewedById    String?
+  reviewedBy      User?                 @relation("MerchantRequestReviewer", fields: [reviewedById], references: [id])
+  reviewedAt      DateTime?
+  rejectionReason String?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@map("merchant_requests")
 }
 
 model UserProfile {
@@ -390,6 +426,9 @@ model StoreBranch {
   status                 StoreBranchStatus @default(ACTIVE)
   marketRegionId         String?
   marketRegion           MarketRegion?     @relation(fields: [marketRegionId], references: [id])
+  /// Usuario MERCHANT dueño de la sucursal (null para sucursales importadas o cargadas por admin).
+  ownerUserId            String?
+  owner                  User?             @relation(fields: [ownerUserId], references: [id])
   createdAt              DateTime          @default(now())
   updatedAt              DateTime          @default(now()) @updatedAt
 
@@ -402,6 +441,7 @@ model StoreBranch {
   @@unique([externalSepaCommerceId, externalSepaBrandId, externalSepaBranchId])
   @@index([storeId])
   @@index([marketRegionId])
+  @@index([ownerUserId])
   @@map("store_branches")
 }
 

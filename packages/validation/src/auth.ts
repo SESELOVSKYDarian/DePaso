@@ -41,8 +41,8 @@ export const authUserResponseSchema = z.object({
   email: z.string(),
   displayName: z.string().nullable(),
   marketingOptIn: z.boolean(),
-  /** Ver enum `Role` — sólo distingue USER/ADMIN hoy (docs/development/DECISIONS.md). */
-  role: z.enum(["USER", "ADMIN"]),
+  /** Ver enum `Role` — USER, MERCHANT (comercio aprobado por un admin) y ADMIN (docs/development/DECISIONS.md). */
+  role: z.enum(["USER", "MERCHANT", "ADMIN"]),
   createdAt: z.string(),
 });
 export type AuthUserResponse = z.infer<typeof authUserResponseSchema>;

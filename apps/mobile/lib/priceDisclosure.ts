@@ -12,6 +12,7 @@ const SOURCE_LABELS: Record<string, string> = {
   COMMUNITY: "Reportado por la comunidad",
   RECEIPT: "Ticket de compra",
   MANUAL_ADMIN: "Carga manual",
+  MERCHANT: "Publicado por el comercio",
   ESTIMATED: "Estimado",
 };
 

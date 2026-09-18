@@ -5,7 +5,7 @@
 
 export type PlaceType = "HOME" | "WORK" | "STUDY" | "GYM" | "FAMILY" | "CUSTOM";
 
-export type Role = "USER" | "ADMIN";
+export type Role = "USER" | "MERCHANT" | "ADMIN";
 
 export type ProductPreferenceType = "EXACT" | "PREFERRED" | "ANY";
 

@@ -1,12 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
-import { router } from "expo-router";
-import { useEffect, useState } from "react";
+import { router, useFocusEffect } from "expo-router";
+import { useCallback, useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { colors, radii, spacing, typography } from "@depaso/design-tokens";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { useToast } from "@/components/Toast";
-import { preferencesClient } from "@/lib/apiClient";
+import { adminMerchantClient, preferencesClient } from "@/lib/apiClient";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { usePlaces } from "@/lib/places/PlacesContext";
 
@@ -27,7 +27,7 @@ function initials(name: string | null, email: string): string {
  * completo, mismo criterio que la corrección de `activity.tsx`). "Mis lugares guardados",
  * "Mis marcas y comercios preferidos" (Fase 10) y "Cerrar sesión" sí son reales. */
 export default function ProfileScreen() {
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, logout, isAuthenticated, refreshUser } = useAuth();
   const { places } = usePlaces();
   const { show: showToast } = useToast();
   const [productPreferenceCount, setProductPreferenceCount] = useState(0);
@@ -40,7 +40,25 @@ export default function ProfileScreen() {
       .catch(() => setProductPreferenceCount(0));
   }, [isAuthenticated]);
 
-  const notReady = (label: string) => showToast(`${label} todavía no está disponible.`, "info");
+  const [pendingMerchantRequests, setPendingMerchantRequests] = useState(0);
+  const role = user?.role;
+
+  // Al volver a esta pestaña se refresca el rol (por si un admin aprobó la solicitud) y,
+  // si es admin, el contador de solicitudes de comercio pendientes.
+  useFocusEffect(
+    useCallback(() => {
+      if (!isAuthenticated) return;
+      void refreshUser().catch(() => undefined);
+      if (role === "ADMIN") {
+        adminMerchantClient
+          .list("PENDING")
+          .then(({ pendingCount }) => setPendingMerchantRequests(pendingCount))
+          .catch(() => setPendingMerchantRequests(0));
+      }
+    }, [isAuthenticated, role, refreshUser])
+  );
+
+  const notReady =(label: string) => showToast(`${label} todavía no está disponible.`, "info");
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -83,6 +101,46 @@ export default function ProfileScreen() {
             onPress={() => notReady("Métodos de pago")}
           />
         </View>
+
+        {role === "ADMIN" ? (
+          <>
+            <Text style={[styles.sectionTitle, styles.sectionSpacing]}>Administración</Text>
+            <View style={styles.section}>
+              <ProfileRow
+                icon="storefront-outline"
+                label="Solicitudes de comercio"
+                value={pendingMerchantRequests > 0 ? `${pendingMerchantRequests} pendientes` : "Sin pendientes"}
+                onPress={() => router.push("/admin/merchant-requests")}
+              />
+            </View>
+          </>
+        ) : null}
+
+        {role === "MERCHANT" ? (
+          <>
+            <Text style={[styles.sectionTitle, styles.sectionSpacing]}>Mi comercio</Text>
+            <View style={styles.section}>
+              <ProfileRow
+                icon="storefront-outline"
+                label="Mis productos y precios"
+                onPress={() => router.push("/merchant")}
+              />
+            </View>
+          </>
+        ) : null}
+
+        {role === "USER" ? (
+          <>
+            <Text style={[styles.sectionTitle, styles.sectionSpacing]}>Comercios</Text>
+            <View style={styles.section}>
+              <ProfileRow
+                icon="storefront-outline"
+                label="Quiero ser comercio"
+                onPress={() => router.push("/merchant/request")}
+              />
+            </View>
+          </>
+        ) : null}
 
         <Text style={[styles.sectionTitle, styles.sectionSpacing]}>Configuración</Text>
         <View style={styles.section}>

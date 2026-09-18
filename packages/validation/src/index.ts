@@ -13,3 +13,4 @@ export * from "./accountExport";
 export * from "./adminOps";
 export * from "./routeCompute";
 export * from "./mapConfig";
+export * from "./merchant";
