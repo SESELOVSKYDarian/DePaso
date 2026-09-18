@@ -19,13 +19,15 @@ export async function GET(request: NextRequest) {
   });
 
   const productVariants = await prisma.productVariant.findMany({
-    where: { id: { in: [...new Set(reports.map((r) => r.productVariantId))] } },
+    where: { id: { in: [...new Set(reports.map((r: (typeof reports)[number]) => r.productVariantId))] } },
     include: { product: { select: { name: true } } },
   });
-  const productNameByVariant = new Map(productVariants.map((v) => [v.id, v.product.name]));
+  const productNameByVariant = new Map(
+    productVariants.map((v: (typeof productVariants)[number]) => [v.id, v.product.name])
+  );
 
   const body: { reports: AdminPriceReportResponse[] } = {
-    reports: reports.map((r) => ({
+    reports: reports.map((r: (typeof reports)[number]) => ({
       id: r.id,
       userEmail: r.user.email,
       productName: productNameByVariant.get(r.productVariantId) ?? "(producto desconocido)",
@@ -36,7 +38,7 @@ export async function GET(request: NextRequest) {
       promotionNote: r.promotionNote,
       hasEvidence: r.photoEvidenceUrl != null,
       createdAt: r.createdAt.toISOString(),
-      moderationEvents: r.moderationEvents.map((e) => ({
+      moderationEvents: r.moderationEvents.map((e: (typeof r.moderationEvents)[number]) => ({
         id: e.id,
         type: e.type,
         reason: e.reason,

@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
   });
 
   const body: { users: AdminUserResponse[] } = {
-    users: users.map((u) => ({
+    users: users.map((u: (typeof users)[number]) => ({
       id: u.id,
       email: u.email,
       displayName: u.displayName,

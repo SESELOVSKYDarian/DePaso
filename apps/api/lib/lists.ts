@@ -15,7 +15,7 @@ async function loadProductNames(productIds: string[]): Promise<Map<string, { nam
     where: { id: { in: productIds } },
     select: { id: true, name: true, category: true },
   });
-  return new Map(products.map((p) => [p.id, { name: p.name, category: p.category }]));
+  return new Map(products.map((p: (typeof products)[number]) => [p.id, { name: p.name, category: p.category }]));
 }
 
 export async function toListResponse(list: ListWithItems): Promise<ShoppingListResponse> {

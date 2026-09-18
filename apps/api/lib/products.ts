@@ -23,12 +23,12 @@ export async function searchProducts(query: string): Promise<ProductSearchResult
     orderBy: { name: "asc" },
   });
 
-  return products.map((product) => ({
+  return products.map((product: (typeof products)[number]) => ({
     id: product.id,
     name: product.name,
     category: product.category,
     brandName: product.brand?.name ?? null,
-    variants: product.variants.map((variant) => ({
+    variants: product.variants.map((variant: (typeof product.variants)[number]) => ({
       id: variant.id,
       name: variant.name,
       unit: variant.unit,

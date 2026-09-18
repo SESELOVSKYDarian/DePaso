@@ -45,3 +45,4 @@ web-build/
 
 # misc
 coverage/
+.git_commit_msg.txt

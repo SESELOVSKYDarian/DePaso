@@ -47,10 +47,10 @@ async function persistOptimizationRun(
         const createdStop = await prisma.optimizationPlanStop.create({
           data: { optimizationPlanId: created.id, order: stop.order, storeBranchId: stop.storeBranchId },
         });
-        const itemsWithVariant = stop.items.filter((item) => item.productVariantId);
+        const itemsWithVariant = stop.items.filter((item: (typeof stop.items)[number]) => item.productVariantId);
         if (itemsWithVariant.length > 0) {
           await prisma.optimizationPlanItem.createMany({
-            data: itemsWithVariant.map((item) => ({
+            data: itemsWithVariant.map((item: (typeof itemsWithVariant)[number]) => ({
               optimizationPlanStopId: createdStop.id,
               productId: item.productId,
               productVariantId: item.productVariantId!,
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
   if (!list) return NextResponse.json({ error: "LIST_NOT_FOUND" }, { status: 404 });
   if (list.items.length === 0) return NextResponse.json({ error: "EMPTY_LIST" }, { status: 422 });
 
-  const productIds = [...new Set(list.items.map((item) => item.productId))];
+  const productIds = [...new Set(list.items.map((item: (typeof list.items)[number]) => item.productId))];
   const [products, productPreferences, storePreferences, prices] = await Promise.all([
     prisma.product.findMany({ where: { id: { in: productIds } }, select: { id: true, name: true } }),
     prisma.productPreference.findMany({ where: { userId: current.userId, productId: { in: productIds } } }),
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest) {
     }),
   ]);
 
-  const names = new Map(products.map((product) => [product.id, product.name]));
+  const names = new Map(products.map((product: (typeof products)[number]) => [product.id, product.name]));
   if (names.size !== productIds.length) {
     return NextResponse.json({ error: "LIST_CONTAINS_UNKNOWN_PRODUCT" }, { status: 422 });
   }
@@ -149,7 +149,7 @@ export async function POST(request: NextRequest) {
     const plans = await optimizeShoppingList(
       {
         shoppingList: {
-          items: list.items.map((item) => ({
+          items: list.items.map((item: (typeof list.items)[number]) => ({
             productId: item.productId,
             productName: names.get(item.productId)!,
             quantity: item.quantity,
@@ -157,12 +157,16 @@ export async function POST(request: NextRequest) {
         },
         routeContext: parsed.data.routeContext,
         preferences: {
-          productPreferences: productPreferences.map(({ productId, type, preferredBrandId }) => ({
-            productId,
-            type,
-            ...(preferredBrandId ? { preferredBrandId } : {}),
+          productPreferences: productPreferences.map((pref: (typeof productPreferences)[number]) => ({
+            productId: pref.productId,
+            type: pref.type,
+            ...(pref.preferredBrandId ? { preferredBrandId: pref.preferredBrandId } : {}),
           })),
-          storePreferences: storePreferences.map(({ category, type, storeBranchId }) => ({ category, type, storeBranchId })),
+          storePreferences: storePreferences.map((pref: (typeof storePreferences)[number]) => ({
+            category: pref.category,
+            type: pref.type,
+            storeBranchId: pref.storeBranchId,
+          })),
         },
         storeCandidates: [...candidateMap.values()],
         transportMode: parsed.data.transportMode,
@@ -172,7 +176,12 @@ export async function POST(request: NextRequest) {
     );
     await persistOptimizationRun(current.userId, parsed.data.shoppingListId, parsed.data.transportMode, plans);
     // `debugScore` es deliberadamente interno; nunca cruza el límite HTTP.
-    return NextResponse.json({ plans: plans.map(({ debugScore: _debugScore, ...plan }) => plan) });
+    return NextResponse.json({
+      plans: plans.map((planResult: (typeof plans)[number]) => {
+        const { debugScore: _debugScore, ...plan } = planResult;
+        return plan;
+      }),
+    });
   } catch (error) {
     return NextResponse.json(
       { error: "OPTIMIZATION_FAILED", message: error instanceof Error ? error.message : "unknown" },

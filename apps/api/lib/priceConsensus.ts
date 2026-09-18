@@ -25,11 +25,13 @@ export async function recomputeConsensus(productVariantId: string, storeBranchId
   });
   if (reports.length === 0) return;
 
-  const userIds = [...new Set(reports.map((r) => r.userId))];
+  const userIds = [...new Set(reports.map((r: (typeof reports)[number]) => r.userId))];
   const trustScores = await prisma.userTrustScore.findMany({ where: { userId: { in: userIds } } });
-  const scoreByUser = new Map(trustScores.map((t) => [t.userId, t.score]));
+  const scoreByUser = new Map(
+    trustScores.map((t: (typeof trustScores)[number]) => [t.userId, t.score])
+  );
 
-  const candidates: PriceReportCandidate[] = reports.map((r) => ({
+  const candidates: PriceReportCandidate[] = reports.map((r: (typeof reports)[number]) => ({
     id: r.id,
     userId: r.userId,
     productVariantId,

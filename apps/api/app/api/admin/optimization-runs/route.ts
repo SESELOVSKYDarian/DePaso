@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
   });
 
   const body: { runs: AdminOptimizationRunResponse[] } = {
-    runs: runs.map((r) => ({
+    runs: runs.map((r: (typeof runs)[number]) => ({
       id: r.id,
       userEmail: r.user.email,
       mode: r.mode,
@@ -23,7 +23,9 @@ export async function GET(request: NextRequest) {
       createdAt: r.createdAt.toISOString(),
       planCount: r.plans.length,
       bestEstimatedSavings:
-        r.plans.length > 0 ? Math.max(...r.plans.map((p) => Number(p.estimatedSavings))) : null,
+        r.plans.length > 0
+          ? Math.max(...r.plans.map((p: (typeof r.plans)[number]) => Number(p.estimatedSavings)))
+          : null,
     })),
   };
   return NextResponse.json(body);
