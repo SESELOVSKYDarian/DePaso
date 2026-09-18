@@ -1,4 +1,4 @@
-import { prisma } from "@depaso/database";
+import { Prisma, prisma } from "@depaso/database";
 import { priceUpdateSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
@@ -30,7 +30,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   const existing = await prisma.price.findUnique({ where: { id } });
   if (!existing) return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
 
-  const price = await prisma.$transaction(async (tx) => {
+  const price = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     const updated = await tx.price.update({
       where: { id },
       data: rest,

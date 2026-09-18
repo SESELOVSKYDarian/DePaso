@@ -144,7 +144,7 @@ async function applyTrustOutcomes(
   }
 
   for (const reportId of decision.anomalousReportIds) {
-    const report = reports.find((r) => r.id === reportId);
+    const report = reports.find((r: (typeof reports)[number]) => r.id === reportId);
     if (!report) continue;
     await updateTrustOutcome(report.userId, "REJECTED");
     await prisma.communityModerationEvent.create({

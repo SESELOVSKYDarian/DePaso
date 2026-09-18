@@ -1,4 +1,4 @@
-import { prisma } from "@depaso/database";
+import { Prisma, prisma } from "@depaso/database";
 import { updateProfileRequestSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser, toAuthUserResponse } from "@/lib/auth/currentUser";
@@ -24,7 +24,7 @@ export async function PATCH(request: NextRequest) {
   }
   const { displayName, marketingOptIn } = parsed.data;
 
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     if (displayName !== undefined) {
       await tx.user.update({ where: { id: current.userId }, data: { displayName } });
     }

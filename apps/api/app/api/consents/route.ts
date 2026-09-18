@@ -1,4 +1,4 @@
-import { prisma } from "@depaso/database";
+import { Prisma, prisma } from "@depaso/database";
 import { LEGAL_DOCUMENT_VERSIONS } from "@depaso/domain";
 import { consentRequestSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
   }
   const { type, accepted } = parsed.data;
 
-  await prisma.$transaction(async (tx) => {
+  await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
     await tx.userConsent.create({
       data: {
         userId: current.userId,
