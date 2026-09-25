@@ -8,6 +8,7 @@ import {
   createGeocodeClient,
   createListsClient,
   createOptimizationClient,
+  createPaymentsClient,
   createPlacesClient,
   createPreferencesClient,
   createMapConfigClient,
@@ -43,3 +44,4 @@ export const routeComputeClient = createRouteComputeClient(client);
 export const mapConfigClient = createMapConfigClient(client);
 export const merchantClient = createMerchantClient(client);
 export const adminMerchantClient = createAdminMerchantClient(client);
+export const paymentsClient = createPaymentsClient(client);

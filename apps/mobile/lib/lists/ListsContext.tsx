@@ -22,6 +22,8 @@ interface ListsContextValue {
   addItem: (listId: string, input: ShoppingListItemInput) => Promise<ShoppingListResponse>;
   updateItem: (listId: string, itemId: string, input: ShoppingListItemUpdate) => Promise<ShoppingListResponse>;
   removeItem: (listId: string, itemId: string) => Promise<ShoppingListResponse>;
+  shareList: (listId: string, email: string) => Promise<ShoppingListResponse>;
+  removeMember: (listId: string, memberUserId: string, isSelf: boolean) => Promise<void>;
 }
 
 const ListsContext = createContext<ListsContextValue | null>(null);
@@ -65,6 +67,9 @@ export function ListsProvider({ children }: { children: ReactNode }) {
     archivedAt: list.archivedAt,
     createdAt: list.createdAt,
     updatedAt: list.updatedAt,
+    role: list.role,
+    ownerName: list.ownerName,
+    memberCount: list.members.length,
     itemCount: list.items.length,
   }), []);
 
@@ -105,9 +110,25 @@ export function ListsProvider({ children }: { children: ReactNode }) {
     return updated;
   }, [summarize]);
 
+  const shareList = useCallback(async (listId: string, email: string) => {
+    const updated = await listsClient.share(listId, { email });
+    setLists((prev) => prev.map((l) => (l.id === listId ? summarize(updated) : l)));
+    return updated;
+  }, [summarize]);
+
+  /** El dueño quita a un miembro, o un miembro se quita a sí mismo (sale de la lista). */
+  const removeMember = useCallback(async (listId: string, memberUserId: string, isSelf: boolean) => {
+    await listsClient.removeMember(listId, memberUserId);
+    if (isSelf) {
+      setLists((prev) => prev.filter((l) => l.id !== listId));
+    } else {
+      await refresh();
+    }
+  }, [refresh]);
+
   const value = useMemo<ListsContextValue>(
-    () => ({ lists, isLoading, error, refresh, createList, updateList, removeList, getList, addItem, updateItem, removeItem }),
-    [lists, isLoading, error, refresh, createList, updateList, removeList, getList, addItem, updateItem, removeItem]
+    () => ({ lists, isLoading, error, refresh, createList, updateList, removeList, getList, addItem, updateItem, removeItem, shareList, removeMember }),
+    [lists, isLoading, error, refresh, createList, updateList, removeList, getList, addItem, updateItem, removeItem, shareList, removeMember]
   );
 
   return <ListsContext.Provider value={value}>{children}</ListsContext.Provider>;

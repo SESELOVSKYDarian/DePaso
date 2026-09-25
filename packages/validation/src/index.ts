@@ -14,3 +14,4 @@ export * from "./adminOps";
 export * from "./routeCompute";
 export * from "./mapConfig";
 export * from "./merchant";
+export * from "./payments";

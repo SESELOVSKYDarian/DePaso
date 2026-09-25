@@ -4,6 +4,7 @@ import type { TransportMode } from "@depaso/types";
 import { optimizationRunRequestSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
+import { applyPaymentPromos } from "@/lib/applyPromos";
 import { getRouteProvider } from "@/lib/routing";
 
 /**
@@ -81,7 +82,11 @@ export async function POST(request: NextRequest) {
   }
 
   const list = await prisma.shoppingList.findFirst({
-    where: { id: parsed.data.shoppingListId, userId: current.userId, archivedAt: null },
+    where: {
+      id: parsed.data.shoppingListId,
+      archivedAt: null,
+      OR: [{ userId: current.userId }, { members: { some: { userId: current.userId } } }],
+    },
     include: { items: true },
   });
   if (!list) return NextResponse.json({ error: "LIST_NOT_FOUND" }, { status: 404 });
@@ -176,12 +181,11 @@ export async function POST(request: NextRequest) {
     );
     await persistOptimizationRun(current.userId, parsed.data.shoppingListId, parsed.data.transportMode, plans);
     // `debugScore` es deliberadamente interno; nunca cruza el límite HTTP.
-    return NextResponse.json({
-      plans: plans.map((planResult: (typeof plans)[number]) => {
-        const { debugScore: _debugScore, ...plan } = planResult;
-        return plan;
-      }),
+    const publicPlans = plans.map((planResult: (typeof plans)[number]) => {
+      const { debugScore: _debugScore, ...plan } = planResult;
+      return plan;
     });
+    return NextResponse.json({ plans: await applyPaymentPromos(publicPlans, current.userId) });
   } catch (error) {
     return NextResponse.json(
       { error: "OPTIMIZATION_FAILED", message: error instanceof Error ? error.message : "unknown" },

@@ -1,20 +1,24 @@
 import type { ShoppingListResponse } from "@depaso/validation";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import { FlatList, StyleSheet, Text, TextInput, View } from "react-native";
 import Animated, { FadeInDown, FadeOutLeft, useReducedMotion } from "react-native-reanimated";
 import { colors, motion, radii, spacing, typography } from "@depaso/design-tokens";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { EmptyState } from "@/components/EmptyState";
 import { Skeleton } from "@/components/Skeleton";
 import { useToast } from "@/components/Toast";
+import { useAuth } from "@/lib/auth/AuthContext";
 import { useLists } from "@/lib/lists/ListsContext";
 
 /** Detalle de una lista de compra (Fase 9) — agregar/quitar productos, ajustar cantidad. */
 export default function ListDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { lists, getList, updateItem, removeItem, removeList } = useLists();
+  const { lists, getList, updateItem, removeItem, removeList, shareList, removeMember } = useLists();
+  const { user } = useAuth();
   const { show: showToast } = useToast();
+  const [shareEmail, setShareEmail] = useState("");
+  const [isSharing, setIsSharing] = useState(false);
   const reducedMotion = useReducedMotion();
   // `itemCount` del resumen compartido (`ListsContext`) — cambia cuando `lists/search.tsx`
   // agrega un producto y vuelve acá. Bug real encontrado probando el flujo completo: sin
@@ -76,6 +80,43 @@ export default function ListDetailScreen() {
     }
   };
 
+  const handleShare = async () => {
+    const email = shareEmail.trim();
+    if (!email) return;
+    setIsSharing(true);
+    try {
+      const updated = await shareList(id, email);
+      setList(updated);
+      setShareEmail("");
+      showToast("Lista compartida", "success");
+    } catch (err) {
+      const code = (err as { body?: { error?: string } }).body?.error;
+      showToast(
+        code === "USER_NOT_FOUND"
+          ? "Esa persona todavía no tiene cuenta en DePaso."
+          : code === "CANNOT_SHARE_WITH_SELF"
+            ? "Esa es tu propia cuenta."
+            : "No pudimos compartir la lista.",
+        "error"
+      );
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
+  const handleRemoveMember = async (memberUserId: string) => {
+    try {
+      await removeMember(id, memberUserId, memberUserId === user?.id);
+      if (memberUserId === user?.id) {
+        router.back();
+      } else {
+        await load();
+      }
+    } catch {
+      showToast("No pudimos actualizar quién ve la lista.", "error");
+    }
+  };
+
   if (isLoading && !list) {
     return (
       <View style={styles.container}>
@@ -92,8 +133,67 @@ export default function ListDetailScreen() {
     return <EmptyState emoji="⚠️" title="Algo salió mal" description={error ?? "Lista no encontrada."} />;
   }
 
+  const isOwner = list.role === "OWNER";
+
   return (
     <View style={styles.container}>
+      <View style={styles.sharePanel}>
+        {isOwner ? (
+          <>
+            <Text style={styles.shareTitle}>
+              {list.members.length === 0 ? "Compartir esta lista" : "Compartida con"}
+            </Text>
+            {list.members.map((member) => (
+              <View key={member.userId} style={styles.memberRow}>
+                <Text style={styles.memberName} numberOfLines={1}>
+                  {member.displayName ?? member.email}
+                </Text>
+                <AnimatedPressable
+                  accessibilityLabel={`Dejar de compartir con ${member.email}`}
+                  haptic={false}
+                  onPress={() => void handleRemoveMember(member.userId)}
+                >
+                  <Text style={styles.memberRemove}>Quitar</Text>
+                </AnimatedPressable>
+              </View>
+            ))}
+            <View style={styles.shareRow}>
+              <TextInput
+                value={shareEmail}
+                onChangeText={setShareEmail}
+                placeholder="Email de quien ya usa DePaso"
+                placeholderTextColor={colors.text.muted}
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="email-address"
+                style={styles.shareInput}
+              />
+              <AnimatedPressable
+                accessibilityLabel="Compartir lista"
+                haptic={false}
+                onPress={() => void handleShare()}
+                style={[styles.shareButton, isSharing || !shareEmail.trim() ? styles.shareButtonDisabled : null]}
+              >
+                <Text style={styles.shareButtonLabel}>{isSharing ? "..." : "Compartir"}</Text>
+              </AnimatedPressable>
+            </View>
+          </>
+        ) : (
+          <View style={styles.memberRow}>
+            <Text style={styles.memberName} numberOfLines={1}>
+              Compartida por {list.ownerName ?? "otra persona"}
+            </Text>
+            <AnimatedPressable
+              accessibilityLabel="Salir de la lista"
+              haptic={false}
+              onPress={() => user && void handleRemoveMember(user.id)}
+            >
+              <Text style={styles.memberRemove}>Salir</Text>
+            </AnimatedPressable>
+          </View>
+        )}
+      </View>
+
       {list.items.length === 0 ? (
         <EmptyState
           emoji="🛒"
@@ -155,14 +255,16 @@ export default function ListDetailScreen() {
         >
           <Text style={styles.addLabel}>+ Agregar producto</Text>
         </AnimatedPressable>
-        <AnimatedPressable
-          accessibilityLabel="Eliminar lista"
-          haptic={false}
-          onPress={() => void handleDeleteList()}
-          style={styles.deleteButton}
-        >
-          <Text style={styles.deleteLabel}>Eliminar lista</Text>
-        </AnimatedPressable>
+        {isOwner ? (
+          <AnimatedPressable
+            accessibilityLabel="Eliminar lista"
+            haptic={false}
+            onPress={() => void handleDeleteList()}
+            style={styles.deleteButton}
+          >
+            <Text style={styles.deleteLabel}>Eliminar lista</Text>
+          </AnimatedPressable>
+        ) : null}
       </View>
     </View>
   );
@@ -176,6 +278,74 @@ const styles = StyleSheet.create({
   list: {
     padding: spacing.lg,
     gap: spacing.sm,
+  },
+  sharePanel: {
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.md,
+    padding: spacing.sm,
+    gap: spacing.xs,
+    backgroundColor: colors.surface.primary,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.border.subtle,
+  },
+  shareTitle: {
+    fontFamily: typography.body.fontFamily,
+    fontWeight: "600",
+    fontSize: 13,
+    color: colors.text.secondary,
+  },
+  memberRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: spacing.sm,
+  },
+  memberName: {
+    flex: 1,
+    fontFamily: typography.body.fontFamily,
+    fontSize: 14,
+    color: colors.text.primary,
+  },
+  memberRemove: {
+    fontFamily: typography.body.fontFamily,
+    fontWeight: "600",
+    fontSize: 13,
+    color: colors.state.error,
+  },
+  shareRow: {
+    flexDirection: "row",
+    gap: spacing.xs,
+    alignItems: "center",
+  },
+  shareInput: {
+    flex: 1,
+    minHeight: 40,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.border.subtle,
+    backgroundColor: colors.surface.input,
+    paddingHorizontal: spacing.sm,
+    fontFamily: typography.subtitle.fontFamily,
+    fontSize: 14,
+    color: colors.text.primary,
+  },
+  shareButton: {
+    minHeight: 40,
+    paddingHorizontal: spacing.md,
+    borderRadius: radii.md,
+    backgroundColor: colors.brand.navy,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  shareButtonDisabled: {
+    opacity: 0.5,
+  },
+  shareButtonLabel: {
+    fontFamily: typography.body.fontFamily,
+    fontWeight: "600",
+    fontSize: 13,
+    color: colors.text.onNavy,
   },
   row: {
     flexDirection: "row",

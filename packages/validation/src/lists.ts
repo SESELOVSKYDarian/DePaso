@@ -40,17 +40,44 @@ export const shoppingListItemResponseSchema = z.object({
 });
 export type ShoppingListItemResponse = z.infer<typeof shoppingListItemResponseSchema>;
 
+/** Compartir una lista con otra persona que ya tenga cuenta en DePaso. */
+export const shoppingListShareInputSchema = z.object({
+  email: z.string().trim().toLowerCase().email(),
+});
+export type ShoppingListShareInput = z.infer<typeof shoppingListShareInputSchema>;
+
+export const shoppingListMemberSchema = z.object({
+  userId: z.string(),
+  email: z.string(),
+  displayName: z.string().nullable(),
+});
+export type ShoppingListMember = z.infer<typeof shoppingListMemberSchema>;
+
+const listRoleSchema = z.enum(["OWNER", "MEMBER"]);
+
 export const shoppingListResponseSchema = z.object({
   id: z.string(),
   name: z.string(),
   archivedAt: z.string().nullable(),
   createdAt: z.string(),
   updatedAt: z.string(),
+  /** OWNER: es tu lista. MEMBER: te la compartieron. */
+  role: listRoleSchema.default("OWNER"),
+  ownerName: z.string().nullable().default(null),
+  members: z.array(shoppingListMemberSchema).default([]),
   items: z.array(shoppingListItemResponseSchema),
 });
 export type ShoppingListResponse = z.infer<typeof shoppingListResponseSchema>;
 
-export const shoppingListSummarySchema = shoppingListResponseSchema.omit({ items: true }).extend({
+export const shoppingListSummarySchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  archivedAt: z.string().nullable(),
+  createdAt: z.string(),
+  updatedAt: z.string(),
+  role: listRoleSchema.default("OWNER"),
+  ownerName: z.string().nullable().default(null),
+  memberCount: z.number().default(0),
   itemCount: z.number(),
 });
 export type ShoppingListSummary = z.infer<typeof shoppingListSummarySchema>;

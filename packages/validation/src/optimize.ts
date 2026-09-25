@@ -4,6 +4,7 @@
  * validation vía Zod, nunca confiar en el body del frontend sin validar — sección 81).
  */
 import { z } from "zod";
+import { appliedPromoSchema } from "./payments";
 
 export const latLngSchema = z.object({
   latitude: z.number().min(-90).max(90),
@@ -95,6 +96,9 @@ const planStopSchema = z.object({
 });
 
 export const optimizationPlanResponseSchema = z.object({
+  /** Promos de bancos/billeteras del usuario aplicadas al total (ya descontadas). */
+  promoSavings: z.number().nonnegative().default(0),
+  appliedPromos: z.array(appliedPromoSchema).default([]),
   label: z.enum(["BALANCED", "FASTEST", "CHEAPEST"]),
   totalProductCost: z.number().nonnegative(),
   estimatedTravelCost: z.number().nonnegative(),

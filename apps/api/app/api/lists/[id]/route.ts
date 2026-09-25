@@ -2,7 +2,7 @@ import { prisma } from "@depaso/database";
 import { shoppingListUpdateSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
-import { toListResponse } from "@/lib/lists";
+import { listAccessWhere, listInclude, toListResponse } from "@/lib/lists";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -14,14 +14,15 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
   const { id } = await params;
   const list = await prisma.shoppingList.findFirst({
-    where: { id, userId: current.userId },
-    include: { items: true },
+    where: { id, ...listAccessWhere(current.userId) },
+    include: listInclude,
   });
   if (!list) return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
 
-  return NextResponse.json(await toListResponse(list));
+  return NextResponse.json(await toListResponse(list, current.userId));
 }
 
+/** Renombrar o archivar: sólo el dueño. */
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   const current = await getCurrentUser(request);
   if (!current) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
@@ -45,10 +46,11 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   });
   if (count === 0) return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
 
-  const list = await prisma.shoppingList.findUniqueOrThrow({ where: { id }, include: { items: true } });
-  return NextResponse.json(await toListResponse(list));
+  const list = await prisma.shoppingList.findUniqueOrThrow({ where: { id }, include: listInclude });
+  return NextResponse.json(await toListResponse(list, current.userId));
 }
 
+/** Borrar: sólo el dueño. Un miembro se sale con `DELETE /api/lists/[id]/members/[userId]`. */
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   const current = await getCurrentUser(request);
   if (!current) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });

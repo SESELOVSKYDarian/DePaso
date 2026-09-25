@@ -98,6 +98,7 @@ function RootNavigator() {
           name="preferences/store-form"
           options={{ headerShown: true, title: "Preferencia de comercio", presentation: "modal" }}
         />
+        <Stack.Screen name="payment-methods" options={{ headerShown: true, title: "Métodos de pago" }} />
         <Stack.Screen name="merchant/request" options={{ headerShown: true, title: "Quiero ser comercio" }} />
         <Stack.Screen name="merchant/index" options={{ headerShown: true, title: "Mi comercio" }} />
         <Stack.Screen

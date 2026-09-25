@@ -95,6 +95,11 @@ function ListCard({ list }: { list: ShoppingListSummary }) {
       </View>
       <Text style={styles.cardMeta}>
         {list.itemCount} {list.itemCount === 1 ? "producto" : "productos"}
+        {list.role === "MEMBER"
+          ? ` · Compartida por ${list.ownerName ?? "otra persona"}`
+          : list.memberCount > 0
+            ? ` · Compartida con ${list.memberCount} ${list.memberCount === 1 ? "persona" : "personas"}`
+            : ""}
       </Text>
     </AnimatedPressable>
   );

@@ -179,6 +179,8 @@ model User {
   merchantRequests     MerchantRequest[] @relation("MerchantRequestApplicant")
   reviewedMerchantRequests MerchantRequest[] @relation("MerchantRequestReviewer")
   ownedBranches        StoreBranch[]
+  listMemberships      ShoppingListMember[]
+  paymentMethods       UserPaymentMethod[]
 
   @@map("users")
 }
@@ -648,9 +650,66 @@ model ShoppingList {
 
   items            ShoppingListItem[]
   optimizationRuns OptimizationRun[]
+  members          ShoppingListMember[]
 
   @@index([userId])
   @@map("shopping_lists")
+}
+
+/// Usuario con quien el dueño compartió la lista. Puede ver la lista y agregar, editar y
+/// quitar productos; sólo el dueño la renombra, archiva, borra o cambia con quién se comparte.
+model ShoppingListMember {
+  id             String       @id @default(uuid())
+  shoppingListId String
+  shoppingList   ShoppingList @relation(fields: [shoppingListId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+
+  @@unique([shoppingListId, userId])
+  @@index([userId])
+  @@map("shopping_list_members")
+}
+
+/// Medio de pago que el usuario declara tener (slug del catálogo `PAYMENT_METHODS` de
+/// `@depaso/domain`, ej. "cuenta-dni"). Sirve para aplicar sólo las promos que le corresponden.
+model UserPaymentMethod {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  methodSlug String
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, methodSlug])
+  @@map("user_payment_methods")
+}
+
+/// Promoción de banco/billetera en un comercio. Se sincroniza desde un dataset abierto
+/// (`packages/database/scripts` / `/api/cron/sync-promos`) — es informativa: las condiciones
+/// reales las define el comercio y el emisor, por eso siempre se muestra con su aviso.
+model PaymentPromo {
+  id              String   @id @default(uuid())
+  /// Id de la fuente — permite re-sincronizar sin duplicar.
+  externalId      String   @unique
+  retailer        String
+  /// Nombre normalizado del comercio, para matchear contra `Store.normalizedName`/`name`.
+  normalizedRetailer String
+  bank            String?
+  /// Slugs del catálogo `PAYMENT_METHODS`; vacío = promo general (sin medio de pago específico).
+  methodSlugs     String[]
+  discountPercent Float
+  /// Tope de reintegro en ARS por compra/día (null = sin tope informado).
+  capAmount       Float?
+  /// 0 = domingo … 6 = sábado; vacío = todos los días.
+  daysOfWeek      Int[]
+  validityNote    String?
+  sourceUrl       String?
+  source          String?
+  active          Boolean  @default(true)
+  syncedAt        DateTime @default(now())
+
+  @@index([normalizedRetailer])
+  @@map("payment_promos")
 }
 
 model ShoppingListItem {

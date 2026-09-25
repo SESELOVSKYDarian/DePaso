@@ -1,3 +1,4 @@
 {
-  "installCommand": "pnpm install --config.node-linker=isolated"
+  "installCommand": "pnpm install --config.node-linker=isolated",
+  "crons": [{ "path": "/api/promos/sync", "schedule": "0 10 * * *" }]
 }

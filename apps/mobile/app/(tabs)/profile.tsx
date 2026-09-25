@@ -6,7 +6,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { colors, radii, spacing, typography } from "@depaso/design-tokens";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { useToast } from "@/components/Toast";
-import { adminMerchantClient, preferencesClient } from "@/lib/apiClient";
+import { adminMerchantClient, paymentsClient, preferencesClient } from "@/lib/apiClient";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { usePlaces } from "@/lib/places/PlacesContext";
 
@@ -98,7 +98,7 @@ export default function ProfileScreen() {
           <ProfileRow
             icon="card-outline"
             label="Métodos de pago"
-            onPress={() => notReady("Métodos de pago")}
+            onPress={() => router.push("/payment-methods")}
           />
         </View>
 
@@ -111,6 +111,17 @@ export default function ProfileScreen() {
                 label="Solicitudes de comercio"
                 value={pendingMerchantRequests > 0 ? `${pendingMerchantRequests} pendientes` : "Sin pendientes"}
                 onPress={() => router.push("/admin/merchant-requests")}
+              />
+              <ProfileRow
+                icon="pricetags-outline"
+                label="Actualizar promos de bancos y billeteras"
+                onPress={() => {
+                  showToast("Actualizando promos...", "info");
+                  paymentsClient
+                    .syncPromos()
+                    .then(({ accepted, discarded }) => showToast(`Promos actualizadas: ${accepted} válidas, ${discarded} descartadas.`, "success"))
+                    .catch(() => showToast("No pudimos actualizar las promos.", "error"));
+                }}
               />
             </View>
           </>

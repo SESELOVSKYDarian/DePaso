@@ -5,6 +5,7 @@ import {
   type ShoppingListInput,
   type ShoppingListItemInput,
   type ShoppingListItemUpdate,
+  type ShoppingListShareInput,
   type ShoppingListUpdate,
 } from "@depaso/validation";
 import type { DepasoApiClient } from "./client";
@@ -25,6 +26,10 @@ export function createListsClient(client: DepasoApiClient) {
       client.post(`/api/lists/${listId}/items`, body, shoppingListResponseSchema),
     updateItem: (listId: string, itemId: string, body: ShoppingListItemUpdate) =>
       client.patch(`/api/lists/${listId}/items/${itemId}`, body, shoppingListResponseSchema),
+    share: (listId: string, body: ShoppingListShareInput) =>
+      client.post(`/api/lists/${listId}/members`, body, shoppingListResponseSchema),
+    removeMember: (listId: string, memberUserId: string) =>
+      client.delete(`/api/lists/${listId}/members/${memberUserId}`, okSchema),
     removeItem: (listId: string, itemId: string) =>
       client.delete(`/api/lists/${listId}/items/${itemId}`, shoppingListResponseSchema),
   };

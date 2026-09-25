@@ -1,8 +1,20 @@
 import { prisma } from "@depaso/database";
-import type { ShoppingList, ShoppingListItem } from "@depaso/database";
+import type { ShoppingList, ShoppingListItem, ShoppingListMember, User } from "@depaso/database";
 import type { ShoppingListItemResponse, ShoppingListResponse, ShoppingListSummary } from "@depaso/validation";
 
-type ListWithItems = ShoppingList & { items: ShoppingListItem[] };
+/** Relaciones que necesita `toListResponse` (dueño y miembros con su usuario). */
+export const listInclude = { items: true, user: true, members: { include: { user: true } } } as const;
+
+type ListWithItems = ShoppingList & {
+  items: ShoppingListItem[];
+  user: User;
+  members: (ShoppingListMember & { user: User })[];
+};
+
+/** Filtro de acceso: la lista es del usuario o se la compartieron. */
+export function listAccessWhere(userId: string) {
+  return { OR: [{ userId }, { members: { some: { userId } } }] };
+}
 
 /**
  * `ShoppingListItem.productId` no tiene relación de Prisma hacia `Product` (Fase 9 sólo
@@ -18,7 +30,7 @@ async function loadProductNames(productIds: string[]): Promise<Map<string, { nam
   return new Map(products.map((p: (typeof products)[number]) => [p.id, { name: p.name, category: p.category }]));
 }
 
-export async function toListResponse(list: ListWithItems): Promise<ShoppingListResponse> {
+export async function toListResponse(list: ListWithItems, viewerId: string): Promise<ShoppingListResponse> {
   const productNames = await loadProductNames(list.items.map((item) => item.productId));
 
   return {
@@ -27,6 +39,13 @@ export async function toListResponse(list: ListWithItems): Promise<ShoppingListR
     archivedAt: list.archivedAt?.toISOString() ?? null,
     createdAt: list.createdAt.toISOString(),
     updatedAt: list.updatedAt.toISOString(),
+    role: list.userId === viewerId ? "OWNER" : "MEMBER",
+    ownerName: list.user.displayName ?? list.user.email,
+    members: list.members.map((member) => ({
+      userId: member.userId,
+      email: member.user.email,
+      displayName: member.user.displayName,
+    })),
     items: list.items.map((item) => toItemResponse(item, productNames)),
   };
 }
@@ -46,13 +65,19 @@ function toItemResponse(
   };
 }
 
-export function toListSummary(list: ShoppingList & { _count: { items: number } }): ShoppingListSummary {
+export function toListSummary(
+  list: ShoppingList & { user: User; _count: { items: number; members: number } },
+  viewerId: string
+): ShoppingListSummary {
   return {
     id: list.id,
     name: list.name,
     archivedAt: list.archivedAt?.toISOString() ?? null,
     createdAt: list.createdAt.toISOString(),
     updatedAt: list.updatedAt.toISOString(),
+    role: list.userId === viewerId ? "OWNER" : "MEMBER",
+    ownerName: list.user.displayName ?? list.user.email,
+    memberCount: list._count.members,
     itemCount: list._count.items,
   };
 }

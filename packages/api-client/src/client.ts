@@ -16,7 +16,7 @@ export interface DepasoApiClientOptions {
   getAuthToken?: () => string | null | undefined | Promise<string | null | undefined>;
 }
 
-type HttpMethod = "GET" | "POST" | "PATCH" | "DELETE";
+type HttpMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
 /**
  * Cliente HTTP tipado y validado con Zod. Crece a medida que `apps/api` expone más
@@ -52,6 +52,8 @@ export function createApiClient(options: DepasoApiClientOptions) {
       request("GET", path, undefined, responseSchema),
     post: <T extends z.ZodTypeAny>(path: string, body: unknown, responseSchema: T) =>
       request("POST", path, body, responseSchema),
+    put: <T extends z.ZodTypeAny>(path: string, body: unknown, responseSchema: T) =>
+      request("PUT", path, body, responseSchema),
     patch: <T extends z.ZodTypeAny>(path: string, body: unknown, responseSchema: T) =>
       request("PATCH", path, body, responseSchema),
     delete: <T extends z.ZodTypeAny>(path: string, responseSchema: T) =>

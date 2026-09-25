@@ -2,20 +2,20 @@ import { prisma } from "@depaso/database";
 import { shoppingListInputSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
-import { toListResponse, toListSummary } from "@/lib/lists";
+import { listAccessWhere, listInclude, toListResponse, toListSummary } from "@/lib/lists";
 
-/** Listas de compra (Fase 9). `userId` sale siempre de la sesión (sección 81). */
+/** Listas de compra (Fase 9): las propias y las que otros usuarios compartieron. `userId` sale siempre de la sesión (sección 81). */
 export async function GET(request: NextRequest) {
   const current = await getCurrentUser(request);
   if (!current) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
 
   const lists = await prisma.shoppingList.findMany({
-    where: { userId: current.userId },
-    include: { _count: { select: { items: true } } },
+    where: listAccessWhere(current.userId),
+    include: { user: true, _count: { select: { items: true, members: true } } },
     orderBy: { updatedAt: "desc" },
   });
 
-  return NextResponse.json({ lists: lists.map(toListSummary) });
+  return NextResponse.json({ lists: lists.map((list: (typeof lists)[number]) => toListSummary(list, current.userId)) });
 }
 
 export async function POST(request: NextRequest) {
@@ -30,8 +30,8 @@ export async function POST(request: NextRequest) {
 
   const list = await prisma.shoppingList.create({
     data: { ...parsed.data, userId: current.userId },
-    include: { items: true },
+    include: listInclude,
   });
 
-  return NextResponse.json(await toListResponse(list), { status: 201 });
+  return NextResponse.json(await toListResponse(list, current.userId), { status: 201 });
 }
