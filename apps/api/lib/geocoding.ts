@@ -1,5 +1,5 @@
 import type { GeocodingProvider } from "@depaso/domain";
-import { createMapboxGeocodingProvider } from "@depaso/data-sources-mapbox";
+import { createMapboxGeocodingProvider, MAR_DEL_PLATA_SCOPE } from "@depaso/data-sources-mapbox";
 
 /**
  * Resuelve el `GeocodingProvider` real desde `MAPBOX_ACCESS_TOKEN` (Fase 28, ver
@@ -10,5 +10,5 @@ import { createMapboxGeocodingProvider } from "@depaso/data-sources-mapbox";
 export function getGeocodingProvider(): GeocodingProvider | null {
   const token = process.env.MAPBOX_ACCESS_TOKEN;
   if (!token) return null;
-  return createMapboxGeocodingProvider(token);
+  return createMapboxGeocodingProvider(token, MAR_DEL_PLATA_SCOPE);
 }

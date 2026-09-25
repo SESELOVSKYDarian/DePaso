@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createMapboxGeocodingProvider, MapboxGeocodingError } from "./geocoding";
+import { createMapboxGeocodingProvider, MapboxGeocodingError, MAR_DEL_PLATA_SCOPE } from "./geocoding";
 
 // Forma real de la respuesta de Mapbox Geocoding v6 (confirmado contra la documentación
 // oficial) — no un fixture inventado al azar.
@@ -65,5 +65,29 @@ describe("createMapboxGeocodingProvider", () => {
 
     const provider = createMapboxGeocodingProvider("pk.invalid");
     await expect(provider.geocode("cualquier dirección")).rejects.toThrow(/401/);
+  });
+
+  it("geocode con alcance Mar del Plata: agrega la localidad y limita por bbox/country", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => REAL_SHAPE_FORWARD_RESPONSE });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const provider = createMapboxGeocodingProvider("pk.test-token", MAR_DEL_PLATA_SCOPE);
+    await provider.geocode("Colón 2500");
+
+    const url = String(fetchMock.mock.calls[0]?.[0]);
+    expect(decodeURIComponent(url)).toContain("Colón 2500, Mar del Plata, Buenos Aires");
+    expect(url).toContain("bbox=");
+    expect(url).toContain("country=ar");
+    expect(url).toContain("proximity=");
+  });
+
+  it("geocode con alcance Mar del Plata: no duplica la localidad si el usuario ya la escribió", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => REAL_SHAPE_FORWARD_RESPONSE });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const provider = createMapboxGeocodingProvider("pk.test-token", MAR_DEL_PLATA_SCOPE);
+    await provider.geocode("Colón 2500, Mar del Plata");
+
+    expect(decodeURIComponent(String(fetchMock.mock.calls[0]?.[0]))).not.toContain("Mar del Plata, Buenos Aires");
   });
 });
