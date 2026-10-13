@@ -1,33 +1,65 @@
+import nodemailer from "nodemailer";
+
 /**
- * Envío de mails transaccionales vía Resend (https://resend.com), por HTTP.
- * Requiere `RESEND_API_KEY` y `EMAIL_FROM` (por ejemplo `DePaso <no-reply@tudominio.com>`,
- * con el dominio verificado en Resend). Sin ellas `sendEmail` devuelve `not_configured`.
+ * Envío de mails transaccionales por SMTP (nodemailer).
+ *
+ * Variables: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` y opcional
+ * `SMTP_SECURE` (`true` para TLS directo, típico del puerto 465). Sin ellas `sendEmail`
+ * devuelve `not_configured`.
  */
 export type SendEmailResult = "sent" | "not_configured" | "failed";
 
+interface SmtpConfig {
+  host: string;
+  port: number;
+  secure: boolean;
+  user: string;
+  pass: string;
+  from: string;
+}
+
+function readConfig(): SmtpConfig | null {
+  const host = process.env.SMTP_HOST?.trim();
+  const user = process.env.SMTP_USER?.trim();
+  const pass = process.env.SMTP_PASS;
+  if (!host || !user || !pass) return null;
+
+  const port = Number(process.env.SMTP_PORT ?? 465) || 465;
+  const secureEnv = process.env.SMTP_SECURE?.trim().toLowerCase();
+  const secure = secureEnv ? secureEnv === "true" : port === 465;
+  const from = process.env.SMTP_FROM?.trim() || user;
+  return { host, port, secure, user, pass, from };
+}
+
 export function isEmailConfigured(): boolean {
-  return Boolean(process.env.RESEND_API_KEY && process.env.EMAIL_FROM);
+  return readConfig() !== null;
 }
 
 export async function sendEmail(input: { to: string; subject: string; html: string; text: string }): Promise<SendEmailResult> {
-  const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.EMAIL_FROM;
-  if (!apiKey || !from) return "not_configured";
+  const config = readConfig();
+  if (!config) return "not_configured";
+
+  const transporter = nodemailer.createTransport({
+    host: config.host,
+    port: config.port,
+    secure: config.secure,
+    auth: { user: config.user, pass: config.pass },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
+  });
 
   try {
-    const response = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from, to: [input.to], subject: input.subject, html: input.html, text: input.text }),
-      signal: AbortSignal.timeout(10000),
+    await transporter.sendMail({
+      from: config.from,
+      to: input.to,
+      subject: input.subject,
+      text: input.text,
+      html: input.html,
     });
-    if (!response.ok) {
-      console.error("resend rejected email", response.status, await response.text().catch(() => ""));
-      return "failed";
-    }
     return "sent";
   } catch (error) {
-    console.error("resend request failed", error);
+    console.error("smtp send failed", error);
     return "failed";
   }
 }

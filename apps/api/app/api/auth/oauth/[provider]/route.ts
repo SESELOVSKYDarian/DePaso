@@ -38,6 +38,11 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
   }
   const { code, redirectUri, codeVerifier, consent } = parsed.data;
 
+  // La app sólo puede usar el callback de este mismo servidor (ver `oauth/callback`).
+  if (redirectUri !== `${request.nextUrl.origin}/api/auth/oauth/callback`) {
+    return NextResponse.json({ error: "INVALID_REDIRECT_URI" }, { status: 400 });
+  }
+
   let profile;
   try {
     profile = await exchangeCodeForProfile(providerId.data, { code, redirectUri, codeVerifier });

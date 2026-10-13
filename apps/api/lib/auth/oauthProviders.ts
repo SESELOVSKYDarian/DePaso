@@ -18,8 +18,9 @@ export interface OAuthProfile {
 interface ProviderDefinition {
   id: OAuthProviderId;
   label: string;
-  clientIdEnv: string;
-  clientSecretEnv: string;
+  /** Nombres de variable aceptados, en orden de preferencia. */
+  clientIdEnv: string[];
+  clientSecretEnv: string[];
   /** Google acepta clientes públicos (iOS/Android) sin secret; el resto lo exige. */
   secretRequired: boolean;
   authorizationEndpoint: string;
@@ -73,8 +74,8 @@ function codeParams(input: ExchangeInput): Record<string, string> {
 const google: ProviderDefinition = {
   id: "google",
   label: "Google",
-  clientIdEnv: "GOOGLE_CLIENT_ID",
-  clientSecretEnv: "GOOGLE_CLIENT_SECRET",
+  clientIdEnv: ["GOOGLE_CLIENT_ID"],
+  clientSecretEnv: ["GOOGLE_CLIENT_SECRET"],
   secretRequired: false,
   authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
   scopes: ["openid", "email", "profile"],
@@ -100,8 +101,8 @@ const google: ProviderDefinition = {
 const facebook: ProviderDefinition = {
   id: "facebook",
   label: "Meta",
-  clientIdEnv: "META_APP_ID",
-  clientSecretEnv: "META_APP_SECRET",
+  clientIdEnv: ["META_APP_ID", "FACEBOOK_APP_ID"],
+  clientSecretEnv: ["META_APP_SECRET", "FACEBOOK_APP_SECRET"],
   secretRequired: true,
   authorizationEndpoint: "https://www.facebook.com/v19.0/dialog/oauth",
   scopes: ["email", "public_profile"],
@@ -128,8 +129,8 @@ const facebook: ProviderDefinition = {
 const discord: ProviderDefinition = {
   id: "discord",
   label: "Discord",
-  clientIdEnv: "DISCORD_CLIENT_ID",
-  clientSecretEnv: "DISCORD_CLIENT_SECRET",
+  clientIdEnv: ["DISCORD_CLIENT_ID"],
+  clientSecretEnv: ["DISCORD_CLIENT_SECRET"],
   secretRequired: true,
   authorizationEndpoint: "https://discord.com/oauth2/authorize",
   scopes: ["identify", "email"],
@@ -169,8 +170,9 @@ export function listProviders() {
 }
 
 function readCredentials(provider: ProviderDefinition): { clientId: string; clientSecret: string | null } | null {
-  const clientId = process.env[provider.clientIdEnv]?.trim();
-  const clientSecret = process.env[provider.clientSecretEnv]?.trim() || null;
+  const firstSet = (names: string[]) => names.map((name) => process.env[name]?.trim()).find(Boolean);
+  const clientId = firstSet(provider.clientIdEnv);
+  const clientSecret = firstSet(provider.clientSecretEnv) || null;
   if (!clientId) return null;
   if (provider.secretRequired && !clientSecret) return null;
   return { clientId, clientSecret };
