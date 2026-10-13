@@ -72,10 +72,21 @@ export type OAuthLoginRequest = z.infer<typeof oauthLoginRequestSchema>;
 export const forgotPasswordRequestSchema = z.object({ email: emailSchema });
 export type ForgotPasswordRequest = z.infer<typeof forgotPasswordRequestSchema>;
 
-export const resetPasswordRequestSchema = z.object({
+/** Largo del código de recuperación que llega por mail (8 dígitos). */
+export const RESET_CODE_LENGTH = 8;
+
+const resetByTokenSchema = z.object({
+  /** Link del mail: abre la página web de cambio de contraseña. */
   token: z.string().min(10),
   password: passwordSchema,
 });
+const resetByCodeSchema = z.object({
+  /** Código del mail, escrito dentro de la app (no hace falta salir). */
+  email: emailSchema,
+  code: z.string().regex(/^\d{8}$/),
+  password: passwordSchema,
+});
+export const resetPasswordRequestSchema = z.union([resetByTokenSchema, resetByCodeSchema]);
 export type ResetPasswordRequest = z.infer<typeof resetPasswordRequestSchema>;
 
 export const updateProfileRequestSchema = z.object({
