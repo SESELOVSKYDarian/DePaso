@@ -109,6 +109,7 @@ function RootNavigator() {
         />
         <Stack.Screen name="payment-methods" options={{ headerShown: true, title: "Métodos de pago" }} />
         <Stack.Screen name="appearance" options={{ headerShown: true, title: "Apariencia" }} />
+        <Stack.Screen name="help" options={{ headerShown: true, title: "Ayuda" }} />
         <Stack.Screen name="merchant/request" options={{ headerShown: true, title: "Quiero ser comercio" }} />
         <Stack.Screen name="merchant/index" options={{ headerShown: true, title: "Mi comercio" }} />
         <Stack.Screen

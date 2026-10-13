@@ -73,7 +73,7 @@ export default function RegisterEmailScreen() {
         acceptPrivacyNotice: true,
         marketingOptIn,
       });
-      router.replace("/(setup)/verify-email");
+      router.replace("/(setup)/location");
     } catch (err) {
       setError(registerErrorMessage(err));
     } finally {

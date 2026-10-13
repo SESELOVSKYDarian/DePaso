@@ -33,7 +33,7 @@ export default function PlacesSetupScreen() {
   const styles = useStyles();
   const { places } = usePlaces();
 
-  const goNext = () => router.push("/(setup)/interests");
+  const goNext = () => router.push("/(setup)/done");
 
   return (
     <SafeAreaView style={styles.container} edges={["top", "bottom"]}>

@@ -29,6 +29,55 @@ export const loginRequestSchema = z.object({
 });
 export type LoginRequest = z.infer<typeof loginRequestSchema>;
 
+/** Proveedores de login social soportados. */
+export const oauthProviderIdSchema = z.enum(["google", "facebook", "discord"]);
+export type OAuthProviderId = z.infer<typeof oauthProviderIdSchema>;
+
+/** Qué proveedores tiene activados el servidor y los datos públicos para iniciar el flujo. */
+export const oauthProvidersResponseSchema = z.object({
+  providers: z.array(
+    z.object({
+      id: oauthProviderIdSchema,
+      label: z.string(),
+      configured: z.boolean(),
+      /** Sólo presente si `configured`; el client id es público por diseño de OAuth. */
+      clientId: z.string().nullable(),
+      authorizationEndpoint: z.string(),
+      scopes: z.array(z.string()),
+    })
+  ),
+});
+export type OAuthProvidersResponse = z.infer<typeof oauthProvidersResponseSchema>;
+
+/**
+ * Canje del `code` de OAuth (PKCE). El secreto del proveedor vive sólo en el servidor.
+ * `consent` es obligatorio únicamente si la cuenta no existe todavía: mismo requisito legal
+ * que el registro con email (mayoría de edad + términos + privacidad).
+ */
+export const oauthLoginRequestSchema = z.object({
+  code: z.string().min(1),
+  redirectUri: z.string().url().or(z.string().regex(/^[a-z][a-z0-9+.-]*:\/\//i)),
+  codeVerifier: z.string().min(16),
+  consent: z
+    .object({
+      ageConfirmed18Plus: z.literal(true),
+      acceptTerms: z.literal(true),
+      acceptPrivacyNotice: z.literal(true),
+      marketingOptIn: z.boolean().default(false),
+    })
+    .optional(),
+});
+export type OAuthLoginRequest = z.infer<typeof oauthLoginRequestSchema>;
+
+export const forgotPasswordRequestSchema = z.object({ email: emailSchema });
+export type ForgotPasswordRequest = z.infer<typeof forgotPasswordRequestSchema>;
+
+export const resetPasswordRequestSchema = z.object({
+  token: z.string().min(10),
+  password: passwordSchema,
+});
+export type ResetPasswordRequest = z.infer<typeof resetPasswordRequestSchema>;
+
 export const updateProfileRequestSchema = z.object({
   displayName: z.string().trim().min(1).max(80).nullable().optional(),
   marketingOptIn: z.boolean().optional(),
@@ -51,5 +100,7 @@ export const authResponseSchema = z.object({
   user: authUserResponseSchema,
   token: z.string(),
   expiresAt: z.string(),
+  /** Sólo en login social: `true` si esta llamada creó la cuenta (dispara el setup inicial). */
+  isNewAccount: z.boolean().optional(),
 });
 export type AuthResponse = z.infer<typeof authResponseSchema>;

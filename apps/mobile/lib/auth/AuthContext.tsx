@@ -1,4 +1,10 @@
-import type { AuthUserResponse, LoginRequest, RegisterRequest } from "@depaso/validation";
+import type {
+  AuthUserResponse,
+  LoginRequest,
+  OAuthLoginRequest,
+  OAuthProviderId,
+  RegisterRequest,
+} from "@depaso/validation";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { authClient } from "../apiClient";
 import {
@@ -24,6 +30,8 @@ interface AuthContextValue {
   completePostSignup: () => void;
   register: (body: RegisterRequest) => Promise<void>;
   login: (body: LoginRequest) => Promise<void>;
+  /** Login/alta con Google, Meta o Discord. Si es una cuenta nueva corre el setup inicial. */
+  loginWithOAuth: (provider: OAuthProviderId, body: OAuthLoginRequest) => Promise<void>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   deleteAccount: () => Promise<void>;
@@ -84,6 +92,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(result.user);
   }, []);
 
+  const loginWithOAuth = useCallback(async (provider: OAuthProviderId, body: OAuthLoginRequest) => {
+    const result = await authClient.oauthLogin(provider, body);
+    await setStoredToken(result.token);
+    setPostSignupDone(!result.isNewAccount);
+    setUser(result.user);
+  }, []);
+
   const logout = useCallback(async () => {
     try {
       await authClient.logout();
@@ -119,6 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       completePostSignup,
       register,
       login,
+      loginWithOAuth,
       logout,
       refreshUser,
       deleteAccount,
@@ -132,6 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       completePostSignup,
       register,
       login,
+      loginWithOAuth,
       logout,
       refreshUser,
       deleteAccount,

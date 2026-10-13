@@ -1,15 +1,14 @@
 import { ApiError } from "@depaso/api-client";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles } from "@/lib/theme";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AuthHero } from "@/components/AuthHero";
 import { Button } from "@/components/Button";
 import { PillInput } from "@/components/PillInput";
-import { SocialButton } from "@/components/SocialButton";
-import { useToast } from "@/components/Toast";
+import { SocialAuthButtons } from "@/components/SocialAuthButtons";
 import { useAuth } from "@/lib/auth/AuthContext";
 
 function loginErrorMessage(error: unknown): string {
@@ -25,7 +24,6 @@ function loginErrorMessage(error: unknown): string {
 export default function LoginScreen() {
   const styles = useStyles();
   const { login } = useAuth();
-  const { show: showToast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -46,10 +44,6 @@ export default function LoginScreen() {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleSocial = (provider: "Google" | "Apple") => {
-    showToast(`Ingresar con ${provider} todavía no está conectado (falta configurar credenciales OAuth).`, "info");
   };
 
   return (
@@ -78,7 +72,7 @@ export default function LoginScreen() {
           <Button
             label="Olvidé mi contraseña"
             variant="ghost"
-            onPress={() => showToast("Recuperar contraseña todavía no está disponible.", "info")}
+            onPress={() => router.push({ pathname: "/(auth)/forgot-password", params: email.trim() ? { email: email.trim() } : {} })}
             style={styles.forgotButton}
           />
 
@@ -97,10 +91,7 @@ export default function LoginScreen() {
             <View style={styles.dividerLine} />
           </View>
 
-          <View style={styles.socialGroup}>
-            <SocialButton provider="google" onPress={() => handleSocial("Google")} />
-            <SocialButton provider="apple" onPress={() => handleSocial("Apple")} />
-          </View>
+          <SocialAuthButtons mode="login" />
 
           <Link href="/(auth)/register" style={styles.link}>
             ¿No tenés cuenta? Registrate
@@ -152,9 +143,6 @@ const useStyles = makeStyles((colors) => StyleSheet.create({
     fontFamily: typography.caption.fontFamily,
     fontSize: 13,
     color: colors.text.muted,
-  },
-  socialGroup: {
-    gap: spacing.sm,
   },
   link: {
     marginTop: spacing.xl,

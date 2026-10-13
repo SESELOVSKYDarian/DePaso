@@ -24,8 +24,7 @@ function initials(name: string | null, email: string): string {
 /**
  * Perfil (depaso-perfil en Figma). Las filas se agrupan por tema en un solo bloque cada una.
  * La sección según rol muestra lo que corresponde: administración, comercio o la opción de
- * pedir ser comercio. "Notificaciones" y "Ayuda" todavía no tienen pantalla: lo dicen en la
- * propia fila en vez de sorprender con un aviso al tocarlas.
+ * pedir ser comercio.
  */
 export default function ProfileScreen() {
   const styles = useStyles();
@@ -69,8 +68,6 @@ export default function ProfileScreen() {
       )
       .catch(() => showToast("No pudimos actualizar las promos.", "error"));
   };
-
-  const soon = (label: string) => showToast(`${label} llega en una próxima versión.`, "info");
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -156,19 +153,8 @@ export default function ProfileScreen() {
             value={mode === "system" ? "Automático" : mode === "dark" ? "Oscuro" : "Claro"}
             onPress={() => router.push("/appearance")}
           />
-          <GroupedRow
-            icon="notifications-outline"
-            label="Notificaciones"
-            value="Próximamente"
-            onPress={() => soon("Notificaciones")}
-          />
           <GroupedRow icon="lock-closed-outline" label="Privacidad y datos" onPress={() => router.push("/privacy")} />
-          <GroupedRow
-            icon="help-circle-outline"
-            label="Ayuda"
-            value="Próximamente"
-            onPress={() => soon("Ayuda")}
-          />
+          <GroupedRow icon="help-circle-outline" label="Ayuda" onPress={() => router.push("/help")} />
         </GroupedList>
 
         <GroupedList>

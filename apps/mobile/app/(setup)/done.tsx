@@ -8,7 +8,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { useAuth } from "@/lib/auth/AuthContext";
 
-const CHECKLIST = ["Perfil verificado", "Lugares guardados", "Preferencias listas"] as const;
+const CHECKLIST = ["Cuenta creada", "Lugares a mano", "Listo para ahorrar de paso"] as const;
 
 /** Cierre del setup (depaso-listo en Figma). `completePostSignup()` flipea el guard raíz,
  * pero desde que `places/*` quedó alcanzable también durante el setup (bug real: "Agregar
