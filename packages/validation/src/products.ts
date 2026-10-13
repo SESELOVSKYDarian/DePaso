@@ -23,6 +23,8 @@ export const productSearchResultSchema = z.object({
   name: z.string(),
   category: z.string(),
   brandName: z.string().nullable(),
+  /** Foto frontal (Open Food Facts) si se consiguió; `null` → la app muestra un ícono. */
+  imageUrl: z.string().nullable().optional(),
   variants: z.array(productVariantSummarySchema),
 });
 export type ProductSearchResult = z.infer<typeof productSearchResultSchema>;

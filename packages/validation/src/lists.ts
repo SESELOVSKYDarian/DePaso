@@ -34,6 +34,8 @@ export const shoppingListItemResponseSchema = z.object({
   id: z.string(),
   productId: z.string(),
   productName: z.string(),
+  brandName: z.string().nullable().optional(),
+  imageUrl: z.string().nullable().optional(),
   category: z.string(),
   quantity: z.number(),
   note: z.string().nullable(),

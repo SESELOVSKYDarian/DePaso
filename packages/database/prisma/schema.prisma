@@ -306,6 +306,10 @@ model Product {
   /// matching tolerante a variaciones sin depender sólo de EAN.
   normalizedName String?
   category String
+  /// Foto frontal (Open Food Facts, resuelta por EAN a demanda desde la búsqueda). `null` +
+  /// `imageCheckedAt` seteado = ya se buscó y no hay foto; no se vuelve a pedir por un tiempo.
+  imageUrl       String?
+  imageCheckedAt DateTime?
   variants ProductVariant[]
   preferences ProductPreference[]
 

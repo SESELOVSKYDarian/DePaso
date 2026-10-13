@@ -1,6 +1,7 @@
 import { prisma } from "@depaso/database";
 import type { ShoppingList, ShoppingListItem, ShoppingListMember, User } from "@depaso/database";
 import type { ShoppingListItemResponse, ShoppingListResponse, ShoppingListSummary } from "@depaso/validation";
+import { prettifyBrandName, prettifyProductName } from "./productNames";
 
 /** Relaciones que necesita `toListResponse` (dueño y miembros con su usuario). */
 export const listInclude = { items: true, user: true, members: { include: { user: true } } } as const;
@@ -21,13 +22,30 @@ export function listAccessWhere(userId: string) {
  * agrega listas sobre el catálogo ya modelado en Fase 8) — se resuelve el nombre/categoría
  * con una consulta aparte en vez de forzar una FK que el schema original no declaró.
  */
-async function loadProductNames(productIds: string[]): Promise<Map<string, { name: string; category: string }>> {
+interface ListProductInfo {
+  name: string;
+  category: string;
+  brandName: string | null;
+  imageUrl: string | null;
+}
+
+async function loadProductNames(productIds: string[]): Promise<Map<string, ListProductInfo>> {
   if (productIds.length === 0) return new Map();
   const products = await prisma.product.findMany({
     where: { id: { in: productIds } },
-    select: { id: true, name: true, category: true },
+    select: { id: true, name: true, category: true, imageUrl: true, brand: { select: { name: true } } },
   });
-  return new Map(products.map((p: (typeof products)[number]) => [p.id, { name: p.name, category: p.category }]));
+  return new Map(
+    products.map((p: (typeof products)[number]) => [
+      p.id,
+      {
+        name: prettifyProductName(p.name),
+        category: p.category,
+        brandName: prettifyBrandName(p.brand?.name),
+        imageUrl: p.imageUrl,
+      },
+    ])
+  );
 }
 
 export async function toListResponse(list: ListWithItems, viewerId: string): Promise<ShoppingListResponse> {
@@ -52,13 +70,15 @@ export async function toListResponse(list: ListWithItems, viewerId: string): Pro
 
 function toItemResponse(
   item: ShoppingListItem,
-  productNames: Map<string, { name: string; category: string }>
+  productNames: Map<string, ListProductInfo>
 ): ShoppingListItemResponse {
   const product = productNames.get(item.productId);
   return {
     id: item.id,
     productId: item.productId,
     productName: product?.name ?? "Producto no encontrado",
+    brandName: product?.brandName ?? null,
+    imageUrl: product?.imageUrl ?? null,
     category: product?.category ?? "",
     quantity: item.quantity,
     note: item.note,
