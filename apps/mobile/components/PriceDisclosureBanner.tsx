@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
-import { colors, radii, spacing, typography } from "@depaso/design-tokens";
+import { radii, spacing, typography } from "@depaso/design-tokens";
+import { makeStyles } from "@/lib/theme";
 import { PRICE_DISCLOSURE_NOTICE } from "@/lib/priceDisclosure";
 
 /**
@@ -9,6 +10,7 @@ import { PRICE_DISCLOSURE_NOTICE } from "@/lib/priceDisclosure";
  * por ítem sería ruido, no protección real para el usuario.
  */
 export function PriceDisclosureBanner() {
+  const styles = useStyles();
   return (
     <View style={styles.banner}>
       <Text style={styles.text}>{PRICE_DISCLOSURE_NOTICE}</Text>
@@ -16,7 +18,7 @@ export function PriceDisclosureBanner() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   banner: {
     backgroundColor: colors.tint.amber.bg,
     borderRadius: radii.lg,
@@ -28,4 +30,4 @@ const styles = StyleSheet.create({
     lineHeight: 17,
     color: colors.tint.amber.text,
   },
-});
+}));

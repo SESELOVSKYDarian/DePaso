@@ -1,4 +1,4 @@
-import { colors } from "@depaso/design-tokens";
+import type { ColorTokens } from "@depaso/design-tokens";
 
 export interface RouteMapWaypoint {
   latitude: number;
@@ -12,6 +12,10 @@ export interface BuildRouteMapHtmlOptions {
    * que `MockRouteProvider`, sección 67). */
   polyline: string | null;
   mapboxToken: string;
+  /** Paleta del tema activo: pines y ruta toman los colores de marca del esquema. */
+  colors: ColorTokens;
+  /** Estilo de mapa oscuro cuando la app está en modo oscuro. */
+  isDark?: boolean;
 }
 
 const MAPBOX_GL_VERSION = "3.7.0";
@@ -26,7 +30,8 @@ const MAPBOX_GL_CSS_INTEGRITY = "sha384-GTsgKcJXGSkBp0M68qpxkz9XovzVH0PwSrjYONvk
  * nativa) como por `RouteMapView.web` (`iframe`, porque `react-native-webview` no tiene
  * build para web). Sin lógica de React/RN acá para poder compartirlo entre ambas.
  */
-export function buildRouteMapHtml({ waypoints, polyline, mapboxToken }: BuildRouteMapHtmlOptions): string {
+export function buildRouteMapHtml({ waypoints, polyline, mapboxToken, colors, isDark = false }: BuildRouteMapHtmlOptions): string {
+  const mapStyle = isDark ? "mapbox://styles/mapbox/dark-v11" : "mapbox://styles/mapbox/streets-v12";
   const waypointsJson = JSON.stringify(waypoints.map((w) => ({ lat: w.latitude, lng: w.longitude })));
   const polylineJson = JSON.stringify(polyline);
 
@@ -81,7 +86,7 @@ export function buildRouteMapHtml({ waypoints, polyline, mapboxToken }: BuildRou
 
   const map = new mapboxgl.Map({
     container: "map",
-    style: "mapbox://styles/mapbox/streets-v12",
+    style: ${JSON.stringify(mapStyle)},
     center: [waypoints[0].lng, waypoints[0].lat],
     zoom: 13,
   });

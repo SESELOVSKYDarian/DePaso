@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
-import { colors, typography } from "@depaso/design-tokens";
+import { typography } from "@depaso/design-tokens";
+import { useColors } from "@/lib/theme";
 
 /**
  * Bottom navigation (sección 72 del master prompt): Inicio / Listas / Mapa / Actividad /
@@ -8,6 +9,7 @@ import { colors, typography } from "@depaso/design-tokens";
  * trabajo de las fases 6-19 (ver docs/development/IMPLEMENTATION-PLAN.md).
  */
 export default function TabsLayout() {
+  const colors = useColors();
   return (
     <Tabs
       screenOptions={{

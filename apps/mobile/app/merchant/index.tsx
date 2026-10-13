@@ -1,5 +1,6 @@
 import type { MerchantBranchResponse, MerchantPriceResponse } from "@depaso/validation";
-import { colors, radii, spacing, typography } from "@depaso/design-tokens";
+import { radii, spacing, typography } from "@depaso/design-tokens";
+import { makeStyles, useColors } from "@/lib/theme";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from "react-native";
@@ -15,6 +16,8 @@ function formatPrice(value: number): string {
 
 /** Panel del comercio: su sucursal y los productos/precios que publica. */
 export default function MerchantHomeScreen() {
+  const colors = useColors();
+  const styles = useStyles();
   const { show: showToast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [branch, setBranch] = useState<MerchantBranchResponse | null>(null);
@@ -94,7 +97,7 @@ export default function MerchantHomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.surface.base, padding: spacing.lg, gap: spacing.md },
   center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.surface.base },
   branchCard: {
@@ -121,4 +124,4 @@ const styles = StyleSheet.create({
   rowName: { fontFamily: typography.body.fontFamily, fontWeight: "600", fontSize: 15, color: colors.text.primary },
   rowMeta: { fontFamily: typography.caption.fontFamily, fontSize: 12, color: colors.text.muted, marginTop: 1 },
   rowPrice: { fontFamily: typography.itemTitle.fontFamily, fontSize: 15, color: colors.text.primary },
-});
+}));

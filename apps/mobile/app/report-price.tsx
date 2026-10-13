@@ -2,7 +2,8 @@ import { ApiError } from "@depaso/api-client";
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
-import { colors, radii, spacing, typography } from "@depaso/design-tokens";
+import { radii, spacing, typography } from "@depaso/design-tokens";
+import { makeStyles } from "@/lib/theme";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { Checkbox } from "@/components/Checkbox";
 import { FormField } from "@/components/FormField";
@@ -16,6 +17,7 @@ import { useToast } from "@/components/Toast";
  * anti-fraude) al recibir el reporte.
  */
 export default function ReportPriceScreen() {
+  const styles = useStyles();
   const { productVariantId, storeBranchId, productName, storeName, currentPrice } = useLocalSearchParams<{
     productVariantId: string;
     storeBranchId: string;
@@ -142,7 +144,7 @@ export default function ReportPriceScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.surface.base },
   content: { padding: spacing.lg, gap: spacing.md },
   header: { gap: spacing.xxs },
@@ -161,4 +163,4 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   submitLabel: { fontFamily: typography.title.fontFamily, fontWeight: "600", fontSize: 16, color: colors.text.onNavy },
-});
+}));

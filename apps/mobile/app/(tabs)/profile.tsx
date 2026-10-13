@@ -1,10 +1,10 @@
-import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { colors, radii, spacing, typography } from "@depaso/design-tokens";
-import { AnimatedPressable } from "@/components/AnimatedPressable";
+import { radii, spacing, typography } from "@depaso/design-tokens";
+import { makeStyles, useTheme } from "@/lib/theme";
+import { GroupedList, GroupedRow } from "@/components/GroupedList";
 import { useToast } from "@/components/Toast";
 import { adminMerchantClient, paymentsClient, preferencesClient } from "@/lib/apiClient";
 import { useAuth } from "@/lib/auth/AuthContext";
@@ -21,16 +21,21 @@ function initials(name: string | null, email: string): string {
   return email[0]?.toUpperCase() ?? "?";
 }
 
-/** Perfil (depaso-perfil en Figma). "Métodos de pago" no tiene backend (no hay concepto de
- * medio de pago en el schema) — queda con el mismo patrón de toast que `SocialButton`, sin
- * un conteo inventado (antes decía "2 tarjetas" fijo — encontrado real probando el flujo
- * completo, mismo criterio que la corrección de `activity.tsx`). "Mis lugares guardados",
- * "Mis marcas y comercios preferidos" (Fase 10) y "Cerrar sesión" sí son reales. */
+/**
+ * Perfil (depaso-perfil en Figma). Las filas se agrupan por tema en un solo bloque cada una.
+ * La sección según rol muestra lo que corresponde: administración, comercio o la opción de
+ * pedir ser comercio. "Notificaciones" y "Ayuda" todavía no tienen pantalla: lo dicen en la
+ * propia fila en vez de sorprender con un aviso al tocarlas.
+ */
 export default function ProfileScreen() {
+  const styles = useStyles();
   const { user, logout, isAuthenticated, refreshUser } = useAuth();
+  const { mode } = useTheme();
   const { places } = usePlaces();
   const { show: showToast } = useToast();
   const [productPreferenceCount, setProductPreferenceCount] = useState(0);
+  const [pendingMerchantRequests, setPendingMerchantRequests] = useState(0);
+  const role = user?.role;
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -39,9 +44,6 @@ export default function ProfileScreen() {
       .then(({ preferences }) => setProductPreferenceCount(preferences.length))
       .catch(() => setProductPreferenceCount(0));
   }, [isAuthenticated]);
-
-  const [pendingMerchantRequests, setPendingMerchantRequests] = useState(0);
-  const role = user?.role;
 
   // Al volver a esta pestaña se refresca el rol (por si un admin aprobó la solicitud) y,
   // si es admin, el contador de solicitudes de comercio pendientes.
@@ -58,142 +60,132 @@ export default function ProfileScreen() {
     }, [isAuthenticated, role, refreshUser])
   );
 
-  const notReady =(label: string) => showToast(`${label} todavía no está disponible.`, "info");
+  const handleSyncPromos = () => {
+    showToast("Actualizando promos de bancos y billeteras...", "info");
+    paymentsClient
+      .syncPromos()
+      .then(({ accepted, discarded }) =>
+        showToast(`${accepted} promos válidas cargadas, ${discarded} descartadas.`, "success")
+      )
+      .catch(() => showToast("No pudimos actualizar las promos.", "error"));
+  };
+
+  const soon = (label: string) => showToast(`${label} llega en una próxima versión.`, "info");
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      <ScrollView contentContainerStyle={styles.content}>
-        <View style={styles.headerRow}>
-          <Text style={styles.title}>Mi perfil</Text>
-          <AnimatedPressable accessibilityLabel="Configuración" haptic={false} onPress={() => notReady("Configuración")} style={styles.settingsButton}>
-            <Ionicons name="settings-outline" size={22} color={colors.text.primary} />
-          </AnimatedPressable>
-        </View>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <Text accessibilityRole="header" style={styles.title}>
+          Mi perfil
+        </Text>
 
-        <AnimatedPressable accessibilityLabel="Editar perfil" haptic={false} onPress={() => notReady("Editar perfil")} style={styles.userCard}>
+        <View style={styles.userCard}>
           <View style={styles.avatar}>
             <Text style={styles.avatarLabel}>{initials(user?.displayName ?? null, user?.email ?? "")}</Text>
           </View>
           <View style={styles.userText}>
-            <Text style={styles.userName}>{user?.displayName ?? "Sin nombre"}</Text>
-            <Text style={styles.userEmail}>{user?.email}</Text>
+            <Text style={styles.userName} numberOfLines={1}>
+              {user?.displayName ?? "Sin nombre"}
+            </Text>
+            <Text style={styles.userEmail} numberOfLines={1}>
+              {user?.email}
+            </Text>
           </View>
-          <Ionicons name="chevron-forward" size={16} color={colors.text.secondary} />
-        </AnimatedPressable>
+        </View>
 
-        <Text style={styles.sectionTitle}>Mis preferencias</Text>
-        <View style={styles.section}>
-          <ProfileRow
+        <GroupedList title="Mis preferencias">
+          <GroupedRow
             icon="pricetag-outline"
-            label="Mis marcas y comercios preferidos"
+            label="Marcas y comercios"
             value={`${productPreferenceCount} ${productPreferenceCount === 1 ? "producto" : "productos"}`}
             onPress={() => router.push("/preferences")}
           />
-          <ProfileRow
+          <GroupedRow
             icon="location-outline"
-            label="Mis lugares guardados"
+            label="Lugares guardados"
             value={`${places.length} ${places.length === 1 ? "lugar" : "lugares"}`}
             onPress={() => router.push("/places")}
           />
-          <ProfileRow
+          <GroupedRow
             icon="card-outline"
             label="Métodos de pago"
             onPress={() => router.push("/payment-methods")}
           />
-        </View>
+        </GroupedList>
 
         {role === "ADMIN" ? (
-          <>
-            <Text style={[styles.sectionTitle, styles.sectionSpacing]}>Administración</Text>
-            <View style={styles.section}>
-              <ProfileRow
-                icon="storefront-outline"
-                label="Solicitudes de comercio"
-                value={pendingMerchantRequests > 0 ? `${pendingMerchantRequests} pendientes` : "Sin pendientes"}
-                onPress={() => router.push("/admin/merchant-requests")}
-              />
-              <ProfileRow
-                icon="pricetags-outline"
-                label="Actualizar promos de bancos y billeteras"
-                onPress={() => {
-                  showToast("Actualizando promos...", "info");
-                  paymentsClient
-                    .syncPromos()
-                    .then(({ accepted, discarded }) => showToast(`Promos actualizadas: ${accepted} válidas, ${discarded} descartadas.`, "success"))
-                    .catch(() => showToast("No pudimos actualizar las promos.", "error"));
-                }}
-              />
-            </View>
-          </>
+          <GroupedList title="Administración">
+            <GroupedRow
+              icon="storefront-outline"
+              label="Solicitudes de comercio"
+              {...(pendingMerchantRequests > 0 ? { value: `${pendingMerchantRequests} pendientes` } : {})}
+              onPress={() => router.push("/admin/merchant-requests")}
+            />
+            <GroupedRow
+              icon="pricetags-outline"
+              label="Actualizar promos de bancos y billeteras"
+              onPress={handleSyncPromos}
+            />
+          </GroupedList>
         ) : null}
 
         {role === "MERCHANT" ? (
-          <>
-            <Text style={[styles.sectionTitle, styles.sectionSpacing]}>Mi comercio</Text>
-            <View style={styles.section}>
-              <ProfileRow
-                icon="storefront-outline"
-                label="Mis productos y precios"
-                onPress={() => router.push("/merchant")}
-              />
-            </View>
-          </>
+          <GroupedList title="Mi comercio">
+            <GroupedRow
+              icon="storefront-outline"
+              label="Mis productos y precios"
+              onPress={() => router.push("/merchant")}
+            />
+          </GroupedList>
         ) : null}
 
         {role === "USER" ? (
-          <>
-            <Text style={[styles.sectionTitle, styles.sectionSpacing]}>Comercios</Text>
-            <View style={styles.section}>
-              <ProfileRow
-                icon="storefront-outline"
-                label="Quiero ser comercio"
-                onPress={() => router.push("/merchant/request")}
-              />
-            </View>
-          </>
+          <GroupedList title="Comercios">
+            <GroupedRow
+              icon="storefront-outline"
+              label="Quiero ser comercio"
+              onPress={() => router.push("/merchant/request")}
+            />
+          </GroupedList>
         ) : null}
 
-        <Text style={[styles.sectionTitle, styles.sectionSpacing]}>Configuración</Text>
-        <View style={styles.section}>
-          <ProfileRow icon="notifications-outline" label="Notificaciones" onPress={() => notReady("Notificaciones")} />
-          <ProfileRow icon="lock-closed-outline" label="Privacidad y datos" onPress={() => router.push("/privacy")} />
-          <ProfileRow icon="help-circle-outline" label="Ayuda y soporte" onPress={() => notReady("Ayuda y soporte")} />
-          <ProfileRow
+        <GroupedList title="Configuración">
+          <GroupedRow
+            icon="contrast-outline"
+            label="Apariencia"
+            value={mode === "system" ? "Automático" : mode === "dark" ? "Oscuro" : "Claro"}
+            onPress={() => router.push("/appearance")}
+          />
+          <GroupedRow
+            icon="notifications-outline"
+            label="Notificaciones"
+            value="Próximamente"
+            onPress={() => soon("Notificaciones")}
+          />
+          <GroupedRow icon="lock-closed-outline" label="Privacidad y datos" onPress={() => router.push("/privacy")} />
+          <GroupedRow
+            icon="help-circle-outline"
+            label="Ayuda"
+            value="Próximamente"
+            onPress={() => soon("Ayuda")}
+          />
+        </GroupedList>
+
+        <GroupedList>
+          <GroupedRow
             icon="log-out-outline"
             label="Cerrar sesión"
-            labelColor={colors.brand.accentDark}
+            tone="accent"
+            trailing={<View />}
             onPress={() => void logout()}
           />
-        </View>
+        </GroupedList>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-function ProfileRow({
-  icon,
-  label,
-  labelColor,
-  value,
-  onPress,
-}: {
-  icon: keyof typeof Ionicons.glyphMap;
-  label: string;
-  labelColor?: string;
-  value?: string;
-  onPress: () => void;
-}) {
-  return (
-    <AnimatedPressable accessibilityLabel={label} haptic={false} onPress={onPress} style={styles.row}>
-      <Ionicons name={icon} size={18} color={labelColor ?? colors.text.secondary} />
-      <Text style={[styles.rowLabel, labelColor ? { color: labelColor } : null]}>{label}</Text>
-      {value ? <Text style={styles.rowValue}>{value}</Text> : null}
-      <Ionicons name="chevron-forward" size={16} color={colors.text.secondary} />
-    </AnimatedPressable>
-  );
-}
-
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.surface.base,
@@ -202,28 +194,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
     paddingBottom: spacing.xxl,
-    gap: spacing.md,
-  },
-  headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    gap: spacing.lg,
   },
   title: {
     fontFamily: typography.heroTitle.fontFamily,
     fontSize: 28,
+    lineHeight: 34,
     color: colors.text.primary,
-  },
-  settingsButton: {
-    width: 36,
-    height: 36,
-    alignItems: "center",
-    justifyContent: "center",
   },
   userCard: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.sm,
+    gap: spacing.md,
     backgroundColor: colors.surface.primary,
     borderWidth: 1,
     borderColor: colors.border.subtle,
@@ -231,65 +213,32 @@ const styles = StyleSheet.create({
     padding: spacing.md,
   },
   avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: radii.xl,
+    width: 52,
+    height: 52,
+    borderRadius: radii.full,
     backgroundColor: colors.brand.navy,
     alignItems: "center",
     justifyContent: "center",
   },
   avatarLabel: {
     fontFamily: typography.heroTitle.fontFamily,
-    fontSize: 18,
+    fontSize: 20,
     color: colors.text.onNavy,
   },
   userText: {
     flex: 1,
+    gap: 2,
   },
   userName: {
     fontFamily: typography.heroTitle.fontFamily,
-    fontSize: 18,
+    fontSize: 19,
+    lineHeight: 24,
     color: colors.text.primary,
   },
   userEmail: {
     fontFamily: typography.subtitle.fontFamily,
     fontSize: 13,
-    color: colors.text.secondary,
-    marginTop: 1,
-  },
-  sectionTitle: {
-    fontFamily: typography.itemTitle.fontFamily,
-    fontSize: 14,
-    color: colors.text.primary,
-    marginBottom: spacing.xs,
-  },
-  sectionSpacing: {
-    marginTop: spacing.xs,
-  },
-  section: {
-    gap: spacing.sm,
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: spacing.sm,
-    backgroundColor: colors.surface.primary,
-    borderWidth: 1,
-    borderColor: colors.border.subtle,
-    borderRadius: radii.lg,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 2,
-    minHeight: 44,
-  },
-  rowLabel: {
-    flex: 1,
-    fontFamily: typography.body.fontFamily,
-    fontSize: 14,
-    color: colors.text.primary,
-  },
-  rowValue: {
-    fontFamily: typography.body.fontFamily,
-    fontSize: 12,
+    lineHeight: 18,
     color: colors.text.secondary,
   },
-});
+}));

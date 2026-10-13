@@ -5,7 +5,8 @@ import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { colors, radii, spacing, typography } from "@depaso/design-tokens";
+import { radii, spacing, typography } from "@depaso/design-tokens";
+import { makeStyles, useColors, withAlpha } from "@/lib/theme";
 import type { RouteContextResponse } from "@depaso/validation";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { BottomSheet } from "@/components/BottomSheet";
@@ -34,6 +35,8 @@ async function geocodeAddress(address: string) {
 }
 
 export default function RouteContextScreen() {
+  const colors = useColors();
+  const styles = useStyles();
   const { places } = usePlaces();
   const { waypoints: savedToday, setWaypoints: commitToday } = useTodayRoute();
   const { show: showToast } = useToast();
@@ -379,7 +382,7 @@ export default function RouteContextScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.surface.base,
@@ -574,7 +577,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     letterSpacing: 1.3,
     textTransform: "uppercase",
-    color: "rgba(255,255,255,0.6)",
+    color: withAlpha(colors.text.onNavy, 0.65),
   },
   summaryRow: {
     flexDirection: "row",
@@ -591,7 +594,7 @@ const styles = StyleSheet.create({
   summaryMeta: {
     fontFamily: typography.subtitle.fontFamily,
     fontSize: 11,
-    color: "#94A3B8",
+    color: withAlpha(colors.text.onNavy, 0.75),
     marginTop: spacing.xxs,
   },
   sheetTitle: {
@@ -601,4 +604,4 @@ const styles = StyleSheet.create({
     color: colors.text.primary,
     marginBottom: spacing.md,
   },
-});
+}));

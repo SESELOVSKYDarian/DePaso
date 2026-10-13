@@ -1,5 +1,6 @@
 import type { StoreBranchResponse, StorePreferenceInput } from "@depaso/validation";
-import { colors, radii, spacing, typography } from "@depaso/design-tokens";
+import { radii, spacing, typography } from "@depaso/design-tokens";
+import { makeStyles } from "@/lib/theme";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { FlatList, StyleSheet, Text, View } from "react-native";
@@ -16,6 +17,7 @@ const TYPE_OPTIONS: { value: StorePreferenceInput["type"]; label: string; hint: 
 
 /** Elegir una categoría, un comercio/sucursal y qué tan estricta es la preferencia (Fase 10). */
 export default function StorePreferenceFormScreen() {
+  const styles = useStyles();
   const { show: showToast } = useToast();
   const [category, setCategory] = useState("");
   const [type, setType] = useState<StorePreferenceInput["type"]>("PREFERRED");
@@ -113,7 +115,7 @@ export default function StorePreferenceFormScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.surface.base,
@@ -185,4 +187,4 @@ const styles = StyleSheet.create({
     color: colors.text.muted,
     marginTop: 1,
   },
-});
+}));

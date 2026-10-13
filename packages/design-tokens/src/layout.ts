@@ -21,10 +21,10 @@ export const radii = {
 
 /** Elevación como sombra (compatible con React Native `shadow*` / Skia). */
 export const elevation = {
-  level0: { shadowColor: "#1A1341", shadowOpacity: 0, shadowRadius: 0, shadowOffset: { width: 0, height: 0 }, elevation: 0 },
-  level1: { shadowColor: "#1A1341", shadowOpacity: 0.06, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 2 },
-  level2: { shadowColor: "#1A1341", shadowOpacity: 0.1, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 4 },
-  level3: { shadowColor: "#1A1341", shadowOpacity: 0.14, shadowRadius: 20, shadowOffset: { width: 0, height: 8 }, elevation: 8 },
+  level0: { shadowColor: "#000000", shadowOpacity: 0, shadowRadius: 0, shadowOffset: { width: 0, height: 0 }, elevation: 0 },
+  level1: { shadowColor: "#000000", shadowOpacity: 0.06, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 2 },
+  level2: { shadowColor: "#000000", shadowOpacity: 0.1, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 4 },
+  level3: { shadowColor: "#000000", shadowOpacity: 0.14, shadowRadius: 20, shadowOffset: { width: 0, height: 8 }, elevation: 8 },
 } as const;
 
 /** Touch targets mínimos (sección 76: accesibilidad, >=44px). */

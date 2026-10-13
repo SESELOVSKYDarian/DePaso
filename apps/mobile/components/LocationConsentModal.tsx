@@ -1,7 +1,8 @@
 import * as Location from "expo-location";
 import { useState } from "react";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
-import { colors, radii, spacing, typography } from "@depaso/design-tokens";
+import { radii, spacing, typography } from "@depaso/design-tokens";
+import { makeStyles } from "@/lib/theme";
 import { AnimatedPressable } from "./AnimatedPressable";
 import { consentClient } from "@/lib/apiClient";
 
@@ -19,6 +20,7 @@ interface LocationConsentModalProps {
  * específico y separado del de T&C/Privacidad (sección 30-31).
  */
 export function LocationConsentModal({ visible, onClose }: LocationConsentModalProps) {
+  const styles = useStyles();
   const [isRequesting, setIsRequesting] = useState(false);
 
   const handleAllow = async () => {
@@ -87,7 +89,7 @@ export function LocationConsentModal({ visible, onClose }: LocationConsentModalP
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   backdrop: {
     flex: 1,
     backgroundColor: "rgba(26, 19, 65, 0.45)",
@@ -155,4 +157,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.text.muted,
   },
-});
+}));

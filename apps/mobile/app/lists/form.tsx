@@ -1,13 +1,15 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from "react-native";
-import { colors, spacing } from "@depaso/design-tokens";
+import { spacing } from "@depaso/design-tokens";
+import { makeStyles } from "@/lib/theme";
 import { Button } from "@/components/Button";
 import { FormField } from "@/components/FormField";
 import { useLists } from "@/lib/lists/ListsContext";
 
 /** Crear (o renombrar) una lista de compra — Fase 9. */
 export default function ListFormScreen() {
+  const styles = useStyles();
   const { id, name: presetName } = useLocalSearchParams<{ id?: string; name?: string }>();
   const { createList, updateList } = useLists();
   const isEditing = id !== undefined;
@@ -59,7 +61,7 @@ export default function ListFormScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.surface.base },
   content: { padding: spacing.lg, gap: spacing.md },
-});
+}));

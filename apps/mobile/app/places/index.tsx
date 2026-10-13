@@ -1,6 +1,7 @@
 import { router } from "expo-router";
 import { FlatList, StyleSheet, Text, View } from "react-native";
-import { colors, radii, spacing, typography } from "@depaso/design-tokens";
+import { radii, spacing, typography } from "@depaso/design-tokens";
+import { makeStyles } from "@/lib/theme";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { EmptyState } from "@/components/EmptyState";
 import { Skeleton } from "@/components/Skeleton";
@@ -9,6 +10,7 @@ import { usePlaces } from "@/lib/places/PlacesContext";
 import type { UserPlaceResponse } from "@depaso/validation";
 
 function PlaceRow({ place }: { place: UserPlaceResponse }) {
+  const styles = useStyles();
   const meta = PLACE_TYPE_META[place.type];
   return (
     <AnimatedPressable
@@ -30,6 +32,7 @@ function PlaceRow({ place }: { place: UserPlaceResponse }) {
 }
 
 export default function PlacesListScreen() {
+  const styles = useStyles();
   const { places, isLoading, error } = usePlaces();
 
   return (
@@ -76,7 +79,7 @@ export default function PlacesListScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.surface.base,
@@ -146,4 +149,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.text.onNavy,
   },
-});
+}));

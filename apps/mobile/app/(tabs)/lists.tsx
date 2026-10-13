@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import type { ShoppingListSummary } from "@depaso/validation";
-import { colors, radii, spacing, typography } from "@depaso/design-tokens";
+import { radii, spacing, typography } from "@depaso/design-tokens";
+import { makeStyles, useColors } from "@/lib/theme";
 import { router } from "expo-router";
 import { useState } from "react";
 import { FlatList, StyleSheet, Text, View } from "react-native";
@@ -16,6 +17,8 @@ import { useLists } from "@/lib/lists/ListsContext";
  * modelo de lista compartida entre usuarios todavía).
  */
 export default function ListsScreen() {
+  const colors = useColors();
+  const styles = useStyles();
   const { lists, isLoading, error } = useLists();
   const [tab, setTab] = useState<"mine" | "shared">("mine");
 
@@ -82,6 +85,8 @@ export default function ListsScreen() {
 }
 
 function ListCard({ list }: { list: ShoppingListSummary }) {
+  const colors = useColors();
+  const styles = useStyles();
   return (
     <AnimatedPressable
       accessibilityLabel={`Abrir lista ${list.name}`}
@@ -105,7 +110,7 @@ function ListCard({ list }: { list: ShoppingListSummary }) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.surface.base,
@@ -184,4 +189,4 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
     marginTop: 2,
   },
-});
+}));

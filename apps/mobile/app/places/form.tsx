@@ -3,7 +3,8 @@ import * as Location from "expo-location";
 import { router, useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
-import { colors, radii, spacing, typography } from "@depaso/design-tokens";
+import { radii, spacing, typography } from "@depaso/design-tokens";
+import { makeStyles } from "@/lib/theme";
 import type { PlaceType } from "@depaso/types";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { Checkbox } from "@/components/Checkbox";
@@ -30,6 +31,7 @@ async function geocodeAddress(address: string): Promise<{ latitude: number; long
 }
 
 export default function PlaceFormScreen() {
+  const styles = useStyles();
   const { id, type: presetType } = useLocalSearchParams<{ id?: string; type?: PlaceType }>();
   const { places, createPlace, updatePlace, removePlace } = usePlaces();
   const existing = useMemo(() => places.find((p) => p.id === id), [places, id]);
@@ -200,7 +202,7 @@ export default function PlaceFormScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.surface.base,
@@ -301,4 +303,4 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.state.error,
   },
-});
+}));

@@ -1,5 +1,6 @@
 import { ApiError } from "@depaso/api-client";
-import { colors, radii, spacing, typography } from "@depaso/design-tokens";
+import { radii, spacing, typography } from "@depaso/design-tokens";
+import { makeStyles } from "@/lib/theme";
 import { Link } from "expo-router";
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -22,6 +23,7 @@ function loginErrorMessage(error: unknown): string {
 }
 
 export default function LoginScreen() {
+  const styles = useStyles();
   const { login } = useAuth();
   const { show: showToast } = useToast();
   const [email, setEmail] = useState("");
@@ -109,7 +111,7 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.surface.base,
@@ -162,4 +164,4 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
     textDecorationLine: "underline",
   },
-});
+}));

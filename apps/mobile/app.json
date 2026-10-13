@@ -6,13 +6,7 @@
     "version": "0.1.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "icon": "./assets/images/icon.png",
-    "splash": {
-      "image": "./assets/images/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#F7FAF8"
-    },
     "plugins": [
       "expo-router",
       "expo-secure-store",
@@ -22,7 +16,22 @@
           "locationWhenInUsePermission": "La usamos para calcular rutas, desvíos y comercios cercanos mientras usás DePaso. No te seguimos fuera de la app."
         }
       ],
-      "./plugins/withMonorepoBuildFix.js"
+      "./plugins/withMonorepoBuildFix.js",
+      "expo-font",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "resizeMode": "contain",
+          "backgroundColor": "#F5F5F7",
+          "imageWidth": 200,
+          "dark": {
+            "image": "./assets/images/splash-icon-dark.png",
+            "backgroundColor": "#000000"
+          }
+        }
+      ],
+      "expo-status-bar"
     ],
     "ios": {
       "supportsTablet": false,
@@ -32,11 +41,12 @@
       "package": "ar.com.depaso.mobile",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#F7FAF8"
+        "monochromeImage": "./assets/images/adaptive-icon-monochrome.png",
+        "backgroundColor": "#0B0B0C"
       }
     },
     "web": {
-      "favicon": "./assets/images/icon.png"
+      "favicon": "./assets/images/favicon.png"
     },
     "owner": "parahacers-team",
     "extra": {

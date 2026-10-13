@@ -1,20 +1,24 @@
 import { PAYMENT_METHODS } from "@depaso/domain";
-import { colors, radii, spacing, typography } from "@depaso/design-tokens";
+import { spacing, typography } from "@depaso/design-tokens";
+import { makeStyles, useColors } from "@/lib/theme";
+import { SelectionMark } from "@/components/SelectionMark";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
-import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { Button } from "@/components/Button";
+import { GroupedList, GroupedRow } from "@/components/GroupedList";
 import { useToast } from "@/components/Toast";
 import { paymentsClient } from "@/lib/apiClient";
 
 const GROUPS = [
-  { group: "WALLET", title: "Billeteras" },
-  { group: "CARD", title: "Tarjetas" },
+  { group: "WALLET", title: "Billeteras", icon: "wallet-outline" },
+  { group: "CARD", title: "Tarjetas", icon: "card-outline" },
 ] as const;
 
 /** El usuario marca con qué paga; el Top 3 descuenta las promos que le corresponden. */
 export default function PaymentMethodsScreen() {
+  const colors = useColors();
+  const styles = useStyles();
   const { show: showToast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -55,55 +59,49 @@ export default function PaymentMethodsScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.intro}>
-        Elegí con qué pagás. Cuando armemos tu Top 3 vamos a descontar las promociones de esos medios de pago en cada
-        comercio, según el día. Las promos son informativas: confirmá condiciones y tope en el comercio.
+        Elegí con qué pagás y descontamos esas promos en tu Top 3, según el comercio y el día.
       </Text>
 
-      {GROUPS.map(({ group, title }) => (
-        <View key={group} style={styles.group}>
-          <Text style={styles.groupTitle}>{title}</Text>
+      {GROUPS.map(({ group, title, icon }) => (
+        <GroupedList key={group} title={title}>
           {PAYMENT_METHODS.filter((method) => method.group === group).map((method) => {
             const isOn = selected.includes(method.slug);
             return (
-              <AnimatedPressable
+              <GroupedRow
                 key={method.slug}
-                accessibilityLabel={method.label}
-                haptic={false}
+                icon={icon}
+                label={method.label}
+                accessibilityState={{ checked: isOn }}
                 onPress={() => toggle(method.slug)}
-                style={[styles.row, isOn ? styles.rowOn : null]}
-              >
-                <Text style={[styles.rowLabel, isOn ? styles.rowLabelOn : null]}>{method.label}</Text>
-                <Text style={styles.check}>{isOn ? "✓" : ""}</Text>
-              </AnimatedPressable>
+                trailing={<SelectionMark selected={isOn} />}
+              />
             );
           })}
-        </View>
+        </GroupedList>
       ))}
+
+      <Text style={styles.note}>
+        Las promos son informativas: confirmá condiciones, tope y vigencia en el comercio antes de pagar.
+      </Text>
 
       <Button label={isSaving ? "Guardando..." : "Guardar"} onPress={() => void handleSave()} loading={isSaving} />
     </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: { flexGrow: 1, backgroundColor: colors.surface.base, padding: spacing.lg, gap: spacing.md },
+const useStyles = makeStyles((colors) => StyleSheet.create({
+  container: { flexGrow: 1, backgroundColor: colors.surface.base, padding: spacing.lg, gap: spacing.lg },
   center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.surface.base },
-  intro: { fontFamily: typography.body.fontFamily, fontSize: 14, color: colors.text.secondary, lineHeight: 20 },
-  group: { gap: spacing.xs },
-  groupTitle: { fontFamily: typography.itemTitle.fontFamily, fontSize: 14, color: colors.text.primary },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    backgroundColor: colors.surface.primary,
-    borderWidth: 1,
-    borderColor: colors.border.subtle,
-    borderRadius: radii.md,
-    paddingHorizontal: spacing.md,
-    minHeight: 48,
+  intro: {
+    fontFamily: typography.subtitle.fontFamily,
+    fontSize: 14,
+    lineHeight: 20,
+    color: colors.text.secondary,
   },
-  rowOn: { borderColor: colors.brand.navy, backgroundColor: colors.brand.mint },
-  rowLabel: { fontFamily: typography.body.fontFamily, fontSize: 15, color: colors.text.primary },
-  rowLabelOn: { fontWeight: "600" },
-  check: { fontSize: 18, color: colors.brand.navy },
-});
+  note: {
+    fontFamily: typography.caption.fontFamily,
+    fontSize: 12,
+    lineHeight: 17,
+    color: colors.text.tertiary,
+  },
+}));

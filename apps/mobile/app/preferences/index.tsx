@@ -1,5 +1,6 @@
 import type { ProductPreferenceResponse, StorePreferenceResponse } from "@depaso/validation";
-import { colors, radii, spacing, typography } from "@depaso/design-tokens";
+import { radii, spacing, typography } from "@depaso/design-tokens";
+import { makeStyles } from "@/lib/theme";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
@@ -24,6 +25,7 @@ const STORE_TYPE_LABEL: Record<StorePreferenceResponse["type"], string> = {
  * `@depaso/optimization` — sin esta pantalla el usuario no tenía forma de configurarlas.
  */
 export default function PreferencesScreen() {
+  const styles = useStyles();
   const { show: showToast } = useToast();
   const [productPrefs, setProductPrefs] = useState<ProductPreferenceResponse[]>([]);
   const [storePrefs, setStorePrefs] = useState<StorePreferenceResponse[]>([]);
@@ -152,7 +154,7 @@ export default function PreferencesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.surface.base,
@@ -228,4 +230,4 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.text.secondary,
   },
-});
+}));

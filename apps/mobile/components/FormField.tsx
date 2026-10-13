@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View, type TextInputProps } from "react-native";
-import { colors, radii, spacing, typography } from "@depaso/design-tokens";
+import { radii, spacing, typography } from "@depaso/design-tokens";
+import { makeStyles, useColors } from "@/lib/theme";
 
 interface FormFieldProps extends TextInputProps {
   label: string;
@@ -12,6 +13,8 @@ interface FormFieldProps extends TextInputProps {
 }
 
 export function FormField({ label, error, hint, isPassword = false, secureTextEntry, style, ...inputProps }: FormFieldProps) {
+  const colors = useColors();
+  const styles = useStyles();
   const [reveal, setReveal] = useState(false);
 
   return (
@@ -42,7 +45,7 @@ export function FormField({ label, error, hint, isPassword = false, secureTextEn
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   container: {
     marginBottom: spacing.md,
   },
@@ -90,4 +93,4 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
     marginTop: spacing.xxs,
   },
-});
+}));

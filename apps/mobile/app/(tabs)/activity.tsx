@@ -1,4 +1,5 @@
-import { colors, radii, spacing, typography } from "@depaso/design-tokens";
+import { radii, spacing, typography } from "@depaso/design-tokens";
+import { makeStyles } from "@/lib/theme";
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -15,6 +16,7 @@ import { EmptyState } from "@/components/EmptyState";
  * usa un `EmptyState` honesto. Corregido para ser consistente.
  */
 export default function ActivityScreen() {
+  const styles = useStyles();
   const [tab, setTab] = useState<"mine" | "community">("mine");
 
   return (
@@ -53,7 +55,7 @@ export default function ActivityScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.surface.base,
@@ -92,4 +94,4 @@ const styles = StyleSheet.create({
   tabLabelActive: {
     color: colors.text.onNavy,
   },
-});
+}));

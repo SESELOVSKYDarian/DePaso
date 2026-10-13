@@ -8,7 +8,8 @@ import Animated, {
   withSequence,
   withSpring,
 } from "react-native-reanimated";
-import { colors, motion, radii, spacing, typography } from "@depaso/design-tokens";
+import { motion, radii, spacing, typography } from "@depaso/design-tokens";
+import { makeStyles } from "@/lib/theme";
 
 const AnimatedView = Animated.createAnimatedComponent(View);
 
@@ -23,6 +24,7 @@ interface CheckboxProps {
 /** Checkbox animado (sección 68: "animar checkboxes de forma satisfactoria — pequeño
  * spring + haptic"). No usa lima — el lima es exclusivo de ahorro/mejor opción. */
 export function Checkbox({ checked, onToggle, children, accessibilityLabel, error }: CheckboxProps) {
+  const styles = useStyles();
   const scale = useSharedValue(1);
   const reducedMotion = useReducedMotion();
 
@@ -63,7 +65,7 @@ export function Checkbox({ checked, onToggle, children, accessibilityLabel, erro
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   row: {
     flexDirection: "row",
     alignItems: "flex-start",
@@ -104,4 +106,4 @@ const styles = StyleSheet.create({
     marginTop: spacing.xxs,
     marginLeft: 34,
   },
-});
+}));

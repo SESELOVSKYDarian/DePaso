@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View, type TextInputProps } from "react-native";
-import { colors, radii, spacing, typography } from "@depaso/design-tokens";
+import { radii, spacing, typography } from "@depaso/design-tokens";
+import { makeStyles, useColors } from "@/lib/theme";
 
 interface PillInputProps extends TextInputProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -15,6 +16,8 @@ interface PillInputProps extends TextInputProps {
  * (labeled, cuadrado) a propósito: los formularios de auth siguen una referencia visual
  * más suave/redondeada que el resto de la app. */
 export function PillInput({ icon, error, isPassword = false, secureTextEntry, style, ...inputProps }: PillInputProps) {
+  const colors = useColors();
+  const styles = useStyles();
   const [reveal, setReveal] = useState(false);
 
   return (
@@ -45,7 +48,7 @@ export function PillInput({ icon, error, isPassword = false, secureTextEntry, st
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   container: {
     marginBottom: spacing.sm,
   },
@@ -82,4 +85,4 @@ const styles = StyleSheet.create({
     marginTop: spacing.xxs,
     marginLeft: spacing.md,
   },
-});
+}));

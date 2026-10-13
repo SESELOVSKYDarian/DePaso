@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256"><title>DePaso</title>
+  <defs><clipPath id="d"><path d="M50 34H134A94 94 0 0 1 134 222H50A22 22 0 0 1 28 200V56A22 22 0 0 1 50 34Z"/></clipPath></defs>
+  <g clip-path="url(#d)">
+    <rect width="256" height="256" fill="#F5F5F7"/>
+    <path fill="#7DDBC0" d="M88 34H134A94 94 0 0 1 134 222H50A22 22 0 0 1 28 200V172C52 160 84 160 108 170C140 182 178 160 190 118C200 84 160 48 124 40C108 36 98 34 88 34Z"/>
+    <path fill="#4A9BEA" d="M224.8 103.7A94 94 0 0 1 89.9 211A150 150 0 0 0 224.8 103.7Z"/>
+    <path fill="#4A9BEA" d="M89.9 211A94 94 0 0 0 134 222H80Z"/>
+    <g fill="none" stroke="#1D1D1F" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="136" cy="108" r="30" stroke-width="16"/>
+      <path stroke-width="22" d="M22 246C70 214 128 204 134 150"/>
+    </g>
+    <path fill="none" stroke="#4A9BEA" stroke-width="5" stroke-linecap="round" stroke-dasharray="7 17" stroke-dashoffset="-6" d="M22 246C70 214 128 204 134 166"/>
+  </g>
+  <path fill="#B7FF1A" transform="translate(136 110) scale(1.18) translate(-136 -110)" d="M136 90.5a11.5 11.5 0 0 1 11.5 11.5c0 8.5-8 15.5-11.5 22c-3.5-6.5-11.5-13.5-11.5-22A11.5 11.5 0 0 1 136 90.5Z"/>
+  <g stroke="#B7FF1A" stroke-width="12" stroke-linecap="round">
+    <path d="M206 34l8-22"/><path d="M226 54l22-12"/>
+  </g>
+</svg>

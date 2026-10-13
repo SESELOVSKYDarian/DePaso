@@ -1,7 +1,9 @@
-import { colors, radii, spacing, typography } from "@depaso/design-tokens";
+import { radii, spacing, typography } from "@depaso/design-tokens";
+import { makeStyles } from "@/lib/theme";
 import { Link, router } from "expo-router";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { Illustration } from "@/components/Illustration";
 import { ProgressHeader } from "@/components/ProgressHeader";
 import { SocialButton } from "@/components/SocialButton";
 import { useToast } from "@/components/Toast";
@@ -10,6 +12,7 @@ import { useToast } from "@/components/Toast";
  * en `register-email.tsx` — separarlo del selector matchea el flujo de Figma en vez del
  * formulario único que había antes acá. */
 export default function CreateAccountScreen() {
+  const styles = useStyles();
   const { show: showToast } = useToast();
 
   const handleSocial = (provider: "Google" | "Apple") => {
@@ -48,7 +51,7 @@ export default function CreateAccountScreen() {
           </Link>
         </Text>
 
-        <Image
+        <Illustration
           source={require("../../assets/images/ahorraravanzar.png")}
           style={styles.illustration}
           resizeMode="contain"
@@ -58,7 +61,7 @@ export default function CreateAccountScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.surface.base,
@@ -120,4 +123,4 @@ const styles = StyleSheet.create({
     width: "100%",
     marginTop: spacing.xl,
   },
-});
+}));

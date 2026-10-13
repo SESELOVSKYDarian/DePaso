@@ -46,6 +46,20 @@ export async function clearStoredToken(): Promise<void> {
   await store.deleteItem(TOKEN_KEY);
 }
 
+const THEME_MODE_KEY = "depaso_theme_mode";
+
+export type StoredThemeMode = "system" | "light" | "dark";
+
+/** Preferencia de apariencia del usuario (no es un secreto, pero comparte el mismo almacén). */
+export async function getStoredThemeMode(): Promise<StoredThemeMode> {
+  const value = await store.getItem(THEME_MODE_KEY);
+  return value === "light" || value === "dark" ? value : "system";
+}
+
+export async function setStoredThemeMode(mode: StoredThemeMode): Promise<void> {
+  await store.setItem(THEME_MODE_KEY, mode);
+}
+
 export async function getOnboardingSeen(): Promise<boolean> {
   return (await store.getItem(ONBOARDING_SEEN_KEY)) === "true";
 }

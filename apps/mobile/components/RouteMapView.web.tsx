@@ -1,5 +1,8 @@
-import { colors, radii } from "@depaso/design-tokens";
+import { radii } from "@depaso/design-tokens";
+import { useTheme } from "@/lib/theme";
 import { buildRouteMapHtml, type BuildRouteMapHtmlOptions } from "@/lib/map/buildRouteMapHtml";
+
+export type RouteMapViewProps = Omit<BuildRouteMapHtmlOptions, "colors" | "isDark">;
 
 /**
  * Mapa visual con ruta dibujada (Fase 17) — versión web: `react-native-webview` no tiene
@@ -7,11 +10,12 @@ import { buildRouteMapHtml, type BuildRouteMapHtmlOptions } from "@/lib/map/buil
  * (`buildRouteMapHtml`, compartido con `RouteMapView.tsx` nativo). Expo Router resuelve
  * este archivo automáticamente en vez de `RouteMapView.tsx` cuando corre en el navegador.
  */
-export function RouteMapView(props: BuildRouteMapHtmlOptions) {
+export function RouteMapView(props: RouteMapViewProps) {
+  const { colors, isDark } = useTheme();
   return (
     <iframe
       title="Mapa del recorrido"
-      srcDoc={buildRouteMapHtml(props)}
+      srcDoc={buildRouteMapHtml({ ...props, colors, isDark })}
       style={{
         height: 260,
         width: "100%",

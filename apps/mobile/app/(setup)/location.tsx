@@ -1,9 +1,11 @@
 import { Ionicons } from "@expo/vector-icons";
-import { colors, radii, spacing, typography } from "@depaso/design-tokens";
+import { radii, spacing, typography } from "@depaso/design-tokens";
+import { makeStyles, useColors } from "@/lib/theme";
 import * as Location from "expo-location";
 import { router } from "expo-router";
 import { useState } from "react";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { Illustration } from "@/components/Illustration";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { ProgressHeader } from "@/components/ProgressHeader";
@@ -18,6 +20,8 @@ const BENEFITS = ["Mejores resultados", "Rutas más precisas", "Siempre podés c
  * consentimiento p.6: "Permitir ubicación..." / "Ingresar dirección manualmente").
  */
 export default function LocationSetupScreen() {
+  const colors = useColors();
+  const styles = useStyles();
   const { show: showToast } = useToast();
   const [isRequesting, setIsRequesting] = useState(false);
 
@@ -43,7 +47,7 @@ export default function LocationSetupScreen() {
       </View>
 
       <View style={styles.content}>
-        <Image source={require("../../assets/images/ubicacion.png")} style={styles.illustration} resizeMode="contain" />
+        <Illustration source={require("../../assets/images/ubicacion.png")} style={styles.illustration} resizeMode="contain" />
 
         <View style={styles.badge}>
           <Text style={styles.badgeLabel}>Opcional por ahora</Text>
@@ -85,7 +89,7 @@ export default function LocationSetupScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.surface.base,
@@ -195,4 +199,4 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
     textDecorationLine: "underline",
   },
-});
+}));

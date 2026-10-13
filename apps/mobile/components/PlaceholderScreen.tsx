@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { colors, spacing, typography } from "@depaso/design-tokens";
+import { spacing, typography } from "@depaso/design-tokens";
+import { makeStyles } from "@/lib/theme";
 
 interface PlaceholderScreenProps {
   title: string;
@@ -12,6 +13,7 @@ interface PlaceholderScreenProps {
  * Actividad, Perfil — fases 9/17/68-69/19 en docs/development/IMPLEMENTATION-PLAN.md).
  */
 export function PlaceholderScreen({ title, description }: PlaceholderScreenProps) {
+  const styles = useStyles();
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.content}>
@@ -22,7 +24,7 @@ export function PlaceholderScreen({ title, description }: PlaceholderScreenProps
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.surface.base,
@@ -44,4 +46,4 @@ const styles = StyleSheet.create({
     lineHeight: typography.bodyRegular.lineHeight,
     color: colors.text.secondary,
   },
-});
+}));

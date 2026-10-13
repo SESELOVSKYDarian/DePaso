@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { StyleSheet, View } from "react-native";
-import { colors, radii, spacing } from "@depaso/design-tokens";
+import { radii, spacing } from "@depaso/design-tokens";
+import { makeStyles, useColors } from "@/lib/theme";
 import { AnimatedPressable } from "./AnimatedPressable";
 
 interface ProgressHeaderProps {
@@ -12,6 +13,8 @@ interface ProgressHeaderProps {
 /** Cabecera de los pasos de registro/setup (crea-cuenta → listo en Figma): flecha atrás +
  * barra de progreso fina en lima. `onBack` ausente oculta la flecha (primer paso). */
 export function ProgressHeader({ progress, onBack }: ProgressHeaderProps) {
+  const colors = useColors();
+  const styles = useStyles();
   return (
     <View style={styles.container}>
       {onBack ? (
@@ -28,7 +31,7 @@ export function ProgressHeader({ progress, onBack }: ProgressHeaderProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   container: {
     paddingTop: spacing.xs,
   },
@@ -51,4 +54,4 @@ const styles = StyleSheet.create({
     borderRadius: radii.full,
     backgroundColor: colors.brand.accent,
   },
-});
+}));

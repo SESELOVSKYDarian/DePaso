@@ -7,7 +7,8 @@ import Animated, {
   withSequence,
   withTiming,
 } from "react-native-reanimated";
-import { colors, radii } from "@depaso/design-tokens";
+import { radii } from "@depaso/design-tokens";
+import { makeStyles } from "@/lib/theme";
 
 interface SkeletonProps {
   width?: DimensionValue;
@@ -18,6 +19,7 @@ interface SkeletonProps {
 /** Placeholder de carga (sección 27: "usar skeletons, evitar spinner gigante + pantalla
  * vacía"). Pulso sutil de opacidad, sin depender de layout animation pesada. */
 export function Skeleton({ width = "100%", height = 16, borderRadius = radii.sm }: SkeletonProps) {
+  const styles = useStyles();
   const opacity = useSharedValue(0.5);
 
   useEffect(() => {
@@ -39,8 +41,8 @@ export function Skeleton({ width = "100%", height = 16, borderRadius = radii.sm 
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   base: {
     backgroundColor: colors.border.subtle,
   },
-});
+}));

@@ -1,8 +1,11 @@
 import { router } from "expo-router";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { colors, radii, spacing, typography } from "@depaso/design-tokens";
+import { radii, spacing, typography } from "@depaso/design-tokens";
+import { makeStyles } from "@/lib/theme";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
+import { BrandLogo } from "@/components/BrandLogo";
+import { Illustration } from "@/components/Illustration";
 import { useAuth } from "@/lib/auth/AuthContext";
 
 /**
@@ -11,6 +14,7 @@ import { useAuth } from "@/lib/auth/AuthContext";
  * diseñó esta única pantalla, así que no se inventan slides adicionales.
  */
 export default function OnboardingScreen() {
+  const styles = useStyles();
   const { completeOnboarding } = useAuth();
 
   const goTo = async (path: "/(auth)/register" | "/(auth)/login") => {
@@ -21,12 +25,8 @@ export default function OnboardingScreen() {
   return (
     <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
       <View style={styles.content}>
-        <Image
-          source={require("../assets/images/logo-wordmark.png")}
-          style={styles.wordmark}
-          resizeMode="contain"
-        />
-        <Image
+        <BrandLogo variant="wordmark" style={styles.wordmark} />
+        <Illustration
           source={require("../assets/images/bienvenida.png")}
           style={styles.illustration}
           resizeMode="contain"
@@ -63,7 +63,7 @@ export default function OnboardingScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.surface.base,
@@ -143,4 +143,4 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     textDecorationLine: "underline",
   },
-});
+}));

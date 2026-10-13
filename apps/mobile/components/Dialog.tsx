@@ -1,5 +1,6 @@
 import { Modal, StyleSheet, Text, View } from "react-native";
-import { colors, radii, spacing, typography } from "@depaso/design-tokens";
+import { radii, spacing, typography } from "@depaso/design-tokens";
+import { makeStyles } from "@/lib/theme";
 import { Button } from "./Button";
 
 interface DialogProps {
@@ -25,6 +26,7 @@ export function Dialog({
   onConfirm,
   onCancel,
 }: DialogProps) {
+  const styles = useStyles();
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
       <View style={styles.backdrop}>
@@ -46,7 +48,7 @@ export function Dialog({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   backdrop: {
     flex: 1,
     backgroundColor: "rgba(26, 19, 65, 0.45)",
@@ -83,4 +85,4 @@ const styles = StyleSheet.create({
   actionButton: {
     flex: 1,
   },
-});
+}));

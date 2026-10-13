@@ -1,5 +1,6 @@
 import type { MerchantRequestResponse } from "@depaso/validation";
-import { colors, radii, spacing, typography } from "@depaso/design-tokens";
+import { radii, spacing, typography } from "@depaso/design-tokens";
+import { makeStyles, useColors } from "@/lib/theme";
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -11,6 +12,8 @@ import { useAuth } from "@/lib/auth/AuthContext";
 
 /** Un usuario común pide pasar a rol comercio; un admin lo aprueba o rechaza. */
 export default function MerchantRequestScreen() {
+  const colors = useColors();
+  const styles = useStyles();
   const { show: showToast } = useToast();
   const { refreshUser } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
@@ -162,7 +165,7 @@ export default function MerchantRequestScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   container: { flexGrow: 1, backgroundColor: colors.surface.base, padding: spacing.lg, gap: spacing.md },
   center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.surface.base },
   intro: { fontFamily: typography.body.fontFamily, fontSize: 14, color: colors.text.secondary, lineHeight: 20 },
@@ -176,4 +179,4 @@ const styles = StyleSheet.create({
   },
   statusTitle: { fontFamily: typography.itemTitle.fontFamily, fontSize: 16, color: colors.text.primary },
   statusBody: { fontFamily: typography.body.fontFamily, fontSize: 14, color: colors.text.secondary, lineHeight: 20 },
-});
+}));

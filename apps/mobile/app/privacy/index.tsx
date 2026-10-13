@@ -2,7 +2,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { ActivityIndicator, ScrollView, Share, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { colors, radii, spacing, typography } from "@depaso/design-tokens";
+import { radii, spacing, typography } from "@depaso/design-tokens";
+import { makeStyles, useColors } from "@/lib/theme";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { Dialog } from "@/components/Dialog";
 import { FormField } from "@/components/FormField";
@@ -19,6 +20,7 @@ import { usePlaces } from "@/lib/places/PlacesContext";
  * cumple el plazo.
  */
 export default function PrivacyScreen() {
+  const styles = useStyles();
   const { user, refreshUser, deleteAccount } = useAuth();
   const { places, removePlace } = usePlaces();
   const toast = useToast();
@@ -183,6 +185,8 @@ function Row({
   disabled?: boolean;
   destructive?: boolean;
 }) {
+  const colors = useColors();
+  const styles = useStyles();
   return (
     <View style={styles.row}>
       <View style={[styles.rowIcon, destructive && styles.rowIconDanger]}>
@@ -208,7 +212,7 @@ function Row({
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.surface.base },
   content: { padding: spacing.lg, paddingBottom: spacing.xxl, gap: spacing.md },
   title: { fontFamily: typography.heroTitle.fontFamily, fontSize: 24, color: colors.text.primary },
@@ -259,4 +263,4 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   saveButtonLabel: { fontFamily: typography.buttonLabel.fontFamily, fontSize: 13, color: colors.text.onNavy },
-});
+}));

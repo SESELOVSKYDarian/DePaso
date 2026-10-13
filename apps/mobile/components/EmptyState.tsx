@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { colors, spacing, typography } from "@depaso/design-tokens";
+import { spacing, typography } from "@depaso/design-tokens";
+import { makeStyles } from "@/lib/theme";
 
 interface EmptyStateProps {
   emoji: string;
@@ -11,6 +12,7 @@ interface EmptyStateProps {
 
 /** Estado vacío agradable (sección 28) — nunca una lista en blanco sin explicación. */
 export function EmptyState({ emoji, title, description, action }: EmptyStateProps) {
+  const styles = useStyles();
   return (
     <View style={styles.container}>
       <Text style={styles.emoji}>{emoji}</Text>
@@ -21,7 +23,7 @@ export function EmptyState({ emoji, title, description, action }: EmptyStateProp
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   container: {
     flex: 1,
     alignItems: "center",
@@ -49,4 +51,4 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: spacing.lg,
   },
-});
+}));

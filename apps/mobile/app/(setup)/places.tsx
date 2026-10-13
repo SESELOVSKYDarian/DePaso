@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import { colors, radii, spacing, typography } from "@depaso/design-tokens";
+import { radii, spacing, typography } from "@depaso/design-tokens";
+import { makeStyles, useColors } from "@/lib/theme";
 import { router } from "expo-router";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -28,6 +29,8 @@ const TYPE_ICON: Record<PlaceType, keyof typeof Ionicons.glyphMap> = {
  * check se calcula según lo que el usuario ya tenga guardado.
  */
 export default function PlacesSetupScreen() {
+  const colors = useColors();
+  const styles = useStyles();
   const { places } = usePlaces();
 
   const goNext = () => router.push("/(setup)/interests");
@@ -95,7 +98,7 @@ export default function PlacesSetupScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.surface.primary,
@@ -180,4 +183,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.text.onNavy,
   },
-});
+}));

@@ -1,5 +1,6 @@
 import type { ProductPreferenceInput, ProductSearchResult } from "@depaso/validation";
-import { colors, radii, spacing, typography } from "@depaso/design-tokens";
+import { radii, spacing, typography } from "@depaso/design-tokens";
+import { makeStyles, useColors } from "@/lib/theme";
 import { router } from "expo-router";
 import { useRef, useState } from "react";
 import { FlatList, StyleSheet, Text, TextInput, View } from "react-native";
@@ -17,6 +18,8 @@ const TYPE_OPTIONS: { value: ProductPreferenceInput["type"]; label: string; hint
 
 /** Elegir un producto y decir qué tan estricta es la preferencia de marca (Fase 10). */
 export default function ProductPreferenceFormScreen() {
+  const colors = useColors();
+  const styles = useStyles();
   const { show: showToast } = useToast();
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<ProductSearchResult[]>([]);
@@ -120,7 +123,7 @@ export default function ProductPreferenceFormScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.surface.base,
@@ -210,4 +213,4 @@ const styles = StyleSheet.create({
     color: colors.text.secondary,
     marginTop: 2,
   },
-});
+}));

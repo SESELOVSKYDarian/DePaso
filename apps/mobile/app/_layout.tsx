@@ -7,11 +7,13 @@ import {
   Montserrat_800ExtraBold,
 } from "@expo-google-fonts/montserrat";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider as NavigationThemeProvider } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { useMemo, type ReactNode } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { colors } from "@depaso/design-tokens";
+import { typography } from "@depaso/design-tokens";
+import { ThemeProvider, useColors, useTheme } from "@/lib/theme";
 import { SplashScreen } from "@/components/SplashScreen";
 import { AuthProvider, useAuth } from "@/lib/auth/AuthContext";
 import { ListsProvider } from "@/lib/lists/ListsContext";
@@ -27,6 +29,7 @@ import { PurchaseProvider } from "@/lib/purchase/PurchaseContext";
  * árbol solo y cae al siguiente protegido que sí matchea).
  */
 function RootNavigator() {
+  const colors = useColors();
   const { isBootstrapping, onboardingSeen, isAuthenticated, postSignupDone } = useAuth();
 
   if (isBootstrapping) {
@@ -38,6 +41,12 @@ function RootNavigator() {
       screenOptions={{
         headerShown: false,
         contentStyle: { backgroundColor: colors.surface.base },
+        // Encabezados con la tipografía y los colores de marca, sin la línea del sistema.
+        headerStyle: { backgroundColor: colors.surface.base },
+        headerShadowVisible: false,
+        headerTintColor: colors.text.primary,
+        headerTitleStyle: { fontFamily: typography.title.fontFamily, fontSize: 17 },
+        headerBackButtonDisplayMode: "minimal",
       }}
     >
       <Stack.Protected guard={!onboardingSeen}>
@@ -99,6 +108,7 @@ function RootNavigator() {
           options={{ headerShown: true, title: "Preferencia de comercio", presentation: "modal" }}
         />
         <Stack.Screen name="payment-methods" options={{ headerShown: true, title: "Métodos de pago" }} />
+        <Stack.Screen name="appearance" options={{ headerShown: true, title: "Apariencia" }} />
         <Stack.Screen name="merchant/request" options={{ headerShown: true, title: "Quiero ser comercio" }} />
         <Stack.Screen name="merchant/index" options={{ headerShown: true, title: "Mi comercio" }} />
         <Stack.Screen
@@ -141,24 +151,54 @@ function useAppFonts() {
   });
 }
 
+/**
+ * Tema de React Navigation alineado con el de la app: el fondo de las pantallas y las
+ * tarjetas de transición usan la paleta activa, así no aparece un destello blanco al navegar
+ * en modo oscuro.
+ */
+function NavigationThemeBridge({ children }: { children: ReactNode }) {
+  const { colors, isDark } = useTheme();
+  const navigationTheme = useMemo(() => {
+    const base = isDark ? DarkTheme : DefaultTheme;
+    return {
+      ...base,
+      colors: {
+        ...base.colors,
+        primary: colors.brand.navy,
+        background: colors.surface.base,
+        card: colors.surface.base,
+        text: colors.text.primary,
+        border: colors.border.subtle,
+        notification: colors.state.error,
+      },
+    };
+  }, [colors, isDark]);
+
+  return <NavigationThemeProvider value={navigationTheme}>{children}</NavigationThemeProvider>;
+}
+
 export default function RootLayout() {
   const [fontsLoaded] = useAppFonts();
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <StatusBar style="dark" />
-        <AuthProvider>
-          <PlacesProvider>
-            <ListsProvider>
-              <TodayRouteProvider>
-                <PurchaseProvider><ToastProvider>
-                  {fontsLoaded ? <RootNavigator /> : <SplashScreen />}
-                </ToastProvider></PurchaseProvider>
-              </TodayRouteProvider>
-            </ListsProvider>
-          </PlacesProvider>
-        </AuthProvider>
+        <ThemeProvider>
+          <StatusBar style="auto" />
+          <NavigationThemeBridge>
+            <AuthProvider>
+              <PlacesProvider>
+                <ListsProvider>
+                  <TodayRouteProvider>
+                    <PurchaseProvider>
+                      <ToastProvider>{fontsLoaded ? <RootNavigator /> : <SplashScreen />}</ToastProvider>
+                    </PurchaseProvider>
+                  </TodayRouteProvider>
+                </ListsProvider>
+              </PlacesProvider>
+            </AuthProvider>
+          </NavigationThemeBridge>
+        </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
   );

@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { ActivityIndicator, StyleSheet, Text, type StyleProp, type ViewStyle } from "react-native";
-import { colors, radii, spacing, typography } from "@depaso/design-tokens";
+import { radii, spacing, typography, type ColorTokens } from "@depaso/design-tokens";
+import { makeStyles, useColors } from "@/lib/theme";
 import { AnimatedPressable } from "./AnimatedPressable";
 
 type ButtonVariant = "primary" | "secondary" | "ghost" | "lime" | "danger";
@@ -31,7 +32,10 @@ export function Button({
   style,
   accessibilityLabel,
 }: ButtonProps) {
+  const colors = useColors();
+  const styles = useStyles();
   const isDisabled = disabled || loading;
+  const textColor = textColors(colors)[variant];
 
   return (
     <AnimatedPressable
@@ -40,41 +44,40 @@ export function Button({
       haptic={!isDisabled}
       style={[
         styles.base,
-        VARIANT_STYLES[variant],
+        variantStyles(colors)[variant],
         isDisabled ? styles.disabled : null,
         style,
       ]}
     >
       {loading ? (
-        <ActivityIndicator color={TEXT_COLOR[variant]} />
+        <ActivityIndicator color={textColor} />
       ) : (
         <>
           {icon}
-          <Text style={[styles.label, { color: TEXT_COLOR[variant], fontFamily: LABEL_FONT[variant] }]}>{label}</Text>
+          <Text style={[styles.label, { color: textColor, fontFamily: LABEL_FONT[variant] }]}>{label}</Text>
         </>
       )}
     </AnimatedPressable>
   );
 }
 
-const VARIANT_STYLES: Record<ButtonVariant, StyleProp<ViewStyle>> = {
+const variantStyles = (colors: ColorTokens): Record<ButtonVariant, StyleProp<ViewStyle>> => ({
   primary: { backgroundColor: colors.brand.navy },
   secondary: { backgroundColor: colors.surface.primary, borderWidth: 1, borderColor: colors.border.strong },
   ghost: { backgroundColor: "transparent" },
   lime: { backgroundColor: colors.saving.lime },
   danger: { backgroundColor: colors.surface.primary, borderWidth: 1, borderColor: colors.state.error },
-};
+});
 
-/** `ghost` usa `text.secondary`, no `brand.route` — el azul ruta (#6290C3, contraste ≈3.3:1
- * sobre blanco) no cumple como texto de botón (BRAND.md p.12: "no debe usarse como texto
- * chico... reservarlo para íconos, rutas, bordes o texto grande"). */
-const TEXT_COLOR: Record<ButtonVariant, string> = {
+/** Texto de cada variante. `ghost` usa `text.secondary`; `danger` usa la variante fuerte del
+ * rojo para cumplir contraste de texto chico (≥ 4.5:1) en claro y en oscuro. */
+const textColors = (colors: ColorTokens): Record<ButtonVariant, string> => ({
   primary: colors.text.onNavy,
   secondary: colors.text.primary,
   ghost: colors.text.secondary,
   lime: colors.text.onLime,
-  danger: colors.state.error,
-};
+  danger: colors.state.errorStrong,
+});
 
 /** Fredoka SemiBold sólo para el CTA principal (navy) — el resto de variantes usa
  * Montserrat SemiBold, igual que en Figma ("Ingresar dirección manualmente", etc). */
@@ -86,22 +89,24 @@ const LABEL_FONT: Record<ButtonVariant, string> = {
   danger: typography.body.fontFamily,
 };
 
-const styles = StyleSheet.create({
-  base: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: spacing.xs,
-    minHeight: 44,
-    borderRadius: radii.full,
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.md,
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-  label: {
-    fontFamily: typography.buttonLabel.fontFamily,
-    fontSize: 16,
-  },
-});
+const useStyles = makeStyles(() =>
+  StyleSheet.create({
+    base: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: spacing.xs,
+      minHeight: 44,
+      borderRadius: radii.full,
+      paddingVertical: spacing.sm,
+      paddingHorizontal: spacing.md,
+    },
+    disabled: {
+      opacity: 0.5,
+    },
+    label: {
+      fontFamily: typography.buttonLabel.fontFamily,
+      fontSize: 16,
+    },
+  }),
+);

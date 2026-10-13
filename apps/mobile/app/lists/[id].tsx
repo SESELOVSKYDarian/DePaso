@@ -3,8 +3,10 @@ import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { FlatList, StyleSheet, Text, TextInput, View } from "react-native";
 import Animated, { FadeInDown, FadeOutLeft, useReducedMotion } from "react-native-reanimated";
-import { colors, motion, radii, spacing, typography } from "@depaso/design-tokens";
+import { motion, radii, spacing, typography } from "@depaso/design-tokens";
+import { makeStyles, useColors } from "@/lib/theme";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
+import { ProductThumb } from "@/components/ProductThumb";
 import { EmptyState } from "@/components/EmptyState";
 import { Skeleton } from "@/components/Skeleton";
 import { useToast } from "@/components/Toast";
@@ -13,6 +15,8 @@ import { useLists } from "@/lib/lists/ListsContext";
 
 /** Detalle de una lista de compra (Fase 9) — agregar/quitar productos, ajustar cantidad. */
 export default function ListDetailScreen() {
+  const colors = useColors();
+  const styles = useStyles();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { lists, getList, updateItem, removeItem, removeList, shareList, removeMember } = useLists();
   const { user } = useAuth();
@@ -197,8 +201,8 @@ export default function ListDetailScreen() {
       {list.items.length === 0 ? (
         <EmptyState
           emoji="🛒"
-          title="Esta lista está vacía"
-          description="Buscá productos y agregalos — el motor de optimización los necesita para armar tu Top 3."
+          title="Todavía no hay nada"
+          description="Sumá lo que te falta y nosotros buscamos dónde te queda de paso."
         />
       ) : (
         <FlatList
@@ -211,8 +215,16 @@ export default function ListDetailScreen() {
               exiting={reducedMotion ? undefined : FadeOutLeft.duration(motion.duration.fast)}
               style={styles.row}
             >
+              <ProductThumb imageUrl={item.imageUrl} size={44} />
               <View style={styles.rowText}>
-                <Text style={styles.rowName}>{item.productName}</Text>
+                <Text style={styles.rowName} numberOfLines={2}>
+                  {item.productName}
+                </Text>
+                {item.brandName ? (
+                  <Text style={styles.rowNote} numberOfLines={1}>
+                    {item.brandName}
+                  </Text>
+                ) : null}
                 {item.note ? <Text style={styles.rowNote}>{item.note}</Text> : null}
               </View>
               <View style={styles.quantityRow}>
@@ -253,7 +265,7 @@ export default function ListDetailScreen() {
           onPress={() => router.push({ pathname: "/lists/search", params: { listId: id } })}
           style={styles.addButton}
         >
-          <Text style={styles.addLabel}>+ Agregar producto</Text>
+          <Text style={styles.addLabel}>+ Sumar un producto</Text>
         </AnimatedPressable>
         {isOwner ? (
           <AnimatedPressable
@@ -270,7 +282,7 @@ export default function ListDetailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.surface.base,
@@ -443,4 +455,4 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: colors.state.error,
   },
-});
+}));

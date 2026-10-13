@@ -1,5 +1,6 @@
 import type { AdminMerchantRequestResponse } from "@depaso/validation";
-import { colors, radii, spacing, typography } from "@depaso/design-tokens";
+import { radii, spacing, typography } from "@depaso/design-tokens";
+import { makeStyles, useColors } from "@/lib/theme";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { ActivityIndicator, FlatList, StyleSheet, Text, View } from "react-native";
@@ -11,6 +12,8 @@ import { adminMerchantClient } from "@/lib/apiClient";
 
 /** Bandeja del admin: solicitudes de usuarios que quieren pasar a rol comercio. */
 export default function AdminMerchantRequestsScreen() {
+  const colors = useColors();
+  const styles = useStyles();
   const { show: showToast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [requests, setRequests] = useState<AdminMerchantRequestResponse[]>([]);
@@ -102,7 +105,7 @@ export default function AdminMerchantRequestsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.surface.base },
   center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.surface.base },
   list: { padding: spacing.lg, gap: spacing.md },
@@ -119,4 +122,4 @@ const styles = StyleSheet.create({
   note: { fontFamily: typography.body.fontFamily, fontSize: 13, color: colors.text.primary, fontStyle: "italic" },
   actions: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.sm },
   action: { flex: 1 },
-});
+}));

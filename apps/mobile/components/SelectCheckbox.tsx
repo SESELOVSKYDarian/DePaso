@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { StyleSheet, View } from "react-native";
-import { colors, radii } from "@depaso/design-tokens";
+import { radii } from "@depaso/design-tokens";
+import { makeStyles, useColors } from "@/lib/theme";
 
 interface SelectCheckboxProps {
   checked: boolean;
@@ -12,6 +13,8 @@ interface SelectCheckboxProps {
  * borde `border.subtle`, sin relleno. Distinto del `Checkbox` navy circular usado en los
  * checkboxes legales de registro (ese no viene de Figma). */
 export function SelectCheckbox({ checked, size = 20 }: SelectCheckboxProps) {
+  const colors = useColors();
+  const styles = useStyles();
   return (
     <View
       style={[
@@ -25,7 +28,7 @@ export function SelectCheckbox({ checked, size = 20 }: SelectCheckboxProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   box: {
     borderRadius: radii.sm - 4,
     alignItems: "center",
@@ -41,4 +44,4 @@ const styles = StyleSheet.create({
     borderColor: colors.border.subtle,
     backgroundColor: "transparent",
   },
-});
+}));

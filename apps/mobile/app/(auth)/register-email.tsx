@@ -1,5 +1,6 @@
 import { ApiError } from "@depaso/api-client";
-import { colors, radii, spacing, typography } from "@depaso/design-tokens";
+import { radii, spacing, typography } from "@depaso/design-tokens";
+import { makeStyles } from "@/lib/theme";
 import { MIN_AGE_YEARS, PASSWORD_MIN_LENGTH } from "@depaso/domain";
 import { Link, router } from "expo-router";
 import { useState } from "react";
@@ -30,6 +31,7 @@ function registerErrorMessage(error: unknown): string {
  * debajo de la contraseña para no perder esa fidelidad visual del resto de la pantalla.
  */
 export default function RegisterEmailScreen() {
+  const styles = useStyles();
   const { register } = useAuth();
   const { show: showToast } = useToast();
   const [firstName, setFirstName] = useState("");
@@ -184,7 +186,7 @@ export default function RegisterEmailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.surface.base,
@@ -262,4 +264,4 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: spacing.md,
   },
-});
+}));

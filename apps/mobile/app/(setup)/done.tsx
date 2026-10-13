@@ -1,7 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
-import { colors, radii, spacing, typography } from "@depaso/design-tokens";
+import { radii, spacing, typography } from "@depaso/design-tokens";
+import { makeStyles, useColors } from "@/lib/theme";
 import { router } from "expo-router";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { Illustration } from "@/components/Illustration";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { useAuth } from "@/lib/auth/AuthContext";
@@ -15,6 +17,8 @@ const CHECKLIST = ["Perfil verificado", "Lugares guardados", "Preferencias lista
  * siendo una ruta válida después del flip y el Stack no tiene motivo para moverse de ahí.
  * `router.replace` fuerza el aterrizaje en Home explícitamente. */
 export default function SetupDoneScreen() {
+  const colors = useColors();
+  const styles = useStyles();
   const { completePostSignup } = useAuth();
 
   const handleStart = () => {
@@ -25,7 +29,7 @@ export default function SetupDoneScreen() {
   return (
     <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
       <View style={styles.content}>
-        <Image source={require("../../assets/images/listo.png")} style={styles.illustration} resizeMode="contain" />
+        <Illustration source={require("../../assets/images/listo.png")} style={styles.illustration} resizeMode="contain" />
         <Text style={styles.title}>¡Listo!</Text>
         <Text style={styles.subtitle}>Tu cuenta ya está creada.</Text>
 
@@ -54,7 +58,7 @@ export default function SetupDoneScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.surface.base,
@@ -122,4 +126,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.text.onNavy,
   },
-});
+}));

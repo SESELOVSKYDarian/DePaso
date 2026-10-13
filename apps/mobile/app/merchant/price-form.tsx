@@ -1,5 +1,6 @@
 import type { ProductSearchResult } from "@depaso/validation";
-import { colors, radii, spacing, typography } from "@depaso/design-tokens";
+import { radii, spacing, typography } from "@depaso/design-tokens";
+import { makeStyles } from "@/lib/theme";
 import { router, useLocalSearchParams } from "expo-router";
 import { useRef, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
@@ -19,6 +20,7 @@ function parsePrice(raw: string): number | null {
  * ya está en el catálogo (buscándolo) o crear un producto nuevo con su primer precio.
  */
 export default function MerchantPriceFormScreen() {
+  const styles = useStyles();
   const params = useLocalSearchParams<{ priceId?: string; name?: string; price?: string }>();
   const { show: showToast } = useToast();
   const isEditing = Boolean(params.priceId);
@@ -197,7 +199,7 @@ export default function MerchantPriceFormScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   container: { flexGrow: 1, backgroundColor: colors.surface.base, padding: spacing.lg, gap: spacing.md },
   title: { fontFamily: typography.heroTitle.fontFamily, fontSize: 20, color: colors.text.primary },
   tabs: { flexDirection: "row", gap: spacing.sm },
@@ -225,4 +227,4 @@ const styles = StyleSheet.create({
   rowSelected: { borderColor: colors.brand.navy, backgroundColor: colors.brand.mint },
   rowName: { fontFamily: typography.body.fontFamily, fontWeight: "600", fontSize: 14, color: colors.text.primary },
   rowMeta: { fontFamily: typography.caption.fontFamily, fontSize: 12, color: colors.text.muted, marginTop: 1 },
-});
+}));

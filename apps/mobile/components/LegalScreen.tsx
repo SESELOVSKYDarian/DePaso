@@ -1,8 +1,10 @@
 import type { ReactNode } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { colors, spacing, typography } from "@depaso/design-tokens";
+import { spacing, typography } from "@depaso/design-tokens";
+import { makeStyles } from "@/lib/theme";
 
 export function LegalScreen({ children }: { children: ReactNode }) {
+  const styles = useStyles();
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
       {children}
@@ -11,10 +13,12 @@ export function LegalScreen({ children }: { children: ReactNode }) {
 }
 
 export function LegalParagraph({ children }: { children: ReactNode }) {
+  const styles = useStyles();
   return <Text style={styles.paragraph}>{children}</Text>;
 }
 
 export function LegalBullet({ children }: { children: ReactNode }) {
+  const styles = useStyles();
   return (
     <View style={styles.bulletRow}>
       <Text style={styles.bulletDot}>•</Text>
@@ -24,6 +28,7 @@ export function LegalBullet({ children }: { children: ReactNode }) {
 }
 
 export function LegalNotice({ children }: { children: ReactNode }) {
+  const styles = useStyles();
   return (
     <View style={styles.notice}>
       <Text style={styles.noticeText}>{children}</Text>
@@ -31,7 +36,7 @@ export function LegalNotice({ children }: { children: ReactNode }) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.surface.base,
@@ -75,4 +80,4 @@ const styles = StyleSheet.create({
     lineHeight: 18,
     color: colors.text.primary,
   },
-});
+}));

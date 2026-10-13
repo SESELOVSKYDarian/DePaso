@@ -1,7 +1,9 @@
-import { colors, radii, spacing, typography } from "@depaso/design-tokens";
+import { radii, spacing, typography } from "@depaso/design-tokens";
+import { makeStyles } from "@/lib/theme";
 import { router } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { Image, StyleSheet, Text, TextInput, View } from "react-native";
+import { StyleSheet, Text, TextInput, View } from "react-native";
+import { Illustration } from "@/components/Illustration";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { ProgressHeader } from "@/components/ProgressHeader";
@@ -19,6 +21,7 @@ const RESEND_SECONDS = 56;
  * (Google/Apple en `SocialButton`), y "Continuar" no queda bloqueado por eso.
  */
 export default function VerifyEmailScreen() {
+  const styles = useStyles();
   const { user } = useAuth();
   const { show: showToast } = useToast();
   const [digits, setDigits] = useState<string[]>(Array(CODE_LENGTH).fill(""));
@@ -60,7 +63,7 @@ export default function VerifyEmailScreen() {
       </View>
 
       <View style={styles.content}>
-        <Image source={require("../../assets/images/mail.png")} style={styles.illustration} resizeMode="contain" />
+        <Illustration source={require("../../assets/images/mail.png")} style={styles.illustration} resizeMode="contain" />
         <Text style={styles.title}>Verificá tu email</Text>
         <Text style={styles.subtitle}>
           Te enviamos un código a{"\n"}
@@ -104,7 +107,7 @@ export default function VerifyEmailScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.surface.base,
@@ -188,4 +191,4 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.text.onNavy,
   },
-});
+}));

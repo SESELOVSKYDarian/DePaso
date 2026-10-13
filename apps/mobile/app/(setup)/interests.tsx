@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import { colors, radii, spacing, typography } from "@depaso/design-tokens";
+import { radii, spacing, typography } from "@depaso/design-tokens";
+import { makeStyles, useColors } from "@/lib/theme";
 import { router } from "expo-router";
 import { useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
@@ -30,6 +31,8 @@ const INTERESTS: Interest[] = [
  * pantalla (no se persiste) hasta que haya un endpoint de perfil que la reciba.
  */
 export default function InterestsSetupScreen() {
+  const colors = useColors();
+  const styles = useStyles();
   const [checked, setChecked] = useState<Set<string>>(
     () => new Set(INTERESTS.filter((i) => i.defaultChecked).map((i) => i.key))
   );
@@ -88,7 +91,7 @@ export default function InterestsSetupScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = makeStyles((colors) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.surface.primary,
@@ -173,4 +176,4 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.text.secondary,
   },
-});
+}));
