@@ -5,7 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles, useTheme } from "@/lib/theme";
 import { GroupedList, GroupedRow } from "@/components/GroupedList";
-import { useToast } from "@/components/Toast";
+import { useNotificationInbox, useToast } from "@/components/Toast";
 import { adminMerchantClient, paymentsClient, preferencesClient } from "@/lib/apiClient";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { usePlaces } from "@/lib/places/PlacesContext";
@@ -32,6 +32,7 @@ export default function ProfileScreen() {
   const { mode } = useTheme();
   const { places } = usePlaces();
   const { show: showToast } = useToast();
+  const { unreadCount, clear: clearNotifications } = useNotificationInbox();
   const [productPreferenceCount, setProductPreferenceCount] = useState(0);
   const [pendingMerchantRequests, setPendingMerchantRequests] = useState(0);
   const role = user?.role;
@@ -153,6 +154,12 @@ export default function ProfileScreen() {
             value={mode === "system" ? "Automático" : mode === "dark" ? "Oscuro" : "Claro"}
             onPress={() => router.push("/appearance")}
           />
+          <GroupedRow
+            icon="notifications-outline"
+            label="Notificaciones"
+            {...(unreadCount > 0 ? { value: `${unreadCount} sin leer` } : {})}
+            onPress={() => router.push("/notifications")}
+          />
           <GroupedRow icon="lock-closed-outline" label="Privacidad y datos" onPress={() => router.push("/privacy")} />
           <GroupedRow icon="help-circle-outline" label="Ayuda" onPress={() => router.push("/help")} />
         </GroupedList>
@@ -163,7 +170,10 @@ export default function ProfileScreen() {
             label="Cerrar sesión"
             tone="accent"
             trailing={<View />}
-            onPress={() => void logout()}
+            onPress={() => {
+              clearNotifications();
+              void logout();
+            }}
           />
         </GroupedList>
       </ScrollView>

@@ -11,6 +11,7 @@ export * from "./stores";
 export * from "./geocode";
 export * from "./optimization";
 export * from "./priceReports";
+export * from "./community";
 export * from "./accountExport";
 export * from "./adminOps";
 export * from "./routeCompute";

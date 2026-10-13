@@ -67,3 +67,18 @@ export async function getOnboardingSeen(): Promise<boolean> {
 export async function setOnboardingSeen(): Promise<void> {
   await store.setItem(ONBOARDING_SEEN_KEY, "true");
 }
+
+const NOTIFICATIONS_KEY = "depaso_notification_inbox";
+
+/** Historial de avisos mostrados (JSON). Se recorta antes de guardar: el almacén seguro es chico. */
+export async function getStoredNotifications(): Promise<string | null> {
+  return store.getItem(NOTIFICATIONS_KEY);
+}
+
+export async function setStoredNotifications(json: string): Promise<void> {
+  await store.setItem(NOTIFICATIONS_KEY, json);
+}
+
+export async function clearStoredNotifications(): Promise<void> {
+  await store.deleteItem(NOTIFICATIONS_KEY);
+}

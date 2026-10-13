@@ -12,6 +12,7 @@ import {
   createPlacesClient,
   createPreferencesClient,
   createMapConfigClient,
+  createCommunityClient,
   createPriceReportsClient,
   createProductsClient,
   createRouteComputeClient,
@@ -45,3 +46,4 @@ export const mapConfigClient = createMapConfigClient(client);
 export const merchantClient = createMerchantClient(client);
 export const adminMerchantClient = createAdminMerchantClient(client);
 export const paymentsClient = createPaymentsClient(client);
+export const communityClient = createCommunityClient(client);

@@ -14,6 +14,8 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
+        // Las pestañas son pares, no una jerarquía: un fundido corto, nunca un deslizamiento.
+        animation: "fade",
         tabBarActiveTintColor: colors.brand.accentDark,
         tabBarInactiveTintColor: colors.text.secondary,
         tabBarStyle: {

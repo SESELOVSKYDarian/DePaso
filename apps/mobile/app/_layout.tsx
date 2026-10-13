@@ -10,6 +10,7 @@ import { useFonts } from "expo-font";
 import { DarkTheme, DefaultTheme, Stack, ThemeProvider as NavigationThemeProvider } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useMemo, type ReactNode } from "react";
+import { Platform } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { typography } from "@depaso/design-tokens";
@@ -28,6 +29,14 @@ import { PurchaseProvider } from "@/lib/purchase/PurchaseContext";
  * el guard se encarga (si `onboardingSeen` pasa a true, expo-router saca "onboarding" del
  * árbol solo y cae al siguiente protegido que sí matchea).
  */
+/** Hoja nativa (la que sube desde abajo y se agranda con el dedo, como en iOS). */
+const sheet = (detents: number[]) => ({
+  presentation: "formSheet" as const,
+  sheetAllowedDetents: detents,
+  sheetGrabberVisible: true,
+  sheetCornerRadius: 24,
+});
+
 function RootNavigator() {
   const colors = useColors();
   const { isBootstrapping, onboardingSeen, isAuthenticated, postSignupDone } = useAuth();
@@ -47,6 +56,10 @@ function RootNavigator() {
         headerTintColor: colors.text.primary,
         headerTitleStyle: { fontFamily: typography.title.fontFamily, fontSize: 17 },
         headerBackButtonDisplayMode: "minimal",
+        // Empujar = deslizar desde la derecha; volver con el gesto de borde (iOS: desde cualquier punto).
+        animation: Platform.OS === "ios" ? "default" : "slide_from_right",
+        gestureEnabled: true,
+        fullScreenGestureEnabled: true,
       }}
     >
       <Stack.Protected guard={!onboardingSeen}>
@@ -76,12 +89,13 @@ function RootNavigator() {
           name="places/form"
           options={{ headerShown: true, title: "Lugar", presentation: "modal" }}
         />
-        <Stack.Screen name="route-context/index" options={{ headerShown: false }} />
-        <Stack.Screen name="optimization/index" options={{ headerShown: false }} />
-        <Stack.Screen name="purchase/index" options={{ headerShown: false }} />
+        {/* Flujo de compra: arma el recorrido subiendo desde abajo y los resultados se funden. */}
+        <Stack.Screen name="route-context/index" options={{ headerShown: false, animation: "slide_from_bottom" }} />
+        <Stack.Screen name="optimization/index" options={{ headerShown: false, animation: "fade" }} />
+        <Stack.Screen name="purchase/index" options={{ headerShown: false, animation: "fade_from_bottom" }} />
         <Stack.Screen
           name="report-price"
-          options={{ headerShown: true, title: "Reportar precio", presentation: "modal" }}
+          options={{ headerShown: true, title: "Reportar precio", ...sheet([0.75, 1]) }}
         />
         <Stack.Screen
           name="lists/[id]"
@@ -89,7 +103,7 @@ function RootNavigator() {
         />
         <Stack.Screen
           name="lists/form"
-          options={{ headerShown: true, title: "Nueva lista", presentation: "modal" }}
+          options={{ headerShown: true, title: "Nueva lista", ...sheet([0.45, 1]) }}
         />
         <Stack.Screen
           name="lists/search"
@@ -107,8 +121,9 @@ function RootNavigator() {
           name="preferences/store-form"
           options={{ headerShown: true, title: "Preferencia de comercio", presentation: "modal" }}
         />
-        <Stack.Screen name="payment-methods" options={{ headerShown: true, title: "Métodos de pago" }} />
-        <Stack.Screen name="appearance" options={{ headerShown: true, title: "Apariencia" }} />
+        <Stack.Screen name="payment-methods" options={{ headerShown: true, title: "Métodos de pago", ...sheet([0.75, 1]) }} />
+        <Stack.Screen name="appearance" options={{ headerShown: true, title: "Apariencia", ...sheet([0.42]) }} />
+        <Stack.Screen name="notifications" options={{ headerShown: true, title: "Notificaciones" }} />
         <Stack.Screen name="help" options={{ headerShown: true, title: "Ayuda" }} />
         <Stack.Screen name="merchant/request" options={{ headerShown: true, title: "Quiero ser comercio" }} />
         <Stack.Screen name="merchant/index" options={{ headerShown: true, title: "Mi comercio" }} />

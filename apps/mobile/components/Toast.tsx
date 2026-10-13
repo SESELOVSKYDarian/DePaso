@@ -1,8 +1,13 @@
-import { createContext, useCallback, useContext, useMemo, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { AccessibilityInfo } from "react-native";
 import * as Haptics from "expo-haptics";
 import type { ColorTokens } from "@depaso/design-tokens";
 import { useColors } from "@/lib/theme";
+import {
+  clearStoredNotifications,
+  getStoredNotifications,
+  setStoredNotifications,
+} from "@/lib/auth/secureStore";
 import {
   DynamicNotifications,
   useDynamicNotifications,
@@ -29,7 +34,30 @@ interface ToastContextValue {
   notify: (options: NotifyOptions) => void;
 }
 
+/** Un aviso ya mostrado, guardado en el historial de "Notificaciones". */
+export interface InboxItem {
+  id: string;
+  title: string;
+  message: string | null;
+  variant: ToastVariant;
+  icon: NotificationIcon;
+  at: number;
+  read: boolean;
+}
+
+interface InboxContextValue {
+  items: InboxItem[];
+  unreadCount: number;
+  markAllRead: () => void;
+  clear: () => void;
+}
+
 const ToastContext = createContext<ToastContextValue | null>(null);
+const InboxContext = createContext<InboxContextValue | null>(null);
+
+/** El almacén seguro es chico (≈2 KB en Android): se guardan pocos avisos y recortados. */
+const MAX_INBOX_ITEMS = 12;
+const MAX_MESSAGE_LENGTH = 90;
 
 /** Título, ícono y color de acento por variante. El acento depende del tema (claro/oscuro). */
 const variants = (colors: ColorTokens): Record<ToastVariant, { title: string; icon: NotificationIcon; accent: string }> => ({
@@ -38,10 +66,50 @@ const variants = (colors: ColorTokens): Record<ToastVariant, { title: string; ic
   error: { title: "No se pudo", icon: "alert-circle", accent: colors.state.errorStrong },
 });
 
+function parseInbox(raw: string | null): InboxItem[] {
+  if (!raw) return [];
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter(
+        (item): item is InboxItem =>
+          typeof item === "object" && item !== null && typeof (item as InboxItem).id === "string",
+      )
+      .slice(0, MAX_INBOX_ITEMS);
+  } catch {
+    return [];
+  }
+}
+
 function ToastBridge({ children }: { children: ReactNode }) {
   const { trigger } = useDynamicNotifications();
   const colors = useColors();
   const presets = useMemo(() => variants(colors), [colors]);
+  const [items, setItems] = useState<InboxItem[]>([]);
+  const loaded = useRef(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    void getStoredNotifications().then((raw) => {
+      if (cancelled) return;
+      loaded.current = true;
+      // Lo que llegó mientras cargaba queda arriba del historial guardado.
+      setItems((current) => [...current, ...parseInbox(raw)].slice(0, MAX_INBOX_ITEMS));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!loaded.current) return;
+    if (items.length === 0) {
+      void clearStoredNotifications();
+      return;
+    }
+    void setStoredNotifications(JSON.stringify(items)).catch(() => undefined);
+  }, [items]);
 
   const notify = useCallback(
     ({ title, message, variant = "info", icon, duration, onPress }: NotifyOptions) => {
@@ -55,6 +123,20 @@ function ToastBridge({ children }: { children: ReactNode }) {
         ...(onPress ? { onPress } : {}),
       };
       trigger(notification);
+      setItems((current) =>
+        [
+          {
+            id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+            title,
+            message: message ? message.slice(0, MAX_MESSAGE_LENGTH) : null,
+            variant,
+            icon: icon ?? preset.icon,
+            at: Date.now(),
+            read: false,
+          },
+          ...current,
+        ].slice(0, MAX_INBOX_ITEMS),
+      );
       // Un toast aparece fuera del foco: sin esto un lector de pantalla nunca se entera.
       AccessibilityInfo.announceForAccessibility([title, message].filter(Boolean).join(". "));
       // Sólo el éxito lleva háptico: los errores pueden venir de cargas automáticas, sin gesto.
@@ -70,8 +152,22 @@ function ToastBridge({ children }: { children: ReactNode }) {
     [notify, presets],
   );
 
-  const value = useMemo<ToastContextValue>(() => ({ show, notify }), [show, notify]);
-  return <ToastContext.Provider value={value}>{children}</ToastContext.Provider>;
+  const markAllRead = useCallback(() => {
+    setItems((current) => (current.some((item) => !item.read) ? current.map((item) => ({ ...item, read: true })) : current));
+  }, []);
+  const clear = useCallback(() => setItems([]), []);
+
+  const toastValue = useMemo<ToastContextValue>(() => ({ show, notify }), [show, notify]);
+  const inboxValue = useMemo<InboxContextValue>(
+    () => ({ items, unreadCount: items.filter((item) => !item.read).length, markAllRead, clear }),
+    [items, markAllRead, clear],
+  );
+
+  return (
+    <ToastContext.Provider value={toastValue}>
+      <InboxContext.Provider value={inboxValue}>{children}</InboxContext.Provider>
+    </ToastContext.Provider>
+  );
 }
 
 /** Notificaciones tipo "Dynamic Island" del catálogo (sección 74). Una activa a la vez. */
@@ -86,5 +182,12 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 export function useToast(): ToastContextValue {
   const ctx = useContext(ToastContext);
   if (!ctx) throw new Error("useToast debe usarse dentro de <ToastProvider>");
+  return ctx;
+}
+
+/** Historial de avisos mostrados, para la pantalla "Notificaciones". */
+export function useNotificationInbox(): InboxContextValue {
+  const ctx = useContext(InboxContext);
+  if (!ctx) throw new Error("useNotificationInbox debe usarse dentro de <ToastProvider>");
   return ctx;
 }
