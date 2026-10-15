@@ -10,6 +10,7 @@ import {
   type RegisterRequest,
   type ResetPasswordRequest,
   type UpdateProfileRequest,
+  type VerifyResetCodeRequest,
 } from "@depaso/validation";
 import type { DepasoApiClient } from "./client";
 
@@ -25,6 +26,7 @@ export function createAuthClient(client: DepasoApiClient) {
     oauthLogin: (provider: OAuthProviderId, body: OAuthLoginRequest) =>
       client.post(`/api/auth/oauth/${provider}`, body, authResponseSchema),
     forgotPassword: (body: ForgotPasswordRequest) => client.post("/api/auth/forgot-password", body, okSchema),
+    verifyResetCode: (body: VerifyResetCodeRequest) => client.post("/api/auth/verify-reset-code", body, okSchema),
     resetPassword: (body: ResetPasswordRequest) => client.post("/api/auth/reset-password", body, okSchema),
     me: () => client.get("/api/auth/me", authUserResponseSchema),
     updateProfile: (body: UpdateProfileRequest) =>

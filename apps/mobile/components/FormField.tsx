@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
+import { useState, type Ref } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View, type TextInputProps } from "react-native";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles, useColors } from "@/lib/theme";
@@ -10,9 +10,20 @@ interface FormFieldProps extends TextInputProps {
   hint?: string;
   /** Muestra el toggle de mostrar/ocultar (sólo tiene sentido con `secureTextEntry`). */
   isPassword?: boolean;
+  /** Referencia al TextInput interno (para pasar el foco al siguiente campo). */
+  inputRef?: Ref<TextInput>;
 }
 
-export function FormField({ label, error, hint, isPassword = false, secureTextEntry, style, ...inputProps }: FormFieldProps) {
+export function FormField({
+  label,
+  error,
+  hint,
+  isPassword = false,
+  secureTextEntry,
+  style,
+  inputRef,
+  ...inputProps
+}: FormFieldProps) {
   const colors = useColors();
   const styles = useStyles();
   const [reveal, setReveal] = useState(false);
@@ -22,6 +33,7 @@ export function FormField({ label, error, hint, isPassword = false, secureTextEn
       <Text style={styles.label}>{label}</Text>
       <View style={styles.inputRow}>
         <TextInput
+          ref={inputRef}
           style={[styles.input, isPassword ? styles.inputWithIcon : null, error ? styles.inputError : null, style]}
           placeholderTextColor={colors.text.muted}
           autoCapitalize="none"

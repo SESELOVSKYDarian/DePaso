@@ -87,6 +87,13 @@ const resetByCodeSchema = z.object({
   password: passwordSchema,
 });
 export const resetPasswordRequestSchema = z.union([resetByTokenSchema, resetByCodeSchema]);
+
+/** Paso 2 de la recuperación: comprueba el código sin cambiar nada. */
+export const verifyResetCodeRequestSchema = z.object({
+  email: emailSchema,
+  code: z.string().regex(/^d{8}$/),
+});
+export type VerifyResetCodeRequest = z.infer<typeof verifyResetCodeRequestSchema>;
 export type ResetPasswordRequest = z.infer<typeof resetPasswordRequestSchema>;
 
 export const updateProfileRequestSchema = z.object({
