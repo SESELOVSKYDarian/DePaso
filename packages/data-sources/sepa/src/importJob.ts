@@ -1,4 +1,5 @@
 import { prisma } from "@depaso/database";
+import { classifyProductType } from "@depaso/domain";
 import type { ImportSourceType } from "@depaso/database";
 import { createGeoScopeService, type MarketRegionConfig } from "@depaso/geo";
 import { iterateSepaDailyArchive } from "./archive";
@@ -441,6 +442,7 @@ async function resolveProductVariant(producto: ProductoRow, eanConfirmed: boolea
       name: producto.descripcion,
       normalizedName,
       category: UNCATEGORIZED_LABEL,
+      productType: classifyProductType(producto.descripcion),
       brandId: brand?.id,
     },
   });

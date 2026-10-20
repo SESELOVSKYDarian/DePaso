@@ -324,6 +324,9 @@ importers:
       '@depaso/database':
         specifier: workspace:*
         version: link:../../database
+      '@depaso/domain':
+        specifier: workspace:*
+        version: link:../../domain
       '@depaso/geo':
         specifier: workspace:*
         version: link:../../geo

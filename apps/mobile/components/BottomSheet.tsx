@@ -34,7 +34,7 @@ export function BottomSheet({ visible, onClose, children }: BottomSheetProps) {
 const useStyles = makeStyles((colors) => StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: "rgba(26, 19, 65, 0.45)",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "flex-end",
   },
   sheet: {

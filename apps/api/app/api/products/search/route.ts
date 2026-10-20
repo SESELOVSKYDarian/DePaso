@@ -3,18 +3,24 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
 import { searchProducts } from "@/lib/products";
 
-/** Búsqueda de catálogo (Fase 8, sección 37) — `GET /api/products/search?q=...`. */
+/**
+ * Búsqueda de catálogo (Fase 8, sección 37) - `GET /api/products/search?q=...&type=...&brandId=...`.
+ * `type` y `brandId` son filtros opcionales; alcanza con uno de los tres criterios.
+ */
 export async function GET(request: NextRequest) {
   const current = await getCurrentUser(request);
   if (!current) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
 
+  const params = request.nextUrl.searchParams;
   const parsed = productSearchQuerySchema.safeParse({
-    q: request.nextUrl.searchParams.get("q") ?? "",
+    q: params.get("q") ?? "",
+    type: params.get("type") ?? undefined,
+    brandId: params.get("brandId") ?? undefined,
   });
   if (!parsed.success) {
     return NextResponse.json({ error: "INVALID_REQUEST", issues: parsed.error.issues }, { status: 400 });
   }
 
-  const results = await searchProducts(parsed.data.q);
+  const results = await searchProducts(parsed.data.q, { type: parsed.data.type, brandId: parsed.data.brandId });
   return NextResponse.json({ results });
 }

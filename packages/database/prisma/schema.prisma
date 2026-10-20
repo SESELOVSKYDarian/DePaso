@@ -310,11 +310,15 @@ model Product {
   /// `imageCheckedAt` seteado = ya se buscó y no hay foto; no se vuelve a pedir por un tiempo.
   imageUrl       String?
   imageCheckedAt DateTime?
+  /// Tipo derivado del nombre ("gaseosa", "vino"…), ver `classifyProductType` en @depaso/domain.
+  /// `null` = no se reconoció; el producto se sigue encontrando por texto.
+  productType    String?
   variants ProductVariant[]
   preferences ProductPreference[]
 
   @@index([category])
   @@index([normalizedName])
+  @@index([productType])
   @@map("products")
 }
 

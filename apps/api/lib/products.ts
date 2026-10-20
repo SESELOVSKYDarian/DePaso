@@ -1,13 +1,22 @@
 import { Prisma, prisma } from "@depaso/database";
-import type { ProductSearchResult } from "@depaso/validation";
+import { PRODUCT_TYPE_LABELS } from "@depaso/domain";
+import type { ProductFacets, ProductSearchResult } from "@depaso/validation";
 import { loadProductImages } from "./productImages";
 import { prettifyBrandName, prettifyProductName } from "./productNames";
 
 const MAX_RESULTS = 30;
+const MAX_FACET_TYPES = 12;
+const MAX_FACET_BRANDS = 25;
 /** Candidatos que se rankean por popularidad; el resto queda afuera por tier y largo del nombre. */
 const POPULARITY_POOL = 400;
 /** Palabras que no ayudan a encontrar nada y harían candidatos a casi todo el catálogo. */
 const STOPWORDS = new Set(["de", "del", "la", "el", "los", "las", "con", "sin", "y", "en", "x", "para"]);
+
+export interface ProductSearchFilters {
+  /** Id de tipo (`"gaseosa"`, `"vino"`…), ver `@depaso/domain`. */
+  type?: string | undefined;
+  brandId?: string | undefined;
+}
 
 interface RankedRow {
   id: string;
@@ -32,6 +41,37 @@ function escapeLike(token: string): string {
   return token.replace(/[\\%_]/g, (char) => `\\${char}`);
 }
 
+const nameExpr = Prisma.sql`COALESCE(p."normalizedName", lower(p.name))`;
+const brandExpr = Prisma.sql`lower(COALESCE(b.name, ''))`;
+
+/** Palabras de la búsqueda que realmente filtran (sin conectores). */
+function searchTokens(normalized: string): string[] {
+  if (!normalized) return [];
+  const all = normalized.split(" ");
+  const meaningful = all.filter((token) => !STOPWORDS.has(token));
+  return meaningful.length > 0 ? meaningful : all;
+}
+
+/** Condiciones que dependen de las palabras buscadas (nombre o marca). */
+function textConditions(tokens: string[]): Prisma.Sql[] {
+  const singleLetter = tokens.length === 1 && (tokens[0]?.length ?? 0) < 2;
+  return tokens.map((token) => {
+    const pattern = singleLetter ? `${escapeLike(token)}%` : `%${escapeLike(token)}%`;
+    return Prisma.sql`(${nameExpr} LIKE ${pattern} OR ${brandExpr} LIKE ${pattern})`;
+  });
+}
+
+function filterConditions(filters: ProductSearchFilters): Prisma.Sql[] {
+  const conditions: Prisma.Sql[] = [];
+  if (filters.type) conditions.push(Prisma.sql`p."productType" = ${filters.type}`);
+  if (filters.brandId) conditions.push(Prisma.sql`p."brandId" = ${filters.brandId}`);
+  return conditions;
+}
+
+function whereClause(conditions: Prisma.Sql[]): Prisma.Sql {
+  return conditions.length > 0 ? Prisma.sql`WHERE ${Prisma.join(conditions, " AND ")}` : Prisma.empty;
+}
+
 /**
  * Búsqueda de catálogo para armar la lista de compras. Lo que busca la gente es el producto
  * genérico ("arroz"), no la última marca que lo trae en el nombre, así que el orden es:
@@ -44,27 +84,37 @@ function escapeLike(token: string): string {
  *
  * Dentro de cada grupo van primero los que más comercios publican (el producto "de verdad"
  * del barrio) y, a igualdad, el nombre más corto. Todas las palabras de la búsqueda tienen
- * que aparecer en el nombre o en la marca.
+ * que aparecer en el nombre o en la marca. Con `filters` se acota por tipo y/o marca; sin
+ * texto de búsqueda alcanza con un filtro (explorar "Gaseosas" sin escribir nada).
  */
-export async function searchProducts(query: string): Promise<ProductSearchResult[]> {
+export async function searchProducts(
+  query: string,
+  filters: ProductSearchFilters = {},
+): Promise<ProductSearchResult[]> {
   const normalized = normalizeQuery(query);
-  if (!normalized) return [];
+  const tokens = searchTokens(normalized);
+  const extra = filterConditions(filters);
+  if (tokens.length === 0 && extra.length === 0) return [];
 
-  const allTokens = normalized.split(" ");
-  const meaningful = allTokens.filter((token) => !STOPWORDS.has(token));
-  const tokens = meaningful.length > 0 ? meaningful : allTokens;
-  const first = tokens[0] ?? normalized;
-  const singleLetter = tokens.length === 1 && first.length < 2;
+  const conditions = [...textConditions(tokens), ...extra];
 
-  const nameExpr = Prisma.sql`COALESCE(p."normalizedName", lower(p.name))`;
-  const brandExpr = Prisma.sql`lower(COALESCE(b.name, ''))`;
-
-  const tokenMatches = tokens.map((token) => {
-    const pattern = singleLetter ? `${escapeLike(token)}%` : `%${escapeLike(token)}%`;
-    return Prisma.sql`(${nameExpr} LIKE ${pattern} OR ${brandExpr} LIKE ${pattern})`;
-  });
-  const allInName = tokens.map((token) => Prisma.sql`${nameExpr} LIKE ${`%${escapeLike(token)}%`}`);
-  const firstEscaped = escapeLike(first);
+  const tierExpr =
+    tokens.length === 0
+      ? Prisma.sql`1`
+      : (() => {
+          const first = escapeLike(tokens[0] ?? normalized);
+          const allInName = Prisma.join(
+            tokens.map((token) => Prisma.sql`${nameExpr} LIKE ${`%${escapeLike(token)}%`}`),
+            " AND ",
+          );
+          return Prisma.sql`CASE
+            WHEN ${nameExpr} = ${normalized} THEN 0
+            WHEN ${allInName} AND ${nameExpr} LIKE ${`${first} %`} THEN 1
+            WHEN ${allInName} AND (' ' || ${nameExpr} || ' ') LIKE ${`% ${first} %`} THEN 2
+            WHEN ${allInName} THEN 3
+            ELSE 4
+          END`;
+        })();
 
   const ranked = await prisma.$queryRaw<RankedRow[]>(Prisma.sql`
     WITH cand AS (
@@ -73,17 +123,11 @@ export async function searchProducts(query: string): Promise<ProductSearchResult
         p.name,
         p.category,
         b.name AS "brandName",
-        CASE
-          WHEN ${nameExpr} = ${normalized} THEN 0
-          WHEN ${Prisma.join(allInName, " AND ")} AND ${nameExpr} LIKE ${`${firstEscaped} %`} THEN 1
-          WHEN ${Prisma.join(allInName, " AND ")} AND (' ' || ${nameExpr} || ' ') LIKE ${`% ${firstEscaped} %`} THEN 2
-          WHEN ${Prisma.join(allInName, " AND ")} THEN 3
-          ELSE 4
-        END AS tier,
+        ${tierExpr} AS tier,
         length(p.name) AS name_length
       FROM products p
       LEFT JOIN brands b ON b.id = p."brandId"
-      WHERE ${Prisma.join(tokenMatches, " AND ")}
+      ${whereClause(conditions)}
       ORDER BY tier, name_length
       LIMIT ${POPULARITY_POOL}
     )
@@ -134,4 +178,48 @@ export async function searchProducts(query: string): Promise<ProductSearchResult
       unitSize: variant.unitSize,
     })),
   }));
+}
+
+/**
+ * Opciones de filtro para una búsqueda, con cuántos productos tiene cada una:
+ *  - tipos: sobre lo que matchea el texto (y la marca elegida, si hay), para poder cambiar de tipo;
+ *  - marcas: sobre lo que matchea el texto y el tipo elegido.
+ * Así cada lista se arma sin el filtro propio y siempre se puede cambiar o quitar.
+ */
+export async function getProductFacets(query: string, filters: ProductSearchFilters = {}): Promise<ProductFacets> {
+  const tokens = searchTokens(normalizeQuery(query));
+  const text = textConditions(tokens);
+
+  const typeConditions = [...text, ...filterConditions({ brandId: filters.brandId })];
+  const brandConditions = [...text, ...filterConditions({ type: filters.type }), Prisma.sql`p."brandId" IS NOT NULL`];
+
+  const [typeRows, brandRows] = await Promise.all([
+    prisma.$queryRaw<{ id: string; count: number }[]>(Prisma.sql`
+      SELECT p."productType" AS id, count(*)::int AS count
+      FROM products p
+      LEFT JOIN brands b ON b.id = p."brandId"
+      ${whereClause([...typeConditions, Prisma.sql`p."productType" IS NOT NULL`])}
+      GROUP BY p."productType"
+      ORDER BY count DESC
+      LIMIT ${MAX_FACET_TYPES}
+    `),
+    prisma.$queryRaw<{ id: string; name: string; count: number }[]>(Prisma.sql`
+      SELECT b.id, b.name, count(*)::int AS count
+      FROM products p
+      JOIN brands b ON b.id = p."brandId"
+      ${whereClause(brandConditions)}
+      GROUP BY b.id, b.name
+      ORDER BY count DESC, b.name
+      LIMIT ${MAX_FACET_BRANDS}
+    `),
+  ]);
+
+  return {
+    types: typeRows.map((row) => ({ id: row.id, label: PRODUCT_TYPE_LABELS[row.id] ?? row.id, count: row.count })),
+    brands: brandRows.map((row) => ({
+      id: row.id,
+      name: prettifyBrandName(row.name) ?? row.name,
+      count: row.count,
+    })),
+  };
 }

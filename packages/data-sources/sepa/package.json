@@ -10,10 +10,12 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "sepa:inspect": "tsx scripts/inspect.ts",
-    "sepa:import": "tsx scripts/import.ts"
+    "sepa:import": "tsx scripts/import.ts",
+    "backfill-types": "tsx scripts/backfillProductTypes.ts"
   },
   "dependencies": {
     "@depaso/database": "workspace:*",
+    "@depaso/domain": "workspace:*",
     "@depaso/geo": "workspace:*",
     "adm-zip": "^0.5.16"
   },
