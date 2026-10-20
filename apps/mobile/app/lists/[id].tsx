@@ -1,6 +1,7 @@
 import type { ShoppingListResponse } from "@depaso/validation";
 import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
+import { Ionicons } from "@expo/vector-icons";
 import { FlatList, StyleSheet, Text, TextInput, View } from "react-native";
 import Animated, { FadeInDown, FadeOutLeft, useReducedMotion } from "react-native-reanimated";
 import { motion, radii, spacing, typography } from "@depaso/design-tokens";
@@ -22,6 +23,7 @@ export default function ListDetailScreen() {
   const { user } = useAuth();
   const { show: showToast } = useToast();
   const [shareEmail, setShareEmail] = useState("");
+  const [shareOpen, setShareOpen] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const reducedMotion = useReducedMotion();
   // `itemCount` del resumen compartido (`ListsContext`) — cambia cuando `lists/search.tsx`
@@ -138,9 +140,26 @@ export default function ListDetailScreen() {
   }
 
   const isOwner = list.role === "OWNER";
+  const shareLabel = isOwner
+    ? list.members.length === 0
+      ? "Compartir lista"
+      : `Compartida con ${list.members.length} ${list.members.length === 1 ? "persona" : "personas"}`
+    : `Compartida por ${list.ownerName ?? "otra persona"}`;
 
   return (
     <View style={styles.container}>
+      <AnimatedPressable
+        accessibilityLabel={shareLabel}
+        haptic={false}
+        onPress={() => setShareOpen((open) => !open)}
+        style={styles.shareToggle}
+      >
+        <Ionicons name="people-outline" size={20} color={colors.text.secondary} />
+        <Text style={styles.shareToggleLabel}>{shareLabel}</Text>
+        <Ionicons name={shareOpen ? "chevron-up" : "chevron-down"} size={16} color={colors.text.tertiary} />
+      </AnimatedPressable>
+
+      {shareOpen ? (
       <View style={styles.sharePanel}>
         {isOwner ? (
           <>
@@ -197,6 +216,7 @@ export default function ListDetailScreen() {
           </View>
         )}
       </View>
+      ) : null}
 
       {list.items.length === 0 ? (
         <EmptyState
@@ -289,11 +309,30 @@ const useStyles = makeStyles((colors) => StyleSheet.create({
   },
   list: {
     padding: spacing.lg,
+    gap: spacing.md,
+  },
+  shareToggle: {
+    flexDirection: "row",
+    alignItems: "center",
     gap: spacing.sm,
+    minHeight: 48,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.md,
+    paddingHorizontal: spacing.md,
+    backgroundColor: colors.surface.primary,
+    borderRadius: radii.xl,
+    borderWidth: 1,
+    borderColor: colors.border.subtle,
+  },
+  shareToggleLabel: {
+    flex: 1,
+    fontFamily: typography.body.fontFamily,
+    fontSize: 15,
+    color: colors.text.primary,
   },
   sharePanel: {
     marginHorizontal: spacing.lg,
-    marginTop: spacing.md,
+    marginTop: spacing.sm,
     padding: spacing.sm,
     gap: spacing.xs,
     backgroundColor: colors.surface.primary,

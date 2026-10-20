@@ -3,7 +3,6 @@ import type { ShoppingListSummary } from "@depaso/validation";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles, useColors } from "@/lib/theme";
 import { router } from "expo-router";
-import { useState } from "react";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
@@ -12,56 +11,35 @@ import { Skeleton } from "@/components/Skeleton";
 import { useLists } from "@/lib/lists/ListsContext";
 
 /**
- * Mis listas (Fase 9). El backend real (`ShoppingList` CRUD) ya existe — ver
- * `docs/development/IMPLEMENTATION-PLAN.md`. "Compartidas" sigue sin implementar (no hay
- * modelo de lista compartida entre usuarios todavía).
+ * Mis listas. Una sola lista, sin pestañas: las que compartieron con vos aparecen mezcladas
+ * y se distinguen por una línea chica debajo del nombre.
  */
 export default function ListsScreen() {
   const colors = useColors();
   const styles = useStyles();
   const { lists, isLoading, error } = useLists();
-  const [tab, setTab] = useState<"mine" | "shared">("mine");
 
   const active = lists.filter((l) => !l.archivedAt);
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.headerRow}>
-        <Text style={styles.title}>Mis listas</Text>
+        <Text accessibilityRole="header" style={styles.title}>
+          Mis listas
+        </Text>
         <AnimatedPressable
           accessibilityLabel="Crear una lista nueva"
           onPress={() => router.push("/lists/form")}
           style={styles.addButton}
         >
-          <Ionicons name="add" size={20} color={colors.text.onLime} />
+          <Ionicons name="add" size={24} color={colors.text.onNavy} />
         </AnimatedPressable>
       </View>
 
-      <View style={styles.tabs}>
-        <AnimatedPressable
-          accessibilityLabel="Mis listas"
-          haptic={false}
-          onPress={() => setTab("mine")}
-          style={[styles.tabButton, tab === "mine" ? styles.tabButtonActive : null]}
-        >
-          <Text style={[styles.tabLabel, tab === "mine" ? styles.tabLabelActive : null]}>Mis listas</Text>
-        </AnimatedPressable>
-        <AnimatedPressable
-          accessibilityLabel="Compartidas"
-          haptic={false}
-          onPress={() => setTab("shared")}
-          style={[styles.tabButton, tab === "shared" ? styles.tabButtonActive : null]}
-        >
-          <Text style={[styles.tabLabel, tab === "shared" ? styles.tabLabelActive : null]}>Compartidas</Text>
-        </AnimatedPressable>
-      </View>
-
-      {tab === "shared" ? (
-        <EmptyState emoji="🤝" title="Todavía no hay listas compartidas" description="Compartir listas con otras personas llega en una fase siguiente." />
-      ) : isLoading && active.length === 0 ? (
+      {isLoading && active.length === 0 ? (
         <View style={styles.list}>
           {[0, 1, 2].map((i) => (
-            <Skeleton key={i} width="100%" height={72} borderRadius={12} />
+            <Skeleton key={i} width="100%" height={72} borderRadius={16} />
           ))}
         </View>
       ) : error ? (
@@ -70,13 +48,14 @@ export default function ListsScreen() {
         <EmptyState
           emoji="📝"
           title="Todavía no tenés listas"
-          description="Creá tu primera lista y empezá a agregar productos — es lo que necesita el motor de optimización para armar tu Top 3."
+          description="Armá una con lo que te falta y nosotros buscamos dónde te queda de paso."
         />
       ) : (
         <FlatList
           data={active}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
           renderItem={({ item }) => <ListCard list={item} />}
         />
       )}
@@ -87,6 +66,14 @@ export default function ListsScreen() {
 function ListCard({ list }: { list: ShoppingListSummary }) {
   const colors = useColors();
   const styles = useStyles();
+  const count = `${list.itemCount} ${list.itemCount === 1 ? "producto" : "productos"}`;
+  const sharedNote =
+    list.role === "MEMBER"
+      ? `Compartida por ${list.ownerName ?? "otra persona"}`
+      : list.memberCount > 0
+        ? "Compartida"
+        : null;
+
   return (
     <AnimatedPressable
       accessibilityLabel={`Abrir lista ${list.name}`}
@@ -94,99 +81,79 @@ function ListCard({ list }: { list: ShoppingListSummary }) {
       onPress={() => router.push({ pathname: "/lists/[id]", params: { id: list.id } })}
       style={styles.card}
     >
-      <View style={styles.cardHeader}>
-        <Text style={styles.cardTitle}>{list.name}</Text>
-        <Ionicons name="chevron-forward" size={16} color={colors.text.muted} />
+      <View style={styles.cardText}>
+        <Text style={styles.cardTitle} numberOfLines={1}>
+          {list.name}
+        </Text>
+        <Text style={styles.cardMeta} numberOfLines={1}>
+          {sharedNote ? `${count}  ·  ${sharedNote}` : count}
+        </Text>
       </View>
-      <Text style={styles.cardMeta}>
-        {list.itemCount} {list.itemCount === 1 ? "producto" : "productos"}
-        {list.role === "MEMBER"
-          ? ` · Compartida por ${list.ownerName ?? "otra persona"}`
-          : list.memberCount > 0
-            ? ` · Compartida con ${list.memberCount} ${list.memberCount === 1 ? "persona" : "personas"}`
-            : ""}
-      </Text>
+      <Ionicons name="chevron-forward" size={18} color={colors.text.tertiary} />
     </AnimatedPressable>
   );
 }
 
-const useStyles = makeStyles((colors) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.surface.base,
-  },
-  headerRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-  },
-  title: {
-    fontFamily: typography.heroTitle.fontFamily,
-    fontSize: 24,
-    color: colors.text.primary,
-  },
-  addButton: {
-    width: 36,
-    height: 36,
-    borderRadius: radii.full,
-    backgroundColor: colors.brand.accent,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  tabs: {
-    flexDirection: "row",
-    marginHorizontal: spacing.lg,
-    marginTop: spacing.md,
-    backgroundColor: colors.surface.primary,
-    borderRadius: radii.full,
-    borderWidth: 1,
-    borderColor: colors.border.subtle,
-    padding: 3,
-  },
-  tabButton: {
-    flex: 1,
-    alignItems: "center",
-    paddingVertical: spacing.xs,
-    borderRadius: radii.full,
-  },
-  tabButtonActive: {
-    backgroundColor: colors.brand.navy,
-  },
-  tabLabel: {
-    fontFamily: typography.body.fontFamily,
-    fontSize: 13,
-    color: colors.text.secondary,
-  },
-  tabLabelActive: {
-    color: colors.text.onNavy,
-  },
-  list: {
-    padding: spacing.lg,
-    gap: spacing.sm,
-  },
-  card: {
-    backgroundColor: colors.surface.primary,
-    borderRadius: radii.md,
-    borderWidth: 1,
-    borderColor: colors.border.subtle,
-    padding: spacing.md,
-  },
-  cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  cardTitle: {
-    fontFamily: typography.itemTitle.fontFamily,
-    fontSize: 15,
-    color: colors.text.primary,
-  },
-  cardMeta: {
-    fontFamily: typography.caption.fontFamily,
-    fontSize: 12,
-    color: colors.text.secondary,
-    marginTop: 2,
-  },
-}));
+const useStyles = makeStyles((colors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.surface.base,
+    },
+    headerRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.lg,
+      paddingBottom: spacing.md,
+    },
+    title: {
+      fontFamily: typography.heroTitle.fontFamily,
+      fontSize: 32,
+      lineHeight: 38,
+      color: colors.text.primary,
+    },
+    addButton: {
+      width: 44,
+      height: 44,
+      borderRadius: radii.full,
+      backgroundColor: colors.brand.navy,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    list: {
+      paddingHorizontal: spacing.lg,
+      paddingTop: spacing.xs,
+      paddingBottom: spacing.xxl,
+      gap: spacing.md,
+    },
+    card: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.sm,
+      minHeight: 72,
+      backgroundColor: colors.surface.primary,
+      borderRadius: radii.xl,
+      borderWidth: 1,
+      borderColor: colors.border.subtle,
+      paddingHorizontal: spacing.lg,
+      paddingVertical: spacing.md,
+    },
+    cardText: {
+      flex: 1,
+      gap: 2,
+    },
+    cardTitle: {
+      fontFamily: typography.itemTitle.fontFamily,
+      fontSize: 17,
+      lineHeight: 24,
+      color: colors.text.primary,
+    },
+    cardMeta: {
+      fontFamily: typography.subtitle.fontFamily,
+      fontSize: 14,
+      color: colors.text.secondary,
+    },
+  }),
+);
