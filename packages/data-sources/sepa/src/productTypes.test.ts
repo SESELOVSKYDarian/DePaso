@@ -50,6 +50,12 @@ describe("classifyProductType", () => {
     ["CEL GALAXY A26 5G BLACK", "electro"],
     ["AIRE ACON BGH BS26WCAT FC", "electro"],
     ["LB 101 CUENTOS CORTOS PARA COMPARTIR", "libro"],
+    ["VERMOUTH CINZANO ROSSO 950ML", "destilado"],
+    ["GUANTES DE LATEX LIMPIEZA", "esponja"],
+    ["HISOPOS COTTON BUDS X100", "farmacia"],
+    ["PELUCHE OSO 30CM", "juguete"],
+    ["HELADERA GAFA NO FROST", "electro"],
+    ["SET 10 BOWL SOUL LIFE DESCARTABLE", "hogar"],
     ["ZZZ PRODUCTO RARO", null],
     ["", null],
   ];

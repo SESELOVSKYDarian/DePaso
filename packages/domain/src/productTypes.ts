@@ -22,7 +22,7 @@ export interface ProductTypeDef {
 export const PRODUCT_TYPES: readonly ProductTypeDef[] = [
   // --- Bebidas sin alcohol
   { id: "gaseosa", label: "Gaseosas", words: ["gaseosa", "gaseosas", "cola", "coca", "pepsi", "sprite", "fanta", "manaos", "schweppes", "tonica", "cunnington", "seven"] },
-  { id: "agua", label: "Aguas y sodas", words: ["agua", "aguas", "soda", "sodas", "sifon"] },
+  { id: "agua", label: "Aguas y sodas", words: ["agua", "aguas", "soda", "sodas", "sifon", "saborizada", "saborizadas"] },
   { id: "jugo", label: "Jugos", words: ["jugo", "jugos", "jug", "nectar", "limonada", "polvo", "smoothie"] },
   { id: "energizante", label: "Energizantes e isotónicas", words: ["energizante", "energizantes", "isotonica", "isotonico", "gatorade", "powerade"] },
   { id: "bebida", label: "Otras bebidas", words: ["bebida", "bebidas"] },
@@ -30,7 +30,7 @@ export const PRODUCT_TYPES: readonly ProductTypeDef[] = [
   { id: "cerveza", label: "Cervezas", words: ["cerveza", "cervezas", "cerv", "stout"] },
   { id: "vino", label: "Vinos", words: ["vino", "vinos", "vin", "malbec", "cabernet", "torrontes", "chardonnay", "syrah", "bonarda", "merlot"] },
   { id: "espumante", label: "Espumantes y sidras", words: ["espumante", "espumantes", "champagne", "champan", "sidra", "sidras"] },
-  { id: "destilado", label: "Whisky, vodka y licores", words: ["whisky", "whiskey", "vodka", "gin", "ron", "tequila", "licor", "licores", "aperitivo", "aperitivos", "fernet", "amargo", "amargos", "cognac", "grappa"] },
+  { id: "destilado", label: "Whisky, vodka y licores", words: ["whisky", "whiskey", "vodka", "gin", "ron", "tequila", "licor", "licores", "aperitivo", "aperitivos", "vermouth", "fernet", "amargo", "amargos", "cognac", "grappa"] },
   // --- Infusiones
   { id: "yerba", label: "Yerba", words: ["yerba", "yerbas"] },
   { id: "mate", label: "Mates y termos", words: ["mate", "mates", "termo", "termos", "bombilla", "bombillas"] },
@@ -69,11 +69,11 @@ export const PRODUCT_TYPES: readonly ProductTypeDef[] = [
   { id: "detergente", label: "Detergentes", words: ["detergente", "detergentes", "det", "lavavajilla", "lavavajillas", "lavavaj"] },
   { id: "lavado_ropa", label: "Lavado de ropa", words: ["lavarropas", "suavizante", "suavizantes", "suav", "quitamanchas", "blanqueador"] },
   { id: "lavandina", label: "Lavandina y desinfectantes", words: ["lavandina", "lavandinas", "cloro", "desinfectante", "desinfectantes", "desinf"] },
-  { id: "limpiador", label: "Limpiadores", words: ["limpiador", "limpiadores", "limp", "limpiapisos", "limpia", "multiuso", "desengrasante", "antigrasa", "cif"] },
+  { id: "limpiador", label: "Limpiadores", words: ["limpiador", "limpiadores", "limp", "limpiapisos", "limpia", "multiuso", "desengrasante", "antigrasa", "cif", "cera"] },
   { id: "jabon", label: "Jabones", words: ["jabon", "jabones", "jab"] },
-  { id: "esponja", label: "Esponjas y paños", words: ["esponja", "esponjas", "pano", "panos", "trapo", "trapos", "rejilla", "rejillas", "virulana", "escobillon", "escoba", "secador", "balde"] },
+  { id: "esponja", label: "Esponjas y paños", words: ["esponja", "esponjas", "pano", "panos", "trapo", "trapos", "rejilla", "rejillas", "virulana", "escobillon", "escoba", "secador", "balde", "guante", "guantes"] },
   { id: "bolsa", label: "Bolsas y envoltorios", words: ["bolsa", "bolsas", "film", "aluminio"] },
-  { id: "aromatizante", label: "Aromatizantes y repelentes", words: ["aromatizante", "aromatizantes", "difusor", "difusores", "sahumerio", "sahumerios", "vela", "velas", "insecticida", "insecticidas", "repelente", "repelentes", "aerosol"] },
+  { id: "aromatizante", label: "Aromatizantes y repelentes", words: ["aromatizante", "aromatizantes", "difusor", "difusores", "sahumerio", "sahumerios", "vela", "velas", "insecticida", "insecticidas", "repelente", "repelentes", "aerosol", "aromatizador", "aromat"] },
   { id: "papel", label: "Papel y servilletas", words: ["papel", "rollo", "rollos", "servilleta", "servilletas", "panuelos", "panuelo"] },
   // --- Cuidado personal y bebés
   { id: "shampoo", label: "Shampoo", words: ["shampoo", "shamp", "sh", "sha", "champu", "shampu"] },
@@ -88,10 +88,12 @@ export const PRODUCT_TYPES: readonly ProductTypeDef[] = [
   { id: "bebe", label: "Pañales y bebés", words: ["panal", "panales", "toallitas", "toallita", "mamadera", "chupete", "biberon"] },
   // --- Hogar y otros
   { id: "mascota", label: "Mascotas", words: ["balanceado", "mascota", "mascotas", "perro", "perros", "gato", "gatos"] },
-  { id: "hogar", label: "Hogar y cocina", words: ["vaso", "vasos", "plato", "platos", "taza", "tazas", "hermetico", "canasta", "cesto", "organizador", "botella", "jarra", "olla", "sarten", "tapper", "colador", "cubiertos", "cubierto", "maceta"] },
-  { id: "electro", label: "Electro y tecnología", words: ["lampara", "lamparas", "pila", "pilas", "cargador", "cable", "auricular", "auriculares", "smart", "cel", "celular", "led", "ventilador", "estufa", "aire"] },
-  { id: "ropa", label: "Ropa y calzado", words: ["remera", "remeras", "short", "pantalon", "medias", "buzo", "campera", "calza", "calzas", "boxer", "bombacha", "zapatilla", "zapatillas", "ojotas"] },
-  { id: "libro", label: "Libros y papelería", words: ["lb", "libro", "libros", "cuaderno", "cuadernos", "lapiz", "lapices", "birome"] },
+  { id: "hogar", label: "Hogar y cocina", words: ["vaso", "vasos", "plato", "platos", "taza", "tazas", "hermetico", "canasta", "cesto", "organizador", "botella", "jarra", "olla", "sarten", "tapper", "colador", "cubiertos", "cubierto", "maceta", "bowl", "rebozador"] },
+  { id: "electro", label: "Electro y tecnología", words: ["lampara", "lamparas", "pila", "pilas", "cargador", "cable", "auricular", "auriculares", "smart", "cel", "celular", "led", "ventilador", "estufa", "aire", "heladera", "microondas", "horno"] },
+  { id: "ropa", label: "Ropa y calzado", words: ["remera", "remeras", "short", "pantalon", "medias", "buzo", "campera", "calza", "calzas", "boxer", "bombacha", "zapatilla", "zapatillas", "ojotas", "bermuda"] },
+  { id: "farmacia", label: "Farmacia y botiquín", words: ["hisopos", "algodon", "alcohol", "pomada", "curitas", "gasa", "venda"] },
+  { id: "juguete", label: "Juguetes", words: ["peluche", "muneca", "munecas", "playset", "globo", "globos", "juguete", "juguetes"] },
+  { id: "libro", label: "Libros y papelería", words: ["lb", "libro", "libros", "cuaderno", "cuadernos", "lapiz", "lapices", "birome", "marcador", "marcadores"] },
 ];
 
 export const PRODUCT_TYPE_LABELS: Readonly<Record<string, string>> = Object.fromEntries(
