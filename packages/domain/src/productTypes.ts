@@ -54,9 +54,9 @@ export const PRODUCT_TYPES: readonly ProductTypeDef[] = [
   { id: "harina", label: "Harinas y premezclas", words: ["harina", "harinas", "premezcla", "premezclas", "bizcochuelo", "polenta", "almidon", "maizena", "levadura"] },
   { id: "pasta", label: "Fideos y pastas", words: ["fideos", "fideo", "fid", "pasta", "pastas", "ravioles", "raviol", "sorrentinos", "tallarines", "noodles", "capeletis", "canelones", "noquis", "lasagna", "lasana", "spaghetti", "espaguetis", "mostachol", "tirabuzon"] },
   { id: "arroz", label: "Arroz y legumbres", words: ["arroz", "lentejas", "lenteja", "garbanzos", "porotos", "poroto", "legumbres", "arvejas", "arveja", "quinoa"] },
-  { id: "aceite", label: "Aceites y vinagres", words: ["aceite", "aceites", "vinagre", "vinagres", "aceto"] },
+  { id: "aceite", label: "Aceites y vinagres", words: ["aceite", "aceites", "aceit", "vinagre", "vinagres", "aceto"] },
   { id: "conserva", label: "Conservas y encurtidos", words: ["aceitunas", "aceitu", "pickles", "encurtidos", "pepinos", "morron", "morrones", "choclo", "duraznos", "durazno", "palmitos", "conserva", "conservas", "pure", "tomate", "tomates"] },
-  { id: "salsa", label: "Salsas y condimentos", words: ["salsa", "salsas", "mayonesa", "ketchup", "mostaza", "aderezo", "aderezos", "condimento", "condimentos", "pimienta", "sal", "pimenton", "oregano", "comino", "aji", "chimichurri"] },
+  { id: "salsa", label: "Salsas y condimentos", words: ["salsa", "salsas", "provenzal", "mayonesa", "ketchup", "mostaza", "aderezo", "aderezos", "condimento", "condimentos", "pimienta", "sal", "pimenton", "oregano", "comino", "aji", "chimichurri"] },
   { id: "sopa", label: "Sopas y caldos", words: ["sopa", "sopas", "caldo", "caldos"] },
   { id: "dulce", label: "Dulces y mermeladas", words: ["dulce", "dulces", "mermelada", "merm", "mermeladas", "miel", "jalea", "arrope", "membrillo"] },
   { id: "helado", label: "Helados y congelados", words: ["helado", "helados", "congelado", "congelados"] },
@@ -78,21 +78,21 @@ export const PRODUCT_TYPES: readonly ProductTypeDef[] = [
   // --- Cuidado personal y bebés
   { id: "shampoo", label: "Shampoo", words: ["shampoo", "shamp", "sh", "sha", "champu", "shampu"] },
   { id: "acondicionador", label: "Acondicionadores", words: ["acondicionador", "acondicionadores", "acond", "aco", "ac", "enjuague", "enj"] },
-  { id: "desodorante", label: "Desodorantes", words: ["desodorante", "desodorantes", "deo", "des", "antitranspirante", "antitranspirantes", "ant"] },
+  { id: "desodorante", label: "Desodorantes", words: ["desodorante", "desodorantes", "deo", "des", "desod", "antitranspirante", "antitranspirantes", "ant"] },
   { id: "tintura", label: "Tinturas", words: ["tintura", "tinturas", "coloracion", "tinte", "tintes", "color"] },
   { id: "gel", label: "Geles y fijadores", words: ["gel", "gomina", "fijador"] },
   { id: "afeitado", label: "Afeitado", words: ["afeitar", "afeitada", "maquina", "maq", "cuchillas"] },
   { id: "piel", label: "Cremas y cuidado de la piel", words: ["cr", "hidratante", "locion", "lociones", "bronceador", "talco", "colonia"] },
   { id: "higiene_bucal", label: "Higiene bucal", words: ["dental", "dentifrico", "cepillo", "cep", "hilo"] },
-  { id: "higiene_femenina", label: "Higiene femenina", words: ["tampon", "tampones", "prot", "toa", "toalla", "toallas"] },
+  { id: "higiene_femenina", label: "Higiene femenina", words: ["tampon", "tampones", "toalla", "toallas"] },
   { id: "bebe", label: "Pañales y bebés", words: ["panal", "panales", "toallitas", "toallita", "mamadera", "chupete", "biberon"] },
   // --- Hogar y otros
   { id: "mascota", label: "Mascotas", words: ["balanceado", "mascota", "mascotas", "perro", "perros", "gato", "gatos"] },
-  { id: "hogar", label: "Hogar y cocina", words: ["vaso", "vasos", "plato", "platos", "taza", "tazas", "hermetico", "canasta", "cesto", "organizador", "botella", "jarra", "olla", "sarten", "tapper", "colador", "cubiertos", "cubierto", "maceta", "bowl", "rebozador"] },
-  { id: "electro", label: "Electro y tecnología", words: ["lampara", "lamparas", "pila", "pilas", "cargador", "cable", "auricular", "auriculares", "smart", "cel", "celular", "led", "ventilador", "estufa", "aire", "heladera", "microondas", "horno"] },
+  { id: "hogar", label: "Hogar y cocina", words: ["vaso", "vasos", "plato", "platos", "taza", "tazas", "hermetico", "canasta", "cesto", "organizador", "botella", "jarra", "olla", "sarten", "tapper", "colador", "cubiertos", "cubierto", "maceta", "bowl", "rebozador", "jarro", "jarros", "bandeja", "contenedor"] },
+  { id: "electro", label: "Electro y tecnología", words: ["lampara", "lamparas", "pila", "pilas", "cargador", "cable", "auricular", "auriculares", "smart", "cel", "celular", "led", "ventilador", "estufa", "aire", "heladera", "microondas", "horno", "tablet"] },
   { id: "ropa", label: "Ropa y calzado", words: ["remera", "remeras", "short", "pantalon", "medias", "buzo", "campera", "calza", "calzas", "boxer", "bombacha", "zapatilla", "zapatillas", "ojotas", "bermuda"] },
   { id: "farmacia", label: "Farmacia y botiquín", words: ["hisopos", "algodon", "alcohol", "pomada", "curitas", "gasa", "venda"] },
-  { id: "juguete", label: "Juguetes", words: ["peluche", "muneca", "munecas", "playset", "globo", "globos", "juguete", "juguetes"] },
+  { id: "juguete", label: "Juguetes", words: ["peluche", "muneca", "munecas", "playset", "globo", "globos", "juguete", "juguetes", "vehiculo", "personaje"] },
   { id: "libro", label: "Libros y papelería", words: ["lb", "libro", "libros", "cuaderno", "cuadernos", "lapiz", "lapices", "birome", "marcador", "marcadores"] },
 ];
 
@@ -115,7 +115,7 @@ function normalize(text: string): string {
     .trim();
 }
 
-const BUCAL = /\b(dental|dentifrico|dientes|bucal|listerine|colgate|oral b|plax)\b/;
+const BUCAL = /\b(dental|dent|dentifrico|dientes|bucal|listerine|colgate|kolynos|oral b|plax)\b/;
 const FEMENINA = /\b(always|nosotras|calipso|carefree|ladysoft|tampon|tampones)\b/;
 const MASCOTA = /\b(perro|perros|gato|gatos|mascota|mascotas|canino|felino|balanceado|cachorro|cat chow|dog chow|pedigree|whiskas)\b/;
 const ROPA = /\b(ropa|lavarropas|pvo|polvo|a\/e|ae)\b/;
@@ -138,6 +138,9 @@ const CONTEXTUAL: Readonly<Record<string, (text: string) => string>> = {
   enj: (text) => (BUCAL.test(text) || /\benj b\b/.test(text) ? "higiene_bucal" : "acondicionador"),
   toalla: (text) => (FEMENINA.test(text) ? "higiene_femenina" : "papel"),
   toallas: (text) => (FEMENINA.test(text) ? "higiene_femenina" : "papel"),
+  prot: (text) => (/\b(sol|solar|fps|bronceador)\b/.test(text) ? "piel" : "higiene_femenina"),
+  toa: (text) => (/\b(hum|humedas|bebe|desm|demaq)\b/.test(text) ? "bebe" : "higiene_femenina"),
+  pap: (text) => (/\b(fr|fritas|pringles|crispy)\b/.test(text) ? "snack" : "papel"),
   gel: (text) => (/\b(afeitar|afe|afeitado)\b/.test(text) ? "afeitado" : "gel"),
   cepillo: (text) => (/\b(ropa|pelo|cabello|limpieza|esquinas|bano|inodoro)\b/.test(text) ? "esponja" : "higiene_bucal"),
   cep: (text) => (/\b(ropa|pelo|cabello|limpieza|esquinas|bano|inodoro)\b/.test(text) ? "esponja" : "higiene_bucal"),
