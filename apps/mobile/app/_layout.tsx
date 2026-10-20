@@ -24,19 +24,26 @@ import { ToastProvider } from "@/components/Toast";
 import { PurchaseProvider } from "@/lib/purchase/PurchaseContext";
 
 /**
+ * Hoja que sube desde abajo. En iOS es la hoja nativa (con manija y alturas); en Android se usa
+ * el modal común, porque `formSheet` de react-native-screens todavía da problemas ahí
+ * (la pantalla se cuelga al abrirla).
+ */
+const sheet = (detents: number[]) =>
+  Platform.OS === "ios"
+    ? {
+        presentation: "formSheet" as const,
+        sheetAllowedDetents: detents,
+        sheetGrabberVisible: true,
+        sheetCornerRadius: 24,
+      }
+    : { presentation: "modal" as const };
+
+/**
  * Puerta de navegación por estado de auth (sección 4-5 del roadmap). `Stack.Protected`
  * decide qué grupo de rutas es alcanzable — no hay que navegar manualmente al arrancar,
  * el guard se encarga (si `onboardingSeen` pasa a true, expo-router saca "onboarding" del
  * árbol solo y cae al siguiente protegido que sí matchea).
  */
-/** Hoja nativa (la que sube desde abajo y se agranda con el dedo, como en iOS). */
-const sheet = (detents: number[]) => ({
-  presentation: "formSheet" as const,
-  sheetAllowedDetents: detents,
-  sheetGrabberVisible: true,
-  sheetCornerRadius: 24,
-});
-
 function RootNavigator() {
   const colors = useColors();
   const { isBootstrapping, onboardingSeen, isAuthenticated, postSignupDone } = useAuth();
