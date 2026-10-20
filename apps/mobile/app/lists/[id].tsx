@@ -280,13 +280,22 @@ export default function ListDetailScreen() {
       )}
 
       <View style={styles.footer}>
-        <AnimatedPressable
-          accessibilityLabel="Agregar producto"
-          onPress={() => router.push({ pathname: "/lists/search", params: { listId: id } })}
-          style={styles.addButton}
-        >
-          <Text style={styles.addLabel}>+ Sumar un producto</Text>
-        </AnimatedPressable>
+        <View style={styles.addRow}>
+          <AnimatedPressable
+            accessibilityLabel="Agregar producto"
+            onPress={() => router.push({ pathname: "/lists/search", params: { listId: id } })}
+            style={[styles.addButton, styles.addButtonGrow]}
+          >
+            <Text style={styles.addLabel}>+ Sumar un producto</Text>
+          </AnimatedPressable>
+          <AnimatedPressable
+            accessibilityLabel="Armar la lista con IA, hablando"
+            onPress={() => router.push({ pathname: "/lists/assistant", params: { listId: id, autoStart: "1" } })}
+            style={styles.aiButton}
+          >
+            <Ionicons name="sparkles" size={22} color={colors.text.primary} />
+          </AnimatedPressable>
+        </View>
         {isOwner ? (
           <AnimatedPressable
             accessibilityLabel="Eliminar lista"
@@ -464,6 +473,23 @@ const useStyles = makeStyles((colors) => StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.border.subtle,
     gap: spacing.sm,
+  },
+  addRow: {
+    flexDirection: "row",
+    gap: spacing.sm,
+  },
+  addButtonGrow: {
+    flex: 1,
+  },
+  aiButton: {
+    width: 52,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    borderColor: colors.border.strong,
+    backgroundColor: colors.surface.primary,
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 44,
   },
   addButton: {
     backgroundColor: colors.brand.navy,

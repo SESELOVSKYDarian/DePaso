@@ -5,6 +5,9 @@ import { checkRateLimit } from "@/lib/auth/rateLimit";
 import { getProductFacets, searchProducts } from "@/lib/products";
 import { parseShoppingText, type ParsedItem } from "@/lib/shoppingParse";
 
+// El modelo grande puede tardar: con el límite por defecto (10 s) la función se cortaba.
+export const maxDuration = 60;
+
 const RATE_LIMIT = { max: 20, windowMs: 10 * 60 * 1000 };
 const MAX_BRANDS = 6;
 const MAX_CANDIDATES = 5;

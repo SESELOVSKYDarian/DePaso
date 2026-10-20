@@ -32,7 +32,13 @@
         }
       ],
       "expo-status-bar",
-      "expo-web-browser"
+      "expo-web-browser",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": "DePaso usa el micrófono para que le digas de corrido lo que te falta comprar. El audio se manda para pasarlo a texto y no se guarda."
+        }
+      ]
     ],
     "ios": {
       "supportsTablet": false,

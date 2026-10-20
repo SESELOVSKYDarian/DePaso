@@ -2,8 +2,28 @@ import { Ionicons } from "@expo/vector-icons";
 import { ApiError } from "@depaso/api-client";
 import type { AssistantItem, AssistantResponse, ProductSearchResult } from "@depaso/validation";
 import { router, useLocalSearchParams } from "expo-router";
-import { useState } from "react";
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Linking,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
+import Animated, {
+  cancelAnimation,
+  Easing,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withRepeat,
+  withTiming,
+} from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
@@ -12,6 +32,8 @@ import { useToast } from "@/components/Toast";
 import { assistantClient, productsClient } from "@/lib/apiClient";
 import { useLists } from "@/lib/lists/ListsContext";
 import { makeStyles, useColors } from "@/lib/theme";
+import { transcribeRecording, TranscribeError } from "@/lib/voice/transcribe";
+import { useVoiceRecorder } from "@/lib/voice/useVoiceRecorder";
 
 interface ReviewItem {
   item: AssistantItem;
@@ -23,43 +45,74 @@ interface ReviewItem {
   removed: boolean;
 }
 
+type Mode = "voice" | "typing" | "review";
+type Phase = "idle" | "recording" | "transcribing" | "parsing";
+
 function capitalize(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
-function errorMessage(error: unknown): string {
+function formatClock(ms: number): string {
+  const seconds = Math.floor(ms / 1000);
+  return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+}
+
+function parseErrorMessage(error: unknown): string {
   if (error instanceof ApiError) {
     const code = (error.body as { error?: string } | null)?.error;
     if (code === "RATE_LIMITED") return "Pediste muchas listas seguidas. Probá de nuevo en unos minutos.";
     if (code === "NOTHING_UNDERSTOOD") return "No entendimos qué necesitás. Probá nombrando los productos.";
+    return `No pudimos armar tu lista (error ${error.status}). Probá de nuevo.`;
   }
-  return "No pudimos armar tu lista. Revisá tu conexión e intentá de nuevo.";
+  return "No pudimos conectar. Revisá tu conexión e intentá de nuevo.";
+}
+
+function voiceErrorMessage(error: unknown): string {
+  if (error instanceof TranscribeError) {
+    if (error.reason === "not_configured") return "La voz todavía no está activada en el servidor. Podés escribirlo.";
+    if (error.reason === "rate_limited") return "Hiciste muchos pedidos seguidos. Probá de nuevo en unos minutos.";
+    if (error.reason === "too_large") return "El audio quedó muy largo. Probá con una lista más corta.";
+  }
+  return "No pudimos entender el audio. Probá de nuevo o escribilo.";
 }
 
 /**
- * Armar la lista de una: se escribe (o se dicta con el micrófono del teclado) todo lo que
- * hace falta, la IA lo separa en productos y por cada uno se elige la marca o "me da igual".
+ * Armar la lista hablando: se toca el micrófono, se dice todo lo que falta, la IA lo separa en
+ * productos y por cada uno se elige la marca o "me da igual". También se puede escribir.
+ * Si llega con `autoStart=1` (viene del botón de IA de la lista) empieza a grabar enseguida.
  */
 export default function ShoppingAssistantScreen() {
   const colors = useColors();
   const styles = useStyles();
-  const { listId } = useLocalSearchParams<{ listId: string }>();
+  const reducedMotion = useReducedMotion();
+  const { listId, autoStart } = useLocalSearchParams<{ listId: string; autoStart?: string }>();
   const { addItem } = useLists();
   const { show: showToast } = useToast();
 
+  const [mode, setMode] = useState<Mode>("voice");
+  const [phase, setPhase] = useState<Phase>("idle");
   const [text, setText] = useState("");
-  const [isParsing, setIsParsing] = useState(false);
+  const [heard, setHeard] = useState<string | null>(null);
   const [error, setError] = useState<string | undefined>();
+  const [micDenied, setMicDenied] = useState(false);
   const [source, setSource] = useState<AssistantResponse["source"]>("ai");
   const [review, setReview] = useState<ReviewItem[] | null>(null);
   const [isAdding, setIsAdding] = useState(false);
+  const autoStarted = useRef(false);
 
-  const handleParse = async () => {
+  const pulse = useSharedValue(0);
+  const pulseStyle = useAnimatedStyle(() => ({
+    opacity: 0.35 * (1 - pulse.value),
+    transform: [{ scale: 1 + pulse.value * 0.55 }],
+  }));
+
+  const parseText = useCallback(async (value: string) => {
     setError(undefined);
-    setIsParsing(true);
+    setPhase("parsing");
     try {
-      const response = await assistantClient.parse({ text: text.trim() });
+      const response = await assistantClient.parse({ text: value.trim() });
       setSource(response.source);
+      setHeard(value.trim());
       setReview(
         response.items.map((item) => ({
           item,
@@ -70,12 +123,74 @@ export default function ShoppingAssistantScreen() {
           removed: false,
         })),
       );
+      setMode("review");
     } catch (err) {
-      setError(errorMessage(err));
+      setError(parseErrorMessage(err));
     } finally {
-      setIsParsing(false);
+      setPhase("idle");
     }
-  };
+  }, []);
+
+  const handleRecording = useCallback(
+    async (uri: string | null) => {
+      if (!uri) {
+        setPhase("idle");
+        setError("No se pudo guardar la grabación. Probá de nuevo.");
+        return;
+      }
+      setPhase("transcribing");
+      try {
+        const transcript = await transcribeRecording(uri);
+        await parseText(transcript);
+      } catch (err) {
+        setPhase("idle");
+        const message = voiceErrorMessage(err);
+        setError(message);
+        if (err instanceof TranscribeError && err.reason === "not_configured") setMode("typing");
+      }
+    },
+    [parseText],
+  );
+
+  const recorder = useVoiceRecorder(handleRecording);
+
+  const startRecording = useCallback(async () => {
+    setError(undefined);
+    setMicDenied(false);
+    const result = await recorder.start();
+    if (result === "started") {
+      setPhase("recording");
+    } else if (result === "denied") {
+      setMicDenied(true);
+      setError("Necesitamos permiso para usar el micrófono.");
+    } else {
+      setError("No pudimos empezar a grabar. Probá de nuevo o escribilo.");
+    }
+  }, [recorder]);
+
+  const stopRecording = useCallback(async () => {
+    const uri = await recorder.stop();
+    await handleRecording(uri);
+  }, [recorder, handleRecording]);
+
+  // Viene del botón de IA de la lista: arranca a escuchar sin un toque extra.
+  useEffect(() => {
+    if (autoStart === "1" && !autoStarted.current) {
+      autoStarted.current = true;
+      void startRecording();
+    }
+  }, [autoStart, startRecording]);
+
+  // Anillo que late mientras se graba (quieto si el sistema pide reducir movimiento).
+  useEffect(() => {
+    if (phase === "recording" && !reducedMotion) {
+      pulse.value = 0;
+      pulse.value = withRepeat(withTiming(1, { duration: 1400, easing: Easing.out(Easing.quad) }), -1, false);
+    } else {
+      cancelAnimation(pulse);
+      pulse.value = 0;
+    }
+  }, [phase, reducedMotion, pulse]);
 
   const update = (id: string, patch: Partial<ReviewItem>) =>
     setReview((current) => current?.map((entry) => (entry.item.id === id ? { ...entry, ...patch } : entry)) ?? null);
@@ -120,19 +235,79 @@ export default function ShoppingAssistantScreen() {
     router.dismissTo({ pathname: "/lists/[id]", params: { id: listId } });
   };
 
+  const isBusy = phase === "transcribing" || phase === "parsing";
+  const isRecording = phase === "recording";
+
+  const voiceTitle = isRecording
+    ? "Te escucho…"
+    : phase === "transcribing"
+      ? "Pasando tu voz a texto…"
+      : phase === "parsing"
+        ? "Armando tu lista…"
+        : "Decime lo que te falta";
+  const voiceHint = isRecording
+    ? "Tocá el botón cuando termines."
+    : isBusy
+      ? "Un momento."
+      : "Tocá el micrófono y nombrá todo de corrido. Después elegís las marcas.";
+
   return (
     <SafeAreaView style={styles.container} edges={["bottom"]}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.flex}>
-        {review === null ? (
+        {mode === "voice" ? (
+          <ScrollView contentContainerStyle={styles.voiceContent} keyboardShouldPersistTaps="handled">
+            <Text accessibilityRole="header" style={styles.voiceTitle}>
+              {voiceTitle}
+            </Text>
+            <Text style={styles.voiceHint}>{voiceHint}</Text>
+
+            <View style={styles.micWrap}>
+              <Animated.View pointerEvents="none" style={[styles.pulseRing, pulseStyle]} />
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={isRecording ? "Terminar de grabar" : "Empezar a grabar"}
+                disabled={isBusy}
+                onPress={() => void (isRecording ? stopRecording() : startRecording())}
+                style={({ pressed }) => [styles.micButton, isBusy ? styles.micButtonBusy : null, pressed ? styles.micPressed : null]}
+              >
+                {isBusy ? (
+                  <ActivityIndicator color={colors.text.onNavy} />
+                ) : (
+                  <Ionicons name={isRecording ? "stop" : "mic"} size={40} color={colors.text.onNavy} />
+                )}
+              </Pressable>
+            </View>
+
+            <Text style={styles.clock}>{isRecording ? formatClock(recorder.durationMs) : " "}</Text>
+
+            {error ? (
+              <View style={styles.errorBox}>
+                <Text accessibilityRole="alert" style={styles.error}>
+                  {error}
+                </Text>
+                {micDenied ? (
+                  <Button label="Abrir ajustes" variant="secondary" onPress={() => void Linking.openSettings()} />
+                ) : null}
+              </View>
+            ) : null}
+
+            <Button
+              label="Prefiero escribir"
+              variant="ghost"
+              disabled={isBusy || isRecording}
+              onPress={() => {
+                setError(undefined);
+                setMode("typing");
+              }}
+            />
+          </ScrollView>
+        ) : mode === "typing" ? (
           <>
             <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
               <Text accessibilityRole="header" style={styles.title}>
-                Contanos todo lo que te falta
+                Escribí lo que te falta
               </Text>
-              <Text style={styles.subtitle}>
-                Escribilo o dictalo de corrido. Después te preguntamos las marcas.
-              </Text>
-
+              <Text style={styles.subtitle}>De corrido, como te salga. Después te preguntamos las marcas.</Text>
               <TextInput
                 value={text}
                 onChangeText={(value) => {
@@ -148,12 +323,6 @@ export default function ShoppingAssistantScreen() {
                 accessibilityLabel="Lo que necesitás comprar"
                 style={styles.textArea}
               />
-
-              <View style={styles.hint}>
-                <Ionicons name="mic-outline" size={18} color={colors.text.secondary} />
-                <Text style={styles.hintText}>Para dictar, tocá el micrófono de tu teclado.</Text>
-              </View>
-
               {error ? (
                 <Text accessibilityRole="alert" style={styles.error}>
                   {error}
@@ -162,11 +331,19 @@ export default function ShoppingAssistantScreen() {
             </ScrollView>
             <View style={styles.footer}>
               <Button
-                label={isParsing ? "Armando tu lista..." : "Armar mi lista"}
-                onPress={() => void handleParse()}
-                loading={isParsing}
+                label={phase === "parsing" ? "Armando tu lista..." : "Armar mi lista"}
+                onPress={() => void parseText(text)}
+                loading={phase === "parsing"}
                 disabled={text.trim().length < 2}
                 style={{ borderRadius: radii.full }}
+              />
+              <Button
+                label="Mejor hablarlo"
+                variant="ghost"
+                onPress={() => {
+                  setError(undefined);
+                  setMode("voice");
+                }}
               />
             </View>
           </>
@@ -176,13 +353,19 @@ export default function ShoppingAssistantScreen() {
               <Text accessibilityRole="header" style={styles.title}>
                 Esto entendimos
               </Text>
+              {heard ? (
+                <View style={styles.heardBox}>
+                  <Text style={styles.heardLabel}>Dijiste</Text>
+                  <Text style={styles.heardText}>{heard}</Text>
+                </View>
+              ) : null}
               <Text style={styles.subtitle}>
                 {source === "fallback"
                   ? "Lo armamos en modo básico: revisá bien cada producto."
                   : "Elegí la marca de cada uno, o dejá “Me da igual”."}
               </Text>
 
-              {review.map((entry) =>
+              {(review ?? []).map((entry) =>
                 entry.removed ? null : (
                   <View key={entry.item.id} style={styles.card}>
                     <View style={styles.cardHeader}>
@@ -276,7 +459,16 @@ export default function ShoppingAssistantScreen() {
                 disabled={addable.length === 0}
                 style={{ borderRadius: radii.full }}
               />
-              <Button label="Volver a escribir" variant="ghost" onPress={() => setReview(null)} />
+              <Button
+                label="Volver a decirlo"
+                variant="ghost"
+                onPress={() => {
+                  setReview(null);
+                  setHeard(null);
+                  setError(undefined);
+                  setMode("voice");
+                }}
+              />
             </View>
           </>
         )}
@@ -284,6 +476,8 @@ export default function ShoppingAssistantScreen() {
     </SafeAreaView>
   );
 }
+
+const MIC_SIZE = 112;
 
 const useStyles = makeStyles((colors) =>
   StyleSheet.create({
@@ -296,6 +490,66 @@ const useStyles = makeStyles((colors) =>
       padding: spacing.lg,
       gap: spacing.md,
     },
+    voiceContent: {
+      flexGrow: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      padding: spacing.lg,
+      gap: spacing.md,
+    },
+    voiceTitle: {
+      fontFamily: typography.heroTitle.fontFamily,
+      fontSize: 28,
+      lineHeight: 34,
+      color: colors.text.primary,
+      textAlign: "center",
+    },
+    voiceHint: {
+      fontFamily: typography.subtitle.fontFamily,
+      fontSize: 15,
+      lineHeight: 22,
+      color: colors.text.secondary,
+      textAlign: "center",
+      maxWidth: 300,
+    },
+    micWrap: {
+      width: MIC_SIZE * 1.8,
+      height: MIC_SIZE * 1.8,
+      alignItems: "center",
+      justifyContent: "center",
+      marginVertical: spacing.lg,
+    },
+    pulseRing: {
+      position: "absolute",
+      width: MIC_SIZE,
+      height: MIC_SIZE,
+      borderRadius: MIC_SIZE / 2,
+      backgroundColor: colors.brand.navy,
+    },
+    micButton: {
+      width: MIC_SIZE,
+      height: MIC_SIZE,
+      borderRadius: MIC_SIZE / 2,
+      backgroundColor: colors.brand.navy,
+      alignItems: "center",
+      justifyContent: "center",
+    },
+    micButtonBusy: {
+      opacity: 0.7,
+    },
+    micPressed: {
+      transform: [{ scale: 0.96 }],
+    },
+    clock: {
+      fontFamily: typography.heroTitle.fontFamily,
+      fontSize: 22,
+      color: colors.text.primary,
+      minHeight: 28,
+    },
+    errorBox: {
+      alignItems: "center",
+      gap: spacing.xs,
+    },
     title: {
       fontFamily: typography.heroTitle.fontFamily,
       fontSize: 26,
@@ -307,6 +561,23 @@ const useStyles = makeStyles((colors) =>
       fontSize: 15,
       lineHeight: 22,
       color: colors.text.secondary,
+    },
+    heardBox: {
+      backgroundColor: colors.surface.input,
+      borderRadius: radii.lg,
+      padding: spacing.md,
+      gap: 2,
+    },
+    heardLabel: {
+      fontFamily: typography.caption.fontFamily,
+      fontSize: 12,
+      color: colors.text.secondary,
+    },
+    heardText: {
+      fontFamily: typography.subtitle.fontFamily,
+      fontSize: 15,
+      lineHeight: 22,
+      color: colors.text.primary,
     },
     textArea: {
       minHeight: 160,
@@ -321,21 +592,12 @@ const useStyles = makeStyles((colors) =>
       lineHeight: 24,
       color: colors.text.primary,
     },
-    hint: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: spacing.xs,
-    },
-    hintText: {
-      fontFamily: typography.caption.fontFamily,
-      fontSize: 13,
-      color: colors.text.secondary,
-    },
     error: {
       fontFamily: typography.caption.fontFamily,
       fontSize: 13,
       lineHeight: 18,
       color: colors.state.errorStrong,
+      textAlign: "center",
     },
     footer: {
       paddingHorizontal: spacing.lg,

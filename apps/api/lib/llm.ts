@@ -32,7 +32,7 @@ export async function chatCompletion(messages: ChatMessage[], options: { maxToke
         model: process.env.LLM_MODEL?.trim() || DEFAULT_MODEL,
         messages,
         temperature: 0.1,
-        max_tokens: options.maxTokens ?? 900,
+        max_tokens: options.maxTokens ?? 700,
         stream: false,
       }),
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
