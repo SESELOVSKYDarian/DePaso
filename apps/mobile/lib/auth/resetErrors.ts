@@ -21,3 +21,12 @@ export const RESET_ERROR_MESSAGES: Record<ResetErrorKind, string> = {
   invalid_email: "Ese email no parece válido.",
   network: "No pudimos conectar. Revisá tu conexión e intentá de nuevo.",
 };
+
+/**
+ * En los pasos 2 y 3 el email ya viene validado del paso 1: un 400 genérico significa que el
+ * código no es válido, no que el email esté mal.
+ */
+export function codeStepErrorKind(error: unknown): ResetErrorKind {
+  const kind = classifyResetError(error);
+  return kind === "invalid_email" ? "invalid_code" : kind;
+}

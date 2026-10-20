@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { TextInput } from "react-native";
 import { radii } from "@depaso/design-tokens";
 import { authClient } from "@/lib/apiClient";
-import { classifyResetError, RESET_ERROR_MESSAGES } from "@/lib/auth/resetErrors";
+import { codeStepErrorKind, RESET_ERROR_MESSAGES } from "@/lib/auth/resetErrors";
 import { AuthStep } from "@/components/AuthStep";
 import { Button } from "@/components/Button";
 import { FormField } from "@/components/FormField";
@@ -37,7 +37,7 @@ export default function NewPasswordScreen() {
       showToast("Listo. Ya podés entrar con tu contraseña nueva.", "success");
       router.dismissTo("/(auth)/login");
     } catch (err) {
-      setSubmitError(RESET_ERROR_MESSAGES[classifyResetError(err)]);
+      setSubmitError(RESET_ERROR_MESSAGES[codeStepErrorKind(err)]);
     } finally {
       setIsSubmitting(false);
     }

@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { authClient } from "@/lib/apiClient";
-import { classifyResetError, RESET_ERROR_MESSAGES } from "@/lib/auth/resetErrors";
+import { codeStepErrorKind, RESET_ERROR_MESSAGES } from "@/lib/auth/resetErrors";
 import { AuthStep } from "@/components/AuthStep";
 import { Button } from "@/components/Button";
 import { OtpInput } from "@/components/OtpInput";
@@ -43,7 +43,7 @@ export default function VerifyCodeScreen() {
       await authClient.verifyResetCode({ email, code: value });
       router.push({ pathname: "/(auth)/new-password", params: { email, code: value } });
     } catch (err) {
-      setError(RESET_ERROR_MESSAGES[classifyResetError(err)]);
+      setError(RESET_ERROR_MESSAGES[codeStepErrorKind(err)]);
     } finally {
       setIsVerifying(false);
     }
@@ -67,7 +67,7 @@ export default function VerifyCodeScreen() {
       setSecondsLeft(RESEND_SECONDS);
       showToast("Te mandamos un código nuevo.", "success");
     } catch (err) {
-      setError(RESET_ERROR_MESSAGES[classifyResetError(err)]);
+      setError(RESET_ERROR_MESSAGES[codeStepErrorKind(err)]);
     } finally {
       setIsResending(false);
     }
