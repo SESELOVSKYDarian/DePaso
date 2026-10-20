@@ -90,6 +90,7 @@ function whereClause(conditions: Prisma.Sql[]): Prisma.Sql {
 export async function searchProducts(
   query: string,
   filters: ProductSearchFilters = {},
+  options: { withImages?: boolean } = {},
 ): Promise<ProductSearchResult[]> {
   const normalized = normalizeQuery(query);
   const tokens = searchTokens(normalized);
@@ -156,7 +157,7 @@ export async function searchProducts(
       where: { productId: { in: ids } },
       select: { id: true, productId: true, name: true, unit: true, unitSize: true },
     }),
-    loadProductImages(ids),
+    options.withImages === false ? Promise.resolve(new Map<string, string>()) : loadProductImages(ids),
   ]);
   const variantsByProduct = new Map<string, typeof variants>();
   for (const variant of variants) {

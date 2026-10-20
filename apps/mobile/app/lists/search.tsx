@@ -105,6 +105,22 @@ export default function ProductSearchScreen() {
         style={styles.input}
       />
 
+      {!hasCriteria ? (
+        <AnimatedPressable
+          accessibilityLabel="Armar la lista con IA, escribiendo o dictando todo junto"
+          haptic={false}
+          onPress={() => router.push({ pathname: "/lists/assistant", params: { listId } })}
+          style={styles.assistantRow}
+        >
+          <Ionicons name="sparkles-outline" size={20} color={colors.text.primary} />
+          <View style={styles.assistantText}>
+            <Text style={styles.assistantTitle}>Armar con IA</Text>
+            <Text style={styles.assistantSub}>Decí todo lo que te falta de corrido</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={18} color={colors.text.tertiary} />
+        </AnimatedPressable>
+      ) : null}
+
       <View style={styles.filters}>
         {facets.types.length > 0 ? (
           <ScrollView
@@ -265,6 +281,33 @@ const useStyles = makeStyles((colors) =>
       fontFamily: typography.subtitle.fontFamily,
       fontSize: 15,
       color: colors.text.primary,
+    },
+    assistantRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.sm,
+      minHeight: 64,
+      marginHorizontal: spacing.lg,
+      marginTop: spacing.sm,
+      paddingHorizontal: spacing.md,
+      borderRadius: radii.xl,
+      borderWidth: 1,
+      borderColor: colors.border.subtle,
+      backgroundColor: colors.surface.primary,
+    },
+    assistantText: {
+      flex: 1,
+      gap: 2,
+    },
+    assistantTitle: {
+      fontFamily: typography.itemTitle.fontFamily,
+      fontSize: 16,
+      color: colors.text.primary,
+    },
+    assistantSub: {
+      fontFamily: typography.subtitle.fontFamily,
+      fontSize: 13,
+      color: colors.text.secondary,
     },
     filters: {
       paddingTop: spacing.sm,

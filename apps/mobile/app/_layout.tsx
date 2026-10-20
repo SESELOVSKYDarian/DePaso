@@ -117,6 +117,10 @@ function RootNavigator() {
           options={{ headerShown: true, title: "Agregar producto", presentation: "modal" }}
         />
         <Stack.Screen
+          name="lists/assistant"
+          options={{ headerShown: true, title: "Armar con IA", presentation: "modal" }}
+        />
+        <Stack.Screen
           name="preferences/index"
           options={{ headerShown: true, title: "Mis preferencias" }}
         />

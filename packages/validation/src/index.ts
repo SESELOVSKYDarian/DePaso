@@ -10,6 +10,7 @@ export * from "./catalogAdmin";
 export * from "./geocode";
 export * from "./priceReports";
 export * from "./community";
+export * from "./assistant";
 export * from "./accountExport";
 export * from "./adminOps";
 export * from "./routeCompute";
