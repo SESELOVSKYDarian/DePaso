@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useRef, useState, type ComponentRef } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles } from "@/lib/theme";
@@ -28,7 +28,7 @@ export function OtpInput({
   accessibilityLabel = "Código de verificación",
 }: OtpInputProps) {
   const styles = useStyles();
-  const inputRef = useRef<TextInput>(null);
+  const inputRef = useRef<ComponentRef<typeof TextInput>>(null);
   const [focused, setFocused] = useState(false);
   const groupSize = length % 4 === 0 ? 4 : length;
   const cells = Array.from({ length }, (_, index) => index);

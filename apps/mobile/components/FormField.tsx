@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useState, type Ref } from "react";
+import { useState, type ComponentRef, type Ref } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View, type TextInputProps } from "react-native";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles, useColors } from "@/lib/theme";
@@ -11,7 +11,7 @@ interface FormFieldProps extends TextInputProps {
   /** Muestra el toggle de mostrar/ocultar (sólo tiene sentido con `secureTextEntry`). */
   isPassword?: boolean;
   /** Referencia al TextInput interno (para pasar el foco al siguiente campo). */
-  inputRef?: Ref<TextInput>;
+  inputRef?: Ref<ComponentRef<typeof TextInput>>;
 }
 
 export function FormField({

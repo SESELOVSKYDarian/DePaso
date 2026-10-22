@@ -1,6 +1,6 @@
 import { PASSWORD_MIN_LENGTH } from "@depaso/domain";
 import { router, useLocalSearchParams } from "expo-router";
-import { useRef, useState } from "react";
+import { useRef, useState, type ComponentRef } from "react";
 import { TextInput } from "react-native";
 import { radii } from "@depaso/design-tokens";
 import { authClient } from "@/lib/apiClient";
@@ -22,7 +22,7 @@ export default function NewPasswordScreen() {
   const [touchedConfirm, setTouchedConfirm] = useState(false);
   const [submitError, setSubmitError] = useState<string | undefined>();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const confirmRef = useRef<TextInput>(null);
+  const confirmRef = useRef<ComponentRef<typeof TextInput>>(null);
 
   const tooShort = password.length > 0 && password.length < PASSWORD_MIN_LENGTH;
   const mismatch = touchedConfirm && confirm.length > 0 && confirm !== password;
