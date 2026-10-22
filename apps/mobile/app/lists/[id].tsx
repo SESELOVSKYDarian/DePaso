@@ -1,9 +1,10 @@
 import type { ShoppingListResponse } from "@depaso/validation";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { FlatList, StyleSheet, Text, TextInput, View } from "react-native";
+import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import Animated, { FadeInDown, FadeOutLeft, useReducedMotion } from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { motion, radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles, useColors } from "@/lib/theme";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
@@ -22,6 +23,9 @@ export default function ListDetailScreen() {
   const { lists, getList, updateItem, removeItem, removeList, shareList, removeMember } = useLists();
   const { user } = useAuth();
   const { show: showToast } = useToast();
+  // Desde Android 15 la app se dibuja bajo la barra de navegación: sin este margen el pie
+  // (con los botones de agregar y de IA) queda tapado por el sistema.
+  const insets = useSafeAreaInsets();
   const [shareEmail, setShareEmail] = useState("");
   const [shareOpen, setShareOpen] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
@@ -139,6 +143,9 @@ export default function ListDetailScreen() {
     return <EmptyState emoji="⚠️" title="Algo salió mal" description={error ?? "Lista no encontrada."} />;
   }
 
+  const openAssistant = () =>
+    router.push({ pathname: "/lists/assistant", params: { listId: id, autoStart: "1" } });
+
   const isOwner = list.role === "OWNER";
   const shareLabel = isOwner
     ? list.members.length === 0
@@ -148,6 +155,22 @@ export default function ListDetailScreen() {
 
   return (
     <View style={styles.container}>
+      <Stack.Screen
+        options={{
+          headerRight: () => (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Armar la lista con IA, hablando"
+              hitSlop={10}
+              onPress={openAssistant}
+              style={styles.headerAiButton}
+            >
+              <Ionicons name="sparkles" size={20} color={colors.text.primary} />
+              <Text style={styles.headerAiLabel}>IA</Text>
+            </Pressable>
+          ),
+        }}
+      />
       <AnimatedPressable
         accessibilityLabel={shareLabel}
         haptic={false}
@@ -223,6 +246,12 @@ export default function ListDetailScreen() {
           emoji="🛒"
           title="Todavía no hay nada"
           description="Sumá lo que te falta y nosotros buscamos dónde te queda de paso."
+          action={
+            <AnimatedPressable accessibilityLabel="Armar la lista con IA, hablando" onPress={openAssistant} style={styles.emptyAi}>
+              <Ionicons name="sparkles" size={18} color={colors.text.onNavy} />
+              <Text style={styles.emptyAiLabel}>Armar con IA</Text>
+            </AnimatedPressable>
+          }
         />
       ) : (
         <FlatList
@@ -279,7 +308,7 @@ export default function ListDetailScreen() {
         />
       )}
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { paddingBottom: Math.max(spacing.lg, insets.bottom + spacing.sm) }]}>
         <View style={styles.addRow}>
           <AnimatedPressable
             accessibilityLabel="Agregar producto"
@@ -290,7 +319,7 @@ export default function ListDetailScreen() {
           </AnimatedPressable>
           <AnimatedPressable
             accessibilityLabel="Armar la lista con IA, hablando"
-            onPress={() => router.push({ pathname: "/lists/assistant", params: { listId: id, autoStart: "1" } })}
+            onPress={openAssistant}
             style={styles.aiButton}
           >
             <Ionicons name="sparkles" size={22} color={colors.text.primary} />
@@ -473,6 +502,39 @@ const useStyles = makeStyles((colors) => StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.border.subtle,
     gap: spacing.sm,
+  },
+  headerAiButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    minHeight: 36,
+    paddingHorizontal: spacing.sm,
+    borderRadius: radii.full,
+    borderWidth: 1,
+    borderColor: colors.border.strong,
+    backgroundColor: colors.surface.primary,
+  },
+  headerAiLabel: {
+    fontFamily: typography.body.fontFamily,
+    fontWeight: "600",
+    fontSize: 14,
+    color: colors.text.primary,
+  },
+  emptyAi: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: spacing.xs,
+    minHeight: 48,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radii.full,
+    backgroundColor: colors.brand.navy,
+  },
+  emptyAiLabel: {
+    fontFamily: typography.title.fontFamily,
+    fontWeight: "600",
+    fontSize: 16,
+    color: colors.text.onNavy,
   },
   addRow: {
     flexDirection: "row",

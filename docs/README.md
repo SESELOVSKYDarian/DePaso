@@ -13,6 +13,9 @@ PDFs originales para asesoramiento legal/marcario — son la fuente autoritativa
 
 | Si tu pregunta es sobre... | Andá a |
 |---|---|
+| Instalar y configurar el proyecto (backend, base de datos, app, APK, despliegue) | [GUIA-DE-INSTALACION.md](GUIA-DE-INSTALACION.md) |
+| Cómo se usa la app, paso a paso y según el rol | [MANUAL-DE-USUARIO.md](MANUAL-DE-USUARIO.md) |
+| Endpoints de la API: métodos, parámetros, respuestas y errores | [development/API.md](development/API.md) |
 | Qué es DePaso, propuesta de valor, estado general | [brand-product/SUMMARY.md](brand-product/SUMMARY.md) |
 | Propósito, misión, tono de voz, naming/riesgo marcario, colores, tipografía, logo | [brand-product/BRAND.md](brand-product/BRAND.md) |
 | Problema que resuelve, benchmark, JTBD, flujo de producto, motor de decisión, métricas | [brand-product/PRODUCT.md](brand-product/PRODUCT.md) |
