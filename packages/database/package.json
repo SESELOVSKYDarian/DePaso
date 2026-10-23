@@ -10,7 +10,8 @@
     "generate": "prisma generate",
     "validate": "prisma validate",
     "migrate:dev": "prisma migrate dev",
-    "seed": "tsx prisma/seed.ts"
+    "seed": "tsx prisma/seed.ts",
+    "migrate:deploy": "prisma migrate deploy"
   },
   "dependencies": {
     "@prisma/client": "^6.1.0"
