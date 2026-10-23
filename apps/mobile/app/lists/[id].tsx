@@ -3,9 +3,8 @@ import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
-import Animated, { FadeInDown, FadeOutLeft, useReducedMotion } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { motion, radii, spacing, typography } from "@depaso/design-tokens";
+import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles, useColors } from "@/lib/theme";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { ProductThumb } from "@/components/ProductThumb";
@@ -29,7 +28,6 @@ export default function ListDetailScreen() {
   const [shareEmail, setShareEmail] = useState("");
   const [shareOpen, setShareOpen] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
-  const reducedMotion = useReducedMotion();
   // `itemCount` del resumen compartido (`ListsContext`) — cambia cuando `lists/search.tsx`
   // agrega un producto y vuelve acá. Bug real encontrado probando el flujo completo: sin
   // esto, la pantalla mostraba "vacía" después de agregar un producto porque el detalle
@@ -259,11 +257,9 @@ export default function ListDetailScreen() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
           renderItem={({ item }) => (
-            <Animated.View
-              entering={reducedMotion ? undefined : FadeInDown.springify().damping(motion.spring.soft.damping).stiffness(motion.spring.soft.stiffness)}
-              exiting={reducedMotion ? undefined : FadeOutLeft.duration(motion.duration.fast)}
-              style={styles.row}
-            >
+            // Sin animaciones de entrada/salida por fila: en una lista virtualizada, cuando entran
+            // varias filas juntas (p. ej. después de armar la lista con IA) fallan en Android.
+            <View style={styles.row}>
               <ProductThumb imageUrl={item.imageUrl} size={44} />
               <View style={styles.rowText}>
                 <Text style={styles.rowName} numberOfLines={2}>
@@ -303,7 +299,7 @@ export default function ListDetailScreen() {
               >
                 <Text style={styles.removeLabel}>✕</Text>
               </AnimatedPressable>
-            </Animated.View>
+            </View>
           )}
         />
       )}

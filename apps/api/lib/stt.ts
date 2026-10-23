@@ -3,15 +3,32 @@
  * Groq (Whisper, tiene capa gratis), OpenAI, etc.
  *
  * Variables: `STT_API_KEY` (obligatoria), `STT_BASE_URL` (por defecto Groq) y `STT_MODEL`
- * (por defecto `whisper-large-v3-turbo`). Sin clave `isSttConfigured()` da `false`.
+ * (por defecto `whisper-large-v3`). Sin clave `isSttConfigured()` da `false`.
  */
 const DEFAULT_BASE_URL = "https://api.groq.com/openai/v1";
-const DEFAULT_MODEL = "whisper-large-v3-turbo";
+// El modelo completo entiende mejor marcas y acentos que el "turbo", que es el más rápido pero menos fino.
+const DEFAULT_MODEL = "whisper-large-v3";
 const REQUEST_TIMEOUT_MS = 30_000;
+/** Whisper sólo mira ~224 tokens de la pista: se corta antes para no desperdiciar el resto. */
+const MAX_HINT_CHARS = 700;
 
-/** Pista de vocabulario: mejora mucho el reconocimiento de marcas y productos de góndola. */
-const VOCABULARY_HINT =
-  "Lista de compras de supermercado en Argentina: leche, yerba, gaseosa, fideos, arroz, aceite, galletitas, queso, Coca-Cola, Taragüí, La Serenísima.";
+const BASE_HINT = "Lista de compras de supermercado en Argentina: leche, yerba, gaseosa, fideos, arroz, aceite, galletitas, chocolate, queso.";
+
+/**
+ * Pista de vocabulario: Whisper la toma como "el texto que venía antes", así que escribe las marcas
+ * tal como figuran acá ("Águila" en vez de "ayla"). `brands` son las del catálogo, de más a menos conocidas.
+ */
+export function buildVocabularyHint(brands: string[] = []): string {
+  let hint = BASE_HINT;
+  if (brands.length === 0) return `${hint} Marcas: Coca-Cola, Taragüí, La Serenísima, Águila.`;
+  hint += " Marcas:";
+  for (const brand of brands) {
+    const next = `${hint} ${brand},`;
+    if (next.length > MAX_HINT_CHARS) break;
+    hint = next;
+  }
+  return hint.replace(/,$/, ".");
+}
 
 export function isSttConfigured(): boolean {
   return Boolean(process.env.STT_API_KEY?.trim());
@@ -36,7 +53,7 @@ export type TranscribeResult =
   | { ok: false; reason: "not_configured" }
   | { ok: false; reason: "failed"; detail: TranscribeFailureDetail };
 
-export async function transcribeAudio(file: Blob, filename: string): Promise<TranscribeResult> {
+export async function transcribeAudio(file: Blob, filename: string, vocabularyHint?: string): Promise<TranscribeResult> {
   const apiKey = process.env.STT_API_KEY?.trim();
   if (!apiKey) return { ok: false, reason: "not_configured" };
 
@@ -47,7 +64,7 @@ export async function transcribeAudio(file: Blob, filename: string): Promise<Tra
   form.append("language", "es");
   form.append("response_format", "json");
   form.append("temperature", "0");
-  form.append("prompt", VOCABULARY_HINT);
+  form.append("prompt", vocabularyHint ?? buildVocabularyHint());
 
   try {
     const response = await fetch(`${baseUrl}/audio/transcriptions`, {

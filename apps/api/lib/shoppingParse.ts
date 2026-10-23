@@ -21,8 +21,15 @@ const modelItemSchema = z.object({
 });
 const modelOutputSchema = z.object({ items: z.array(modelItemSchema).min(1) });
 
-function systemPrompt(): string {
+export function systemPrompt(brands: string[] = []): string {
   const types = PRODUCT_TYPES.map((type) => `${type.id} (${type.label})`).join(", ");
+  const brandRule =
+    brands.length > 0
+      ? [
+          `- Marcas conocidas: ${brands.join(", ")}.`,
+          '- El dictado por voz se equivoca con las marcas: si una palabra suena parecido a una marca conocida (p. ej. "ayla" suena a "Águila"), escribí la marca bien. Si no se parece a ninguna, dejala como se dijo.',
+        ]
+      : [];
   return [
     "Sos el asistente de compras de DePaso, una app de supermercado de Argentina.",
     "Recibís un texto, a veces dictado por voz y con errores, con todo lo que una persona necesita comprar.",
@@ -31,6 +38,7 @@ function systemPrompt(): string {
     '- "term": el producto en singular y en minúsculas, lo más genérico posible ("gaseosa", "yerba", "arroz"). Si la persona nombra una marca, dejala ("yerba taragui", "coca cola").',
     '- "quantity": entero mayor o igual a 1. Si no dice cantidad, 1. "una docena" es 12; "un par" es 2.',
     `- "type": uno de estos ids, o null si no estás seguro: ${types}.`,
+    ...brandRule,
     "- No inventes productos que no se mencionan. No agregues marcas que no se dijeron. Un ítem por producto distinto.",
     `- Máximo ${MAX_PARSED_ITEMS} ítems.`,
   ].join("\n");
@@ -84,10 +92,13 @@ export function splitShoppingText(text: string): ParsedItem[] {
 }
 
 /** Convierte el pedido en ítems. Usa la IA si está configurada; si no, o si falla, el corte simple. */
-export async function parseShoppingText(text: string): Promise<{ items: ParsedItem[]; source: "ai" | "fallback" }> {
+export async function parseShoppingText(
+  text: string,
+  brands: string[] = [],
+): Promise<{ items: ParsedItem[]; source: "ai" | "fallback" }> {
   if (isLlmConfigured()) {
     const raw = await chatCompletion([
-      { role: "system", content: systemPrompt() },
+      { role: "system", content: systemPrompt(brands) },
       { role: "user", content: text },
     ]);
     const items = raw ? parseModelOutput(raw) : null;

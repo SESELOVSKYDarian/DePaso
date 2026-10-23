@@ -44,10 +44,96 @@ interface ReviewItem {
   product: ProductSearchResult | null;
   loading: boolean;
   removed: boolean;
+  /** Mostrando el buscador para elegir otro producto. */
+  picking: boolean;
 }
 
 type Mode = "voice" | "typing" | "review";
 type Phase = "idle" | "recording" | "transcribing" | "parsing";
+
+/** Buscador chico para cambiar el producto elegido, o buscarlo a mano si no se encontró. */
+function ProductPicker({
+  initialQuery,
+  typeId,
+  onPick,
+  onClose,
+}: {
+  initialQuery: string;
+  typeId: string | null;
+  onPick: (product: ProductSearchResult) => void;
+  onClose: () => void;
+}) {
+  const colors = useColors();
+  const styles = useStyles();
+  const [query, setQuery] = useState(initialQuery);
+  const [results, setResults] = useState<ProductSearchResult[] | null>(null);
+  const [searching, setSearching] = useState(false);
+
+  useEffect(() => {
+    const value = query.trim();
+    if (value.length < 2) {
+      setResults(null);
+      return;
+    }
+    let cancelled = false;
+    setSearching(true);
+    const timer = setTimeout(() => {
+      productsClient
+        .search(value, typeId && value === initialQuery ? { type: typeId } : {})
+        .then((response) => {
+          if (!cancelled) setResults(response.results.slice(0, 6));
+        })
+        .catch(() => {
+          if (!cancelled) setResults([]);
+        })
+        .finally(() => {
+          if (!cancelled) setSearching(false);
+        });
+    }, 350);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [query, typeId, initialQuery]);
+
+  return (
+    <View style={styles.picker}>
+      <View style={styles.pickerInputRow}>
+        <TextInput
+          value={query}
+          onChangeText={setQuery}
+          placeholder="Buscar producto o marca"
+          placeholderTextColor={colors.text.muted}
+          autoFocus
+          returnKeyType="search"
+          accessibilityLabel="Buscar producto"
+          style={styles.pickerInput}
+        />
+        <Pressable accessibilityLabel="Cerrar búsqueda" hitSlop={10} onPress={onClose}>
+          <Text style={styles.remove}>Cerrar</Text>
+        </Pressable>
+      </View>
+      {searching ? <ActivityIndicator size="small" color={colors.text.secondary} /> : null}
+      {results && results.length === 0 && !searching ? (
+        <Text style={styles.resultMissing}>No encontramos nada con eso. Probá con otra palabra.</Text>
+      ) : null}
+      {(results ?? []).map((product) => (
+        <Pressable
+          key={product.id}
+          accessibilityRole="button"
+          accessibilityLabel={`Elegir ${product.name}`}
+          onPress={() => onPick(product)}
+          style={({ pressed }) => [styles.pickerRow, pressed ? styles.micPressed : null]}
+        >
+          <Text style={styles.resultName} numberOfLines={2}>
+            {product.name}
+          </Text>
+          {product.brandName ? <Text style={styles.resultText}>{product.brandName}</Text> : null}
+        </Pressable>
+      ))}
+    </View>
+  );
+}
 
 function capitalize(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
@@ -137,6 +223,7 @@ export default function ShoppingAssistantScreen() {
           product: item.candidates[0] ?? null,
           loading: false,
           removed: false,
+          picking: false,
         })),
       );
       setMode("review");
@@ -375,7 +462,21 @@ export default function ShoppingAssistantScreen() {
               </Text>
               {heard ? (
                 <View style={styles.heardBox}>
-                  <Text style={styles.heardLabel}>Dijiste</Text>
+                  <View style={styles.heardHeader}>
+                    <Text style={styles.heardLabel}>Dijiste</Text>
+                    <Pressable
+                      accessibilityLabel="Corregir lo que dijiste"
+                      hitSlop={10}
+                      onPress={() => {
+                        setText(heard);
+                        setReview(null);
+                        setError(undefined);
+                        setMode("typing");
+                      }}
+                    >
+                      <Text style={styles.remove}>Corregir</Text>
+                    </Pressable>
+                  </View>
                   <Text style={styles.heardText}>{heard}</Text>
                 </View>
               ) : null}
@@ -453,14 +554,32 @@ export default function ShoppingAssistantScreen() {
                       ) : (
                         <Text style={styles.resultMissing}>No encontramos este producto.</Text>
                       )}
-                      <Pressable
-                        accessibilityLabel={`Quitar ${entry.item.term}`}
-                        hitSlop={10}
-                        onPress={() => update(entry.item.id, { removed: true })}
-                      >
-                        <Text style={styles.remove}>Quitar</Text>
-                      </Pressable>
+                      <View style={styles.resultActions}>
+                        <Pressable
+                          accessibilityLabel={entry.product ? `Cambiar ${entry.item.term}` : `Buscar ${entry.item.term} a mano`}
+                          hitSlop={10}
+                          onPress={() => update(entry.item.id, { picking: !entry.picking })}
+                        >
+                          <Text style={styles.remove}>{entry.product ? "Cambiar" : "Buscar"}</Text>
+                        </Pressable>
+                        <Pressable
+                          accessibilityLabel={`Quitar ${entry.item.term}`}
+                          hitSlop={10}
+                          onPress={() => update(entry.item.id, { removed: true })}
+                        >
+                          <Text style={styles.remove}>Quitar</Text>
+                        </Pressable>
+                      </View>
                     </View>
+
+                    {entry.picking ? (
+                      <ProductPicker
+                        initialQuery={entry.item.term}
+                        typeId={entry.item.typeId}
+                        onClose={() => update(entry.item.id, { picking: false })}
+                        onPick={(product) => update(entry.item.id, { product, picking: false, loading: false })}
+                      />
+                    ) : null}
                   </View>
                 ),
               )}
@@ -591,6 +710,44 @@ const useStyles = makeStyles((colors) =>
       backgroundColor: colors.surface.input,
       borderRadius: radii.lg,
       padding: spacing.md,
+      gap: 2,
+    },
+    heardHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
+    },
+    resultActions: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.md,
+    },
+    picker: {
+      gap: spacing.xs,
+      paddingTop: spacing.xs,
+    },
+    pickerInputRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.sm,
+    },
+    pickerInput: {
+      flex: 1,
+      minHeight: 44,
+      borderRadius: radii.lg,
+      borderWidth: 1,
+      borderColor: colors.border.subtle,
+      backgroundColor: colors.surface.input,
+      paddingHorizontal: spacing.md,
+      fontFamily: typography.subtitle.fontFamily,
+      fontSize: 15,
+      color: colors.text.primary,
+    },
+    pickerRow: {
+      borderRadius: radii.lg,
+      backgroundColor: colors.surface.base,
+      paddingHorizontal: spacing.md,
+      paddingVertical: spacing.sm,
       gap: 2,
     },
     heardLabel: {

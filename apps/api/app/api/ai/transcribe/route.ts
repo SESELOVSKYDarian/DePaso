@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
 import { checkRateLimit } from "@/lib/auth/rateLimit";
-import { isSttConfigured, transcribeAudio } from "@/lib/stt";
+import { topBrandNames } from "@/lib/brandVocabulary";
+import { buildVocabularyHint, isSttConfigured, transcribeAudio } from "@/lib/stt";
 
 export const maxDuration = 60;
 
@@ -33,7 +34,9 @@ export async function POST(request: NextRequest) {
   }
 
   const name = file instanceof File && file.name ? file.name : "audio.m4a";
-  const result = await transcribeAudio(file, name);
+  // Las marcas del catálogo van como pista: así "Águila" sale escrito "Águila" y no "ayla".
+  const hint = buildVocabularyHint(await topBrandNames(60));
+  const result = await transcribeAudio(file, name, hint);
   if (!result.ok) {
     if (result.reason === "not_configured") {
       return NextResponse.json({ error: "STT_NOT_CONFIGURED" }, { status: 503 });
