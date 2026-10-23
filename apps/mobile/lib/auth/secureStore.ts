@@ -82,3 +82,29 @@ export async function setStoredNotifications(json: string): Promise<void> {
 export async function clearStoredNotifications(): Promise<void> {
   await store.deleteItem(NOTIFICATIONS_KEY);
 }
+
+const DETOUR_KEY = "depaso_detour_blocks";
+
+export interface StoredDetourBlocks {
+  strict: number;
+  intermediate: number;
+}
+
+/** Cuántas cuadras se acepta desviarse en cada nivel de compra (preferencia del dispositivo). */
+export async function getStoredDetourBlocks(): Promise<StoredDetourBlocks | null> {
+  const raw = await store.getItem(DETOUR_KEY);
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as Partial<StoredDetourBlocks>;
+    if (typeof parsed.strict === "number" && typeof parsed.intermediate === "number") {
+      return { strict: parsed.strict, intermediate: parsed.intermediate };
+    }
+  } catch {
+    // Valor corrupto: se usan los de fábrica.
+  }
+  return null;
+}
+
+export async function setStoredDetourBlocks(blocks: StoredDetourBlocks): Promise<void> {
+  await store.setItem(DETOUR_KEY, JSON.stringify(blocks));
+}

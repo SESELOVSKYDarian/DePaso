@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { radii, spacing, typography } from "@depaso/design-tokens";
+import { useDetour } from "@/lib/detour/DetourContext";
 import { makeStyles, useTheme } from "@/lib/theme";
 import { GroupedList, GroupedRow } from "@/components/GroupedList";
 import { useNotificationInbox, useToast } from "@/components/Toast";
@@ -31,6 +32,7 @@ export default function ProfileScreen() {
   const { user, logout, isAuthenticated, refreshUser } = useAuth();
   const { mode } = useTheme();
   const { places } = usePlaces();
+  const { strictBlocks, intermediateBlocks } = useDetour();
   const { show: showToast } = useToast();
   const { unreadCount, clear: clearNotifications } = useNotificationInbox();
   const [productPreferenceCount, setProductPreferenceCount] = useState(0);
@@ -103,6 +105,12 @@ export default function ProfileScreen() {
             label="Lugares guardados"
             value={`${places.length} ${places.length === 1 ? "lugar" : "lugares"}`}
             onPress={() => router.push("/places")}
+          />
+          <GroupedRow
+            icon="trending-up-outline"
+            label="Cuánto me desvío"
+            value={`${strictBlocks} y ${intermediateBlocks} cuadras`}
+            onPress={() => router.push("/detour")}
           />
           <GroupedRow
             icon="card-outline"

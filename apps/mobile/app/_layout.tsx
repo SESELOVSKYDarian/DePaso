@@ -19,6 +19,7 @@ import { SplashScreen } from "@/components/SplashScreen";
 import { AuthProvider, useAuth } from "@/lib/auth/AuthContext";
 import { ListsProvider } from "@/lib/lists/ListsContext";
 import { PlacesProvider } from "@/lib/places/PlacesContext";
+import { DetourProvider } from "@/lib/detour/DetourContext";
 import { TodayRouteProvider } from "@/lib/routeContext/TodayRouteContext";
 import { ToastProvider } from "@/components/Toast";
 import { PurchaseProvider } from "@/lib/purchase/PurchaseContext";
@@ -132,6 +133,7 @@ function RootNavigator() {
           name="preferences/store-form"
           options={{ headerShown: true, title: "Preferencia de comercio", presentation: "modal" }}
         />
+        <Stack.Screen name="detour" options={{ headerShown: true, title: "Cuánto me desvío", ...sheet([0.5]) }} />
         <Stack.Screen name="payment-methods" options={{ headerShown: true, title: "Métodos de pago", ...sheet([0.75, 1]) }} />
         <Stack.Screen name="appearance" options={{ headerShown: true, title: "Apariencia", ...sheet([0.42]) }} />
         <Stack.Screen name="notifications" options={{ headerShown: true, title: "Notificaciones" }} />
@@ -216,11 +218,13 @@ export default function RootLayout() {
             <AuthProvider>
               <PlacesProvider>
                 <ListsProvider>
+                  <DetourProvider>
                   <TodayRouteProvider>
                     <PurchaseProvider>
                       <ToastProvider>{fontsLoaded ? <RootNavigator /> : <SplashScreen />}</ToastProvider>
                     </PurchaseProvider>
                   </TodayRouteProvider>
+                  </DetourProvider>
                 </ListsProvider>
               </PlacesProvider>
             </AuthProvider>

@@ -183,6 +183,7 @@ export async function POST(request: NextRequest) {
         transportMode: parsed.data.transportMode,
         mode: "BALANCED",
         promoDiscount: (stops) => promoDiscountForStops(promoContext, stops),
+        ...(parsed.data.tierLimitsMeters ? { tierLimitsMeters: parsed.data.tierLimitsMeters } : {}),
       },
       getRouteProvider(parsed.data.transportMode)
     );

@@ -24,6 +24,7 @@ import { optimizationClient } from "@/lib/apiClient";
 import { useCountUp } from "@/lib/useCountUp";
 import { useLists } from "@/lib/lists/ListsContext";
 import { useTodayRoute } from "@/lib/routeContext/TodayRouteContext";
+import { useDetour } from "@/lib/detour/DetourContext";
 import { usePurchase } from "@/lib/purchase/PurchaseContext";
 
 const labels = {
@@ -87,6 +88,7 @@ export default function OptimizationScreen() {
   const { lists, isLoading: loadingLists } = useLists();
   const { waypoints } = useTodayRoute();
   const { start, setRoutePlan } = usePurchase();
+  const { tierLimitsMeters } = useDetour();
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
   const [plans, setPlans] = useState<OptimizationPlanResponse[] | null>(null);
   const [ranking, setRanking] = useState<StoreRankingEntryResponse[]>([]);
@@ -98,7 +100,7 @@ export default function OptimizationScreen() {
     if (!selectedListId || waypoints.length < 2) return;
     setError(null); setRunning(true);
     try {
-      const result = await optimizationClient.run({ shoppingListId: selectedListId, routeContext: { waypoints: waypoints.map(({ latitude, longitude }) => ({ latitude, longitude })) }, transportMode: "CAR" });
+      const result = await optimizationClient.run({ shoppingListId: selectedListId, routeContext: { waypoints: waypoints.map(({ latitude, longitude }) => ({ latitude, longitude })) }, transportMode: "CAR", tierLimitsMeters });
       if (result.plans.length === 0) {
         // Respuesta real y válida (200, sin combinaciones viables) — no un error del
         // motor. Bug real encontrado probando el flujo completo: antes esto caía en el

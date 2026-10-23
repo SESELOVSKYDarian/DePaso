@@ -69,6 +69,13 @@ export const optimizationRunRequestSchema = z.object({
   shoppingListId: z.string().uuid(),
   routeContext: z.object({ waypoints: z.array(latLngSchema).min(2) }),
   transportMode: z.enum(["CAR", "MOTORCYCLE", "BICYCLE", "WALK", "PUBLIC_TRANSPORT"]).default("CAR"),
+  /** Cuánto se acepta alejarse del recorrido en los niveles "sin desvíos" e "intermedio" (metros). */
+  tierLimitsMeters: z
+    .object({
+      strict: z.number().int().min(100).max(500).optional(),
+      intermediate: z.number().int().min(500).max(4000).optional(),
+    })
+    .optional(),
 });
 export type OptimizationRunRequest = z.input<typeof optimizationRunRequestSchema>;
 
