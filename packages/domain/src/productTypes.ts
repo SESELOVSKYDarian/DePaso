@@ -169,3 +169,40 @@ export function classifyProductType(productName: string): string | null {
   }
   return null;
 }
+
+export interface ProductTypeGroup {
+  id: string;
+  label: string;
+  /** Tipos de producto de la categoría, en el orden en que se muestran. */
+  typeIds: readonly string[];
+}
+
+/**
+ * Categorías grandes para explorar el catálogo sin escribir: categoría → tipo → marca →
+ * producto (p. ej. Bebidas → Gaseosas → Pepsi → Pepsi 1,5 L).
+ */
+export const PRODUCT_TYPE_GROUPS: readonly ProductTypeGroup[] = [
+  { id: "bebidas", label: "Bebidas", typeIds: ["gaseosa", "agua", "jugo", "energizante", "bebida"] },
+  { id: "alcohol", label: "Bebidas con alcohol", typeIds: ["cerveza", "vino", "espumante", "destilado"] },
+  { id: "infusiones", label: "Infusiones", typeIds: ["yerba", "cafe", "te", "edulcorante", "mate"] },
+  { id: "lacteos", label: "Lácteos y huevos", typeIds: ["leche", "yogur", "queso", "crema_leche", "manteca", "huevo", "postre"] },
+  {
+    id: "almacen",
+    label: "Almacén",
+    typeIds: ["arroz", "pasta", "harina", "aceite", "conserva", "salsa", "sopa", "cereal", "dulce", "pan"],
+  },
+  { id: "dulces", label: "Galletitas y golosinas", typeIds: ["galletita", "alfajor", "golosina", "snack", "helado"] },
+  { id: "carnes", label: "Carnes y fiambres", typeIds: ["carne", "fiambre", "pescado"] },
+  {
+    id: "limpieza",
+    label: "Limpieza",
+    typeIds: ["detergente", "lavado_ropa", "lavandina", "limpiador", "jabon", "esponja", "bolsa", "aromatizante", "papel"],
+  },
+  {
+    id: "personal",
+    label: "Cuidado personal",
+    typeIds: ["shampoo", "acondicionador", "desodorante", "higiene_bucal", "piel", "gel", "afeitado", "tintura", "higiene_femenina"],
+  },
+  { id: "bebes", label: "Bebés", typeIds: ["bebe"] },
+  { id: "hogar", label: "Hogar y mascotas", typeIds: ["mascota", "hogar", "electro", "farmacia", "ropa", "juguete", "libro"] },
+];

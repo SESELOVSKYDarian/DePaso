@@ -217,7 +217,8 @@ export async function getProductFacets(query: string, filters: ProductSearchFilt
 
   return {
     types: typeRows.map((row) => ({ id: row.id, label: PRODUCT_TYPE_LABELS[row.id] ?? row.id, count: row.count })),
-    brands: brandRows.map((row) => ({
+    // "S/D", "Genérico" o vacío no son marcas para elegir.
+    brands: brandRows.filter((row) => !/^(s\/?d|gen[eé]rico|sin marca|\s*)$/i.test(row.name.trim())).map((row) => ({
       id: row.id,
       name: prettifyBrandName(row.name) ?? row.name,
       count: row.count,

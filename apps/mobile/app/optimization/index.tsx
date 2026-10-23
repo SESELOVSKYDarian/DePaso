@@ -4,9 +4,6 @@ import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
 import Animated, {
-  FadeIn,
-  FadeInDown,
-  FadeOut,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
@@ -52,7 +49,7 @@ function AnalyzingIndicator() {
   }, [reducedMotion, opacity]);
   const animatedStyle = useAnimatedStyle(() => ({ opacity: reducedMotion ? 1 : opacity.value }));
   return (
-    <Animated.View entering={FadeIn.duration(200)} exiting={FadeOut.duration(150)} style={[styles.analyzing, animatedStyle]}>
+    <Animated.View style={[styles.analyzing, animatedStyle]}>
       <Ionicons name="sparkles-outline" size={16} color={colors.brand.accentDark} />
       <Text style={styles.analyzingText}>Analizando productos y precios cercanos...</Text>
     </Animated.View>
@@ -62,11 +59,10 @@ function AnalyzingIndicator() {
 function PlanCard({ plan, index, onStart, onMap }: { plan: OptimizationPlanResponse; index: number; onStart: () => void; onMap: () => void }) {
   const colors = useColors();
   const styles = useStyles();
-  const reducedMotion = useReducedMotion();
   const meta = labels[plan.label];
   const recommended = plan.label === "BALANCED";
   const animatedSavings = useCountUp(plan.estimatedSavings, 500);
-  return <Animated.View entering={reducedMotion ? undefined : FadeInDown.delay(index * 110).duration(280)} style={[styles.plan, recommended && styles.recommended]}>
+  return <View style={[styles.plan, recommended && styles.recommended]}>
     <View style={styles.planHead}>
       <View style={[styles.planIcon, recommended && styles.recommendedIcon]} accessible={false}><Ionicons name={meta.icon} size={21} color={colors.text.primary} /></View>
       <View style={styles.flex}><View style={styles.titleLine}><Text style={styles.planTitle}>{meta.title}</Text>{recommended ? <Text style={styles.tag}>RECOMENDADO</Text> : null}</View><Text style={styles.meta}>{meta.subtitle}</Text></View>
@@ -78,7 +74,7 @@ function PlanCard({ plan, index, onStart, onMap }: { plan: OptimizationPlanRespo
     {plan.missingProductIds.length > 0 ? <Text style={styles.warning}>Hay {plan.missingProductIds.length} producto{plan.missingProductIds.length === 1 ? "" : "s"} sin precio vigente.</Text> : null}
     <AnimatedPressable accessibilityLabel={`Ver ${meta.title} en el mapa`} haptic={false} onPress={onMap} style={styles.routeAction}><Text style={styles.routeActionText}>Ver mi ruta en el mapa</Text><Ionicons name="map-outline" size={17} color={colors.text.primary} accessible={false} /></AnimatedPressable>
     <AnimatedPressable accessibilityLabel={`Empezar compra con ${meta.title}`} onPress={onStart} style={styles.routeAction}><Text style={styles.routeActionText}>Empezar compra</Text><Ionicons name="arrow-forward" size={17} color={colors.text.primary} accessible={false} /></AnimatedPressable>
-  </Animated.View>;
+  </View>;
 }
 
 /** Fase 16: Top 3 construido desde la lista, preferencias, precios y sucursales reales. */

@@ -35,7 +35,7 @@ export function DynamicNotifications({ children, duration }: DynamicNotification
       <View style={styles.root}>
         {children}
         <View pointerEvents="box-none" style={[styles.overlay, { height: layout.canvasHeight }]}>
-          {notification ? <Gooey /> : null}
+          {notification && !simple ? <Gooey /> : null}
           <Card />
         </View>
       </View>

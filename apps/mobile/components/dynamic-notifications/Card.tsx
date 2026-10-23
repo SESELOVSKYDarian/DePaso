@@ -117,12 +117,14 @@ export const Card = memo(function Card() {
         ]}
       >
         <Body notification={notification} />
-        <Animated.View
-          pointerEvents="none"
-          style={[StyleSheet.absoluteFill, { borderRadius: layout.cardRadius }, styles.veil, veilStyle]}
-        >
-          <BlurView intensity={48} tint={isDark ? "dark" : "light"} style={StyleSheet.absoluteFill} />
-        </Animated.View>
+        {Platform.OS === "ios" ? (
+          <Animated.View
+            pointerEvents="none"
+            style={[StyleSheet.absoluteFill, { borderRadius: layout.cardRadius }, styles.veil, veilStyle]}
+          >
+            <BlurView intensity={48} tint={isDark ? "dark" : "light"} style={StyleSheet.absoluteFill} />
+          </Animated.View>
+        ) : null}
       </Animated.View>
     </GestureDetector>
   );

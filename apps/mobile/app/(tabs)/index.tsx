@@ -2,7 +2,6 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { Fragment } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import Animated, { FadeInDown, useReducedMotion } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles, useColors } from "@/lib/theme";
@@ -11,12 +10,6 @@ import { Button } from "@/components/Button";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useLists } from "@/lib/lists/ListsContext";
 import { useTodayRoute } from "@/lib/routeContext/TodayRouteContext";
-
-/** Entrada sutil y escalonada (MOTION-SYSTEM.md) - respeta Reduce Motion. */
-function useEntering(index: number) {
-  const reducedMotion = useReducedMotion();
-  return reducedMotion ? undefined : FadeInDown.delay(index * 70).duration(240);
-}
 
 /**
  * Inicio. Una sola cosa por vez: arriba el saludo, en el medio la acción principal (armar el
@@ -37,14 +30,14 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <Animated.View entering={useEntering(0)} style={styles.header}>
+        <View style={styles.header}>
           <Text accessibilityRole="header" style={styles.greeting} numberOfLines={1}>
             Hola{firstName ? `, ${firstName}` : ""}
           </Text>
           <Text style={styles.question}>¿Qué te queda de paso hoy?</Text>
-        </Animated.View>
+        </View>
 
-        <Animated.View entering={useEntering(1)} style={styles.mainCard}>
+        <View style={styles.mainCard}>
           {hasRoute ? (
             <>
               <Text style={styles.cardLabel}>Tu recorrido de hoy</Text>
@@ -73,9 +66,9 @@ export default function HomeScreen() {
               />
             </>
           )}
-        </Animated.View>
+        </View>
 
-        <Animated.View entering={useEntering(2)} style={styles.section}>
+        <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Text accessibilityRole="header" style={styles.sectionTitle}>
               Tus listas
@@ -127,7 +120,7 @@ export default function HomeScreen() {
               ))}
             </View>
           )}
-        </Animated.View>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
