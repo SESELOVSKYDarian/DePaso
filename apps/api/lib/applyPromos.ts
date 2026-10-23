@@ -28,6 +28,42 @@ function formatMoney(value: number): string {
   return `$${Math.round(value).toLocaleString("es-AR")}`;
 }
 
+type Promos = Awaited<ReturnType<typeof prisma.paymentPromo.findMany>>;
+
+/** Promos activas + medios de pago del usuario + día: lo necesario para calcular descuentos. */
+export interface PromoContext {
+  promos: Promos;
+  userMethodSlugs: string[];
+  weekday: number;
+}
+
+/** `null` si el usuario no cargó medios de pago o no hay promos activas (no hay nada que descontar). */
+export async function loadPromoContext(userId: string, now: Date = new Date()): Promise<PromoContext | null> {
+  const methods = await prisma.userPaymentMethod.findMany({ where: { userId } });
+  const userMethodSlugs = methods.map((method: (typeof methods)[number]) => method.methodSlug);
+  if (userMethodSlugs.length === 0) return null;
+  const promos = await prisma.paymentPromo.findMany({ where: { active: true } });
+  if (promos.length === 0) return null;
+  return { promos, userMethodSlugs, weekday: argentinaWeekday(now) };
+}
+
+/** Cuánto descuentan en total las promos del usuario si compra en estas paradas. */
+export function promoDiscountForStops(context: PromoContext | null, stops: PlanStopLike[]): number {
+  if (!context) return 0;
+  let total = 0;
+  for (const stop of stops) {
+    const subtotal = stop.items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+    const best = bestPromoForStore(context.promos, {
+      storeName: stop.storeName,
+      subtotal,
+      userMethodSlugs: context.userMethodSlugs,
+      weekday: context.weekday,
+    });
+    if (best) total += best.discount;
+  }
+  return total;
+}
+
 /**
  * Descuenta de cada plan las promos de bancos/billeteras que le corresponden al usuario según
  * los medios de pago que declaró. Sin medios de pago cargados, los planes salen intactos.
@@ -35,16 +71,14 @@ function formatMoney(value: number): string {
 export async function applyPaymentPromos<T extends PlanLike>(
   plans: T[],
   userId: string,
-  now: Date = new Date()
+  now: Date = new Date(),
+  /** Si ya se cargó (para rankear), se reusa en vez de volver a consultar la base. */
+  preloaded?: PromoContext | null
 ): Promise<(T & { promoSavings: number; appliedPromos: AppliedPromo[] })[]> {
-  const methods = await prisma.userPaymentMethod.findMany({ where: { userId } });
-  const userMethodSlugs = methods.map((method: (typeof methods)[number]) => method.methodSlug);
   const none = plans.map((plan) => ({ ...plan, promoSavings: 0, appliedPromos: [] as AppliedPromo[] }));
-  if (userMethodSlugs.length === 0) return none;
-
-  const promos = await prisma.paymentPromo.findMany({ where: { active: true } });
-  if (promos.length === 0) return none;
-  const weekday = argentinaWeekday(now);
+  const context = preloaded !== undefined ? preloaded : await loadPromoContext(userId, now);
+  if (!context) return none;
+  const { promos, userMethodSlugs, weekday } = context;
 
   return plans.map((plan) => {
     const appliedPromos: AppliedPromo[] = [];

@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import type { OptimizationPlanResponse } from "@depaso/validation";
+import type { OptimizationPlanResponse, StoreRankingEntryResponse } from "@depaso/validation";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -27,9 +27,13 @@ import { useTodayRoute } from "@/lib/routeContext/TodayRouteContext";
 import { usePurchase } from "@/lib/purchase/PurchaseContext";
 
 const labels = {
-  BALANCED: { title: "Mejor equilibrio", subtitle: "Ahorro y tiempo en balance", icon: "sparkles-outline" as const },
-  FASTEST: { title: "Más rápido", subtitle: "Casi no te desviás del camino", icon: "flash-outline" as const },
-  CHEAPEST: { title: "Más económico", subtitle: "El menor costo de productos", icon: "wallet-outline" as const },
+  FASTEST: { title: "Sin desvíos", subtitle: "A 2 cuadras de tu camino como mucho", icon: "flash-outline" as const },
+  BALANCED: { title: "Intermedio", subtitle: "Algunos desvíos, más ahorro", icon: "sparkles-outline" as const },
+  CHEAPEST: { title: "Hipereconómico", subtitle: "Lo más barato, sin importar tu ruta", icon: "wallet-outline" as const },
+};
+const blocks = (meters: number) => {
+  const count = Math.round(meters / 100);
+  return count < 1 ? "Sobre tu camino" : `A ${count} ${count === 1 ? "cuadra" : "cuadras"} de tu camino`;
 };
 const money = (value: number) => new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 0 }).format(value);
 const distance = (meters: number) => meters < 1000 ? `${Math.round(meters)} m extra` : `${(meters / 1000).toFixed(1)} km extra`;
@@ -85,6 +89,7 @@ export default function OptimizationScreen() {
   const { start, setRoutePlan } = usePurchase();
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
   const [plans, setPlans] = useState<OptimizationPlanResponse[] | null>(null);
+  const [ranking, setRanking] = useState<StoreRankingEntryResponse[]>([]);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const activeLists = lists.filter((list) => !list.archivedAt && list.itemCount > 0);
@@ -102,6 +107,7 @@ export default function OptimizationScreen() {
         return;
       }
       setPlans(result.plans);
+      setRanking(result.ranking);
       // El mejor equilibrio queda dibujado en el mapa del recorrido.
       setRoutePlan(result.plans.find((plan) => plan.label === "BALANCED") ?? result.plans[0] ?? null);
     } catch (caught) {
@@ -112,9 +118,23 @@ export default function OptimizationScreen() {
 
   if (plans) return <SafeAreaView style={styles.container} edges={["top"]}><ScrollView contentContainerStyle={styles.content}>
     <View style={styles.resultsHead}><View><Text style={styles.eyebrow}>TU TOP 3</Text><Text style={styles.screenTitle}>Comprá mejor, de paso</Text></View><AnimatedPressable accessibilityLabel="Armar otra optimización" haptic={false} onPress={() => setPlans(null)} style={styles.reset}><Ionicons name="refresh" size={19} color={colors.text.primary} accessible={false} /></AnimatedPressable></View>
-    <Text style={styles.intro}>Elegí la opción que mejor encaja con tu día. Los precios provienen de datos vigentes.</Text>
+    <Text style={styles.intro}>Tres formas de comprar, de menos a más desvío. En cada una te dejamos lo más barato, con las promos de tus medios de pago ya contadas.</Text>
     <PriceDisclosureBanner />
+    {(["FASTEST", "BALANCED", "CHEAPEST"] as const).filter((label) => !plans.some((plan) => plan.label === label)).map((label) => <View key={label} style={styles.unavailable}><Text style={styles.planTitle}>{labels[label].title}</Text><Text style={styles.meta}>{label === "FASTEST" ? "Ningún comercio con tus productos te queda a 2 cuadras del camino." : label === "BALANCED" ? "No encontramos comercios con tus productos a un desvío razonable." : "Todavía no hay precios para armar esta opción."}</Text></View>)}
     {plans.map((plan, index) => <PlanCard key={plan.label} plan={plan} index={index} onStart={() => { start(plan); router.push("/purchase"); }} onMap={() => { setRoutePlan(plan); router.navigate("/map"); }} />)}
+    {ranking.length > 0 ? <View style={styles.section}>
+      <Text style={styles.sectionTitle}>Los comercios más baratos para tu lista</Text>
+      <Text style={styles.meta}>Comprando todo en un solo lugar, con promos incluidas.</Text>
+      {ranking.slice(0, 6).map((entry, index) => <View key={entry.storeBranchId} style={styles.rankRow}>
+        <Text style={styles.rankNumber}>{index + 1}</Text>
+        <View style={styles.flex}>
+          <Text style={styles.choiceName}>{entry.storeName}</Text>
+          <Text style={styles.meta} numberOfLines={1}>{entry.address || entry.branchName}</Text>
+          <Text style={styles.meta}>{blocks(entry.distanceFromRouteMeters)}{entry.missingCount > 0 ? ` · le faltan ${entry.missingCount}` : ""}{entry.promoSavings > 0 ? ` · promo ${money(entry.promoSavings)}` : ""}</Text>
+        </View>
+        <Text style={styles.cost}>{money(entry.totalCost)}</Text>
+      </View>)}
+    </View> : null}
   </ScrollView></SafeAreaView>;
 
   return <SafeAreaView style={styles.container} edges={["top"]}><ScrollView contentContainerStyle={styles.content}>
@@ -138,6 +158,9 @@ const useStyles = makeStyles((colors) => StyleSheet.create({
   choice: { minHeight: 64, padding: spacing.sm, borderWidth: 1, borderColor: colors.border.subtle, borderRadius: radii.lg, backgroundColor: colors.surface.primary, flexDirection: "row", alignItems: "center", gap: spacing.sm }, choiceSelected: { borderColor: colors.brand.accentDark, backgroundColor: colors.surface.secondary }, choiceIcon: { width: 36, height: 36, alignItems: "center", justifyContent: "center", borderRadius: radii.md, backgroundColor: colors.tint.blue.bg }, choiceName: { fontFamily: typography.itemTitle.fontFamily, fontSize: 15, color: colors.text.primary }, meta: { fontFamily: typography.caption.fontFamily, fontSize: 12, color: colors.text.secondary },
   empty: { gap: spacing.sm, padding: spacing.md, borderRadius: radii.lg, backgroundColor: colors.surface.primary, borderWidth: 1, borderColor: colors.border.subtle }, emptyText: { fontFamily: typography.body.fontFamily, fontSize: 14, lineHeight: 20, color: colors.text.secondary }, error: { fontFamily: typography.body.fontFamily, fontSize: 14, color: colors.state.error }, runButton: { marginTop: spacing.md }, analyzing: { flexDirection: "row", alignItems: "center", gap: spacing.xs, justifyContent: "center", paddingVertical: spacing.xs }, analyzingText: { fontFamily: typography.body.fontFamily, fontSize: 13, color: colors.brand.accentDark },
   resultsHead: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" }, reset: { width: 44, height: 44, alignItems: "center", justifyContent: "center", borderRadius: radii.full, backgroundColor: colors.surface.primary, borderWidth: 1, borderColor: colors.border.subtle }, plan: { gap: spacing.sm, padding: spacing.md, backgroundColor: colors.surface.primary, borderRadius: radii.xl, borderWidth: 1, borderColor: colors.border.subtle }, recommended: { borderColor: colors.saving.lime, borderWidth: 2 }, planHead: { flexDirection: "row", alignItems: "center", gap: spacing.sm }, planIcon: { width: 42, height: 42, borderRadius: radii.md, backgroundColor: colors.tint.blue.bg, alignItems: "center", justifyContent: "center" }, recommendedIcon: { backgroundColor: colors.surface.secondary }, titleLine: { flexDirection: "row", alignItems: "center", flexWrap: "wrap", gap: spacing.xs }, planTitle: { fontFamily: typography.itemTitle.fontFamily, fontSize: 17, color: colors.text.primary }, tag: { fontFamily: typography.caption.fontFamily, fontSize: 10, color: colors.text.onLime, backgroundColor: colors.saving.lime, paddingHorizontal: 6, paddingVertical: 3, borderRadius: radii.full }, costRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-end" }, cost: { fontFamily: typography.heroTitle.fontFamily, fontSize: 24, color: colors.text.primary }, savings: { backgroundColor: colors.saving.lime, borderRadius: radii.full, paddingHorizontal: spacing.sm, paddingVertical: 6 }, savingsText: { fontFamily: typography.caption.fontFamily, fontSize: 12, color: colors.text.onLime }, explanation: { fontFamily: typography.body.fontFamily, fontSize: 13, lineHeight: 19, color: colors.text.primary }, warning: { fontFamily: typography.caption.fontFamily, fontSize: 12, color: colors.state.warning }, routeAction: { minHeight: 44, flexDirection: "row", alignItems: "center", justifyContent: "space-between", borderTopWidth: 1, borderTopColor: colors.border.subtle, paddingTop: spacing.sm }, routeActionText: { fontFamily: typography.itemTitle.fontFamily, fontSize: 14, color: colors.text.primary },
+  unavailable: { gap: 2, padding: spacing.md, borderRadius: radii.xl, borderWidth: 1, borderStyle: "dashed", borderColor: colors.border.subtle },
+  rankRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm, padding: spacing.sm, borderRadius: radii.lg, borderWidth: 1, borderColor: colors.border.subtle, backgroundColor: colors.surface.primary },
+  rankNumber: { width: 26, fontFamily: typography.heroTitle.fontFamily, fontSize: 18, color: colors.text.secondary, textAlign: "center" },
   promoBox: { backgroundColor: colors.brand.mint, borderRadius: radii.md, padding: spacing.sm, gap: 2 },
   promoTitle: { fontFamily: typography.body.fontFamily, fontWeight: "600", fontSize: 13, color: colors.text.primary },
   promoText: { fontFamily: typography.caption.fontFamily, fontSize: 12, color: colors.text.secondary },

@@ -20,3 +20,10 @@ export function formatMinutes(seconds: number): string {
   const minutes = Math.max(0, Math.round(seconds / 60));
   return `${minutes} min`;
 }
+
+/** "1 cuadra", "2 cuadras": una cuadra en Argentina ronda los 100 m. */
+export function formatBlocks(meters: number): string {
+  const blocks = Math.max(0, Math.round(meters / 100));
+  if (blocks === 0) return "menos de 1 cuadra";
+  return `${blocks} ${blocks === 1 ? "cuadra" : "cuadras"}`;
+}

@@ -1,12 +1,15 @@
 import { prisma } from "@depaso/database";
-import { optimizeShoppingList, type OptimizationPlanResult, type StoreCandidateInput } from "@depaso/optimization";
+import { optimizeWithRanking, type OptimizationPlanResult, type StoreCandidateInput } from "@depaso/optimization";
 import type { TransportMode } from "@depaso/types";
 import { optimizationRunRequestSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
-import { applyPaymentPromos } from "@/lib/applyPromos";
+import { applyPaymentPromos, loadPromoContext, promoDiscountForStops } from "@/lib/applyPromos";
 import { buildPlanRoute, type BranchInfo } from "@/lib/planRoute";
 import { getRouteProvider } from "@/lib/routing";
+
+// Varias rutas de Mapbox por plan: con el límite por defecto la función se cortaba.
+export const maxDuration = 60;
 
 /**
  * Deja registro de la corrida para la vista de admin "Optimization runs" (Fase 20) — antes
@@ -152,7 +155,9 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const plans = await optimizeShoppingList(
+    // Las promos de los medios de pago entran al ranking: gana lo más barato DESPUÉS de descuentos.
+    const promoContext = await loadPromoContext(current.userId);
+    const { plans, ranking } = await optimizeWithRanking(
       {
         shoppingList: {
           items: list.items.map((item: (typeof list.items)[number]) => ({
@@ -177,6 +182,7 @@ export async function POST(request: NextRequest) {
         storeCandidates: [...candidateMap.values()],
         transportMode: parsed.data.transportMode,
         mode: "BALANCED",
+        promoDiscount: (stops) => promoDiscountForStops(promoContext, stops),
       },
       getRouteProvider(parsed.data.transportMode)
     );
@@ -193,7 +199,23 @@ export async function POST(request: NextRequest) {
       const planned = buildPlanRoute(parsed.data.routeContext.waypoints, plan.stops, branchInfo);
       return { ...plan, stops: planned.stops, routeWaypoints: planned.routeWaypoints };
     });
-    return NextResponse.json({ plans: await applyPaymentPromos(publicPlans, current.userId) });
+    const rankingWithAddress = ranking.map((entry) => ({
+      storeBranchId: entry.storeBranchId,
+      storeName: entry.storeName,
+      branchName: entry.branchName,
+      address: branchInfo.get(entry.storeBranchId)?.address ?? "",
+      latitude: entry.location.latitude,
+      longitude: entry.location.longitude,
+      totalCost: entry.totalCost,
+      promoSavings: entry.promoSavings,
+      coveredCount: entry.coveredCount,
+      missingCount: entry.missingCount,
+      distanceFromRouteMeters: entry.distanceFromRouteMeters,
+    }));
+    return NextResponse.json({
+      plans: await applyPaymentPromos(publicPlans, current.userId, new Date(), promoContext),
+      ranking: rankingWithAddress,
+    });
   } catch (error) {
     return NextResponse.json(
       { error: "OPTIMIZATION_FAILED", message: error instanceof Error ? error.message : "unknown" },

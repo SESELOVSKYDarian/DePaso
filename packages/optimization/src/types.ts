@@ -89,8 +89,30 @@ export interface OptimizeInput {
   mode: OptimizationMode;
   /** Metros de desvío máximo para pre-filtrar candidatos por corredor de ruta. Default 3000m. */
   maxDeviationMeters?: number;
-  /** Pesos custom para el perfil indicado en `mode` — pensado para tests/tuning, no UI. */
+  /** Pesos custom para el perfil indicado en `mode` — ya no se usan (el ranking es por precio efectivo); se conserva por compatibilidad. */
   weightsOverride?: Partial<OptimizationWeights>;
+  /**
+   * Cuánto descuentan en total las promos de los medios de pago del usuario si compra en estas
+   * paradas. Entra al ranking: se elige lo más barato *después* de promos.
+   */
+  promoDiscount?: (stops: PlanStop[]) => number;
+  /** Lejanía máxima al recorrido (metros) de cada nivel; por defecto 200 m (2 cuadras) y 1500 m. */
+  tierLimitsMeters?: { strict?: number; intermediate?: number };
+}
+
+/** Un comercio ordenado por lo que cuesta comprar TODA la lista ahí (ranking de más baratos). */
+export interface StoreRankingEntry {
+  storeBranchId: string;
+  storeName: string;
+  branchName: string;
+  location: LatLng;
+  /** Costo de la lista completa en este comercio, ya con promos. */
+  totalCost: number;
+  promoSavings: number;
+  /** Productos de la lista que el comercio tiene / no tiene. */
+  coveredCount: number;
+  missingCount: number;
+  distanceFromRouteMeters: number;
 }
 
 export interface PlanStopItem {

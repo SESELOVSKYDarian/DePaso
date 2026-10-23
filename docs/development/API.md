@@ -235,7 +235,7 @@ sus etiquetas está en [`packages/domain/src/productTypes.ts`](../../packages/do
 
 | Método | Ruta | Acceso | Descripción |
 |---|---|---|---|
-| POST | `/optimization` | 🔒 | `{ shoppingListId, routeContext: { waypoints }, transportMode }`. Carga la lista, los precios vigentes y las preferencias del usuario, aplica promos de sus medios de pago y devuelve hasta 3 planes (`BALANCED`, `FASTEST`, `CHEAPEST`) con paradas, total, desvío y ahorro estimado. `NO_CURRENT_PRICES` si no hay precios |
+| POST | `/optimization` | 🔒 | `{ shoppingListId, routeContext: { waypoints }, transportMode }`. Carga la lista, los precios vigentes y las preferencias del usuario y devuelve hasta 3 planes, uno por nivel de desvío, y en cada uno gana lo **más barato después de las promos de sus medios de pago**: `FASTEST` "sin desvíos" (comercios a 2 cuadras ≈ 200 m del recorrido o menos), `BALANCED` "intermedio" (hasta ≈ 1,5 km) y `CHEAPEST` "hipereconómico" (la ruta más barata para toda la lista, sin importar el recorrido). Un nivel sin comercios que alcancen no aparece. Cada plan trae paradas con dirección, ubicación y distancia al camino, y `routeWaypoints` (el recorrido con las paradas metidas). Además `ranking`: los comercios más baratos para comprar TODA la lista en un solo lugar. `NO_CURRENT_PRICES` si no hay precios |
 | POST | `/optimize` | 🌐 | Motor puro: recibe todo el contexto en el cuerpo (útil para pruebas) |
 
 ## Comunidad

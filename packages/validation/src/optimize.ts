@@ -127,15 +127,27 @@ export const optimizationPlanResponseSchema = z.object({
 });
 export type OptimizationPlanResponse = z.infer<typeof optimizationPlanResponseSchema>;
 
-/** El motor (`@depaso/optimization/optimize.ts`) sólo devuelve 0 o 3 planes — nunca 1 ni 2
- * (los 3 perfiles comparten el mismo set de combinaciones, así que si hay al menos una
- * combinación viable, los 3 ganan juntos). `[]` es una respuesta real y válida ("no hay
- * ningún comercio con estos productos dentro del corredor de tu ruta") — bug real
- * encontrado probando el flujo completo: `.length(3)` la rechazaba con el mismo error
- * genérico que una falla real, sin poder distinguir un caso del otro en la UI. */
+/** Un comercio del ranking "los más baratos para tu lista": costo de la lista completa ahí, con promos. */
+export const storeRankingEntrySchema = z.object({
+  storeBranchId: z.string(),
+  storeName: z.string(),
+  branchName: z.string(),
+  address: z.string(),
+  latitude: z.number(),
+  longitude: z.number(),
+  totalCost: z.number().nonnegative(),
+  promoSavings: z.number().nonnegative(),
+  coveredCount: z.number().int().nonnegative(),
+  missingCount: z.number().int().nonnegative(),
+  distanceFromRouteMeters: z.number().nonnegative(),
+});
+export type StoreRankingEntryResponse = z.infer<typeof storeRankingEntrySchema>;
+
+/** El motor devuelve hasta 3 planes, uno por nivel de desvío (FASTEST "sin desvíos", BALANCED
+ * "intermedio", CHEAPEST "hipereconómico"). Un nivel sin comercios que alcancen no aparece, y
+ * `[]` es una respuesta válida ("ningún comercio con estos productos"). */
 export const optimizationRunResponseSchema = z.object({
-  plans: z.array(optimizationPlanResponseSchema).refine((arr) => arr.length === 0 || arr.length === 3, {
-    message: "El motor de optimización siempre devuelve 0 o 3 planes",
-  }),
+  plans: z.array(optimizationPlanResponseSchema).max(3),
+  ranking: z.array(storeRankingEntrySchema).default([]),
 });
 export type OptimizationRunResponse = z.infer<typeof optimizationRunResponseSchema>;
