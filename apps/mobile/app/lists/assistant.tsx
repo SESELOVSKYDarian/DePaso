@@ -34,6 +34,7 @@ import { useLists } from "@/lib/lists/ListsContext";
 import { makeStyles, useColors } from "@/lib/theme";
 import { transcribeRecording, TranscribeError } from "@/lib/voice/transcribe";
 import { useVoiceRecorder } from "@/lib/voice/useVoiceRecorder";
+import { Waveform } from "@/components/Waveform";
 
 interface ReviewItem {
   item: AssistantItem;
@@ -72,6 +73,18 @@ function voiceErrorMessage(error: unknown): string {
     if (error.reason === "not_configured") return "La voz todavía no está activada en el servidor. Podés escribirlo.";
     if (error.reason === "rate_limited") return "Hiciste muchos pedidos seguidos. Probá de nuevo en unos minutos.";
     if (error.reason === "too_large") return "El audio quedó muy largo. Probá con una lista más corta.";
+
+    const detail = error.detail ?? "";
+    const code = detail ? ` (código: ${detail})` : "";
+    if (detail === "empty_transcript") return "No te escuchamos. Hablá más cerca del micrófono y probá de nuevo.";
+    if (detail === "upstream_401" || detail === "upstream_403") {
+      return `El servicio de voz rechazó la clave. Escribilo por ahora${code}.`;
+    }
+    if (detail === "upstream_429") return `El servicio de voz está saturado. Probá en un minuto${code}.`;
+    if (detail === "no_connection" || detail === "network") {
+      return `No pudimos conectar con el servidor. Revisá tu conexión${code}.`;
+    }
+    return `No pudimos entender el audio. Probá de nuevo o escribilo${code}.`;
   }
   return "No pudimos entender el audio. Probá de nuevo o escribilo.";
 }
@@ -260,6 +273,10 @@ export default function ShoppingAssistantScreen() {
               {voiceTitle}
             </Text>
             <Text style={styles.voiceHint}>{voiceHint}</Text>
+
+            <View style={styles.waveWrap}>
+              <Waveform level={recorder.level} tick={recorder.durationMs} active={isRecording} />
+            </View>
 
             <View style={styles.micWrap}>
               <Animated.View pointerEvents="none" style={[styles.pulseRing, pulseStyle]} />
@@ -512,12 +529,17 @@ const useStyles = makeStyles((colors) =>
       textAlign: "center",
       maxWidth: 300,
     },
+    waveWrap: {
+      alignSelf: "stretch",
+      alignItems: "center",
+      marginTop: spacing.md,
+    },
     micWrap: {
       width: MIC_SIZE * 1.8,
       height: MIC_SIZE * 1.8,
       alignItems: "center",
       justifyContent: "center",
-      marginVertical: spacing.lg,
+      marginVertical: spacing.md,
     },
     pulseRing: {
       position: "absolute",

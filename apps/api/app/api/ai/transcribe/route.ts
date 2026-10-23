@@ -35,7 +35,11 @@ export async function POST(request: NextRequest) {
   const name = file instanceof File && file.name ? file.name : "audio.m4a";
   const result = await transcribeAudio(file, name);
   if (!result.ok) {
-    return NextResponse.json({ error: "TRANSCRIPTION_FAILED" }, { status: 502 });
+    if (result.reason === "not_configured") {
+      return NextResponse.json({ error: "STT_NOT_CONFIGURED" }, { status: 503 });
+    }
+    // `detail` dice por qué falló (clave inválida, audio vacío, silencio…) para poder mostrarlo.
+    return NextResponse.json({ error: "TRANSCRIPTION_FAILED", detail: result.detail }, { status: 502 });
   }
   return NextResponse.json({ text: result.text.slice(0, 800) });
 }

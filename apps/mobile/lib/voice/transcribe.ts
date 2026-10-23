@@ -4,8 +4,15 @@ import { getStoredToken } from "../auth/secureStore";
 export type TranscribeFailure = "not_configured" | "too_large" | "rate_limited" | "failed";
 
 export class TranscribeError extends Error {
-  constructor(public reason: TranscribeFailure) {
-    super(`transcribe:${reason}`);
+  /**
+   * @param detail Código corto de la causa (`upstream_401`, `empty_transcript`, `http_400`…).
+   * Se muestra en pantalla para poder diagnosticar sin mirar los logs del servidor.
+   */
+  constructor(
+    public reason: TranscribeFailure,
+    public detail?: string,
+  ) {
+    super(`transcribe:${reason}${detail ? `:${detail}` : ""}`);
   }
 }
 
@@ -28,17 +35,18 @@ export async function transcribeRecording(uri: string): Promise<string> {
       body: form,
     });
   } catch {
-    throw new TranscribeError("failed");
+    throw new TranscribeError("failed", "no_connection");
   }
 
   if (response.ok) {
     const body = (await response.json().catch(() => null)) as { text?: unknown } | null;
     if (typeof body?.text === "string" && body.text.trim()) return body.text.trim();
-    throw new TranscribeError("failed");
+    throw new TranscribeError("failed", "empty_response");
   }
-  const code = ((await response.json().catch(() => null)) as { error?: string } | null)?.error;
-  if (code === "STT_NOT_CONFIGURED") throw new TranscribeError("not_configured");
-  if (code === "AUDIO_TOO_LARGE") throw new TranscribeError("too_large");
-  if (code === "RATE_LIMITED") throw new TranscribeError("rate_limited");
-  throw new TranscribeError("failed");
+
+  const body = (await response.json().catch(() => null)) as { error?: string; detail?: string } | null;
+  if (body?.error === "STT_NOT_CONFIGURED") throw new TranscribeError("not_configured");
+  if (body?.error === "AUDIO_TOO_LARGE") throw new TranscribeError("too_large");
+  if (body?.error === "RATE_LIMITED") throw new TranscribeError("rate_limited");
+  throw new TranscribeError("failed", body?.detail ?? `${body?.error ?? "http"}_${response.status}`);
 }

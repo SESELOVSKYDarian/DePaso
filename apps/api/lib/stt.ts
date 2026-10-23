@@ -17,7 +17,24 @@ export function isSttConfigured(): boolean {
   return Boolean(process.env.STT_API_KEY?.trim());
 }
 
-export type TranscribeResult = { ok: true; text: string } | { ok: false; reason: "not_configured" | "failed" };
+/**
+ * Por qué falló, en un código corto que la app puede mostrar y que sirve para diagnosticar:
+ *  - `upstream_401`/`upstream_403`: la clave de voz es inválida o no tiene permiso;
+ *  - `upstream_400`: el servicio rechazó el audio (formato o archivo vacío);
+ *  - `upstream_429`: se pasó el límite del servicio;
+ *  - `upstream_5xx`: caída del servicio de voz;
+ *  - `empty_transcript`: se transcribió, pero no se escuchó voz (silencio);
+ *  - `network`: no se pudo llegar al servicio.
+ */
+export type TranscribeFailureDetail =
+  | `upstream_${number}`
+  | "empty_transcript"
+  | "network";
+
+export type TranscribeResult =
+  | { ok: true; text: string }
+  | { ok: false; reason: "not_configured" }
+  | { ok: false; reason: "failed"; detail: TranscribeFailureDetail };
 
 export async function transcribeAudio(file: Blob, filename: string): Promise<TranscribeResult> {
   const apiKey = process.env.STT_API_KEY?.trim();
@@ -40,14 +57,20 @@ export async function transcribeAudio(file: Blob, filename: string): Promise<Tra
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     });
     if (!response.ok) {
-      console.error("stt request rejected", response.status);
-      return { ok: false, reason: "failed" };
+      // El mensaje del servicio de voz describe el problema (clave, formato…) y no incluye el audio.
+      const message = (await response.text().catch(() => "")).replace(/\s+/g, " ").slice(0, 200);
+      console.error("stt request rejected", response.status, message);
+      return { ok: false, reason: "failed", detail: `upstream_${response.status}` };
     }
     const body = (await response.json()) as { text?: unknown };
     const text = typeof body.text === "string" ? body.text.trim() : "";
-    return text ? { ok: true, text } : { ok: false, reason: "failed" };
+    if (!text) {
+      console.error("stt returned an empty transcript", { bytes: file.size, type: file.type });
+      return { ok: false, reason: "failed", detail: "empty_transcript" };
+    }
+    return { ok: true, text };
   } catch (error) {
     console.error("stt request failed", error instanceof Error ? error.name : "unknown");
-    return { ok: false, reason: "failed" };
+    return { ok: false, reason: "failed", detail: "network" };
   }
 }
