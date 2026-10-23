@@ -81,8 +81,11 @@ function voiceErrorMessage(error: unknown): string {
       return `El servicio de voz rechazó la clave. Escribilo por ahora${code}.`;
     }
     if (detail === "upstream_429") return `El servicio de voz está saturado. Probá en un minuto${code}.`;
-    if (detail === "no_connection" || detail === "network") {
+    if (detail.startsWith("no_connection") || detail === "network") {
       return `No pudimos conectar con el servidor. Revisá tu conexión${code}.`;
+    }
+    if (detail.startsWith("file_read")) {
+      return `No pudimos leer la grabación. Probá de nuevo${code}.`;
     }
     return `No pudimos entender el audio. Probá de nuevo o escribilo${code}.`;
   }

@@ -1,3 +1,4 @@
+import { File } from "expo-file-system";
 import { API_BASE_URL } from "../config";
 import { getStoredToken } from "../auth/secureStore";
 
@@ -16,15 +17,29 @@ export class TranscribeError extends Error {
   }
 }
 
+/** Acorta el mensaje de un error de red para mostrarlo como código (sin rutas ni datos). */
+function shortReason(error: unknown): string {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.replace(/file:\/\/\S+/g, "file").replace(/\s+/g, " ").slice(0, 60);
+}
+
 /**
  * Manda la grabación al servidor (`/api/ai/transcribe`) y devuelve el texto. El servidor
  * reenvía el audio al servicio de voz a texto y lo descarta: no se guarda.
+ *
+ * Expo reemplaza el `fetch` global por `expo/fetch`, que NO acepta el archivo local de React
+ * Native (`{ uri, name, type }`) dentro de un `FormData`: hay que adjuntar un `File` de
+ * `expo-file-system`, que es el que sabe leer los bytes del archivo.
  */
 export async function transcribeRecording(uri: string): Promise<string> {
   const token = await getStoredToken();
+
   const form = new FormData();
-  // En React Native un archivo local se adjunta como { uri, name, type }.
-  form.append("file", { uri, name: "audio.m4a", type: "audio/m4a" } as unknown as Blob);
+  try {
+    form.append("file", new File(uri) as unknown as Blob);
+  } catch (error) {
+    throw new TranscribeError("failed", `file_read:${shortReason(error)}`);
+  }
 
   let response: Response;
   try {
@@ -34,8 +49,8 @@ export async function transcribeRecording(uri: string): Promise<string> {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
       body: form,
     });
-  } catch {
-    throw new TranscribeError("failed", "no_connection");
+  } catch (error) {
+    throw new TranscribeError("failed", `no_connection:${shortReason(error)}`);
   }
 
   if (response.ok) {
