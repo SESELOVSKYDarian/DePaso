@@ -14,6 +14,7 @@ export * from "./assistant";
 export * from "./accountExport";
 export * from "./adminOps";
 export * from "./routeCompute";
+export * from "./routeNearby";
 export * from "./mapConfig";
 export * from "./merchant";
 export * from "./payments";

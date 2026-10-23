@@ -51,7 +51,7 @@ export const Gooey = memo(function Gooey() {
   );
   const droplet = useDerivedValue(() =>
     interpolateColor(tint.get(), [DROP_TINT_START, DROP_TINT_END], [PALETTE.island, cardColor]),
-  [cardColor]);
+  );
 
   if (simple) return null;
 

@@ -16,6 +16,15 @@ export interface BuildRouteMapHtmlOptions {
   colors: ColorTokens;
   /** Estilo de mapa oscuro cuando la app está en modo oscuro. */
   isDark?: boolean;
+  /** Comercios de paso: se dibujan con ícono y nombre, y avisan cuál se tocó. */
+  stores?: RouteMapStore[];
+}
+
+export interface RouteMapStore {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
 }
 
 const MAPBOX_GL_VERSION = "3.7.0";
@@ -30,10 +39,12 @@ const MAPBOX_GL_CSS_INTEGRITY = "sha384-GTsgKcJXGSkBp0M68qpxkz9XovzVH0PwSrjYONvk
  * nativa) como por `RouteMapView.web` (`iframe`, porque `react-native-webview` no tiene
  * build para web). Sin lógica de React/RN acá para poder compartirlo entre ambas.
  */
-export function buildRouteMapHtml({ waypoints, polyline, mapboxToken, colors, isDark = false }: BuildRouteMapHtmlOptions): string {
+export function buildRouteMapHtml({ waypoints, polyline, mapboxToken, colors, isDark = false, stores = [] }: BuildRouteMapHtmlOptions): string {
   const mapStyle = isDark ? "mapbox://styles/mapbox/dark-v11" : "mapbox://styles/mapbox/streets-v12";
   const waypointsJson = JSON.stringify(waypoints.map((w) => ({ lat: w.latitude, lng: w.longitude })));
   const polylineJson = JSON.stringify(polyline);
+  // `<` escapado: un nombre de comercio no puede cerrar el <script> del HTML.
+  const storesJson = JSON.stringify(stores.map((s) => ({ id: s.id, name: s.name, lat: s.latitude, lng: s.longitude }))).replace(/</g, "\\u003c");
 
   return `<!DOCTYPE html>
 <html>
@@ -60,6 +71,21 @@ export function buildRouteMapHtml({ waypoints, polyline, mapboxToken, colors, is
     font-family: sans-serif; font-size: 13px; font-weight: 600; border: 2px solid #fff;
     box-shadow: 0 1px 4px rgba(0,0,0,0.3);
   }
+  .depaso-store { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+  .depaso-store .bubble {
+    width: 30px; height: 30px; border-radius: 999px; display: flex; align-items: center; justify-content: center;
+    background: ${isDark ? "#1C1C1E" : "#FFFFFF"}; color: ${isDark ? "#F5F5F7" : "#111111"};
+    border: 2px solid ${isDark ? "#F5F5F7" : "#111111"}; box-shadow: 0 1px 5px rgba(0,0,0,0.35);
+    transition: transform 160ms ease-out;
+  }
+  .depaso-store .label {
+    margin-top: 2px; max-width: 92px; padding: 1px 6px; border-radius: 999px; overflow: hidden;
+    white-space: nowrap; text-overflow: ellipsis; font-family: sans-serif; font-size: 11px; font-weight: 600;
+    background: ${isDark ? "rgba(28,28,30,0.92)" : "rgba(255,255,255,0.92)"}; color: ${isDark ? "#F5F5F7" : "#111111"};
+    box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+  }
+  .depaso-store.selected .bubble { background: ${colors.brand.navy}; color: ${colors.text.onNavy}; transform: scale(1.18); border-color: #fff; }
+  .depaso-store.selected { z-index: 5; }
 </style>
 </head>
 <body>
@@ -101,6 +127,38 @@ export function buildRouteMapHtml({ waypoints, polyline, mapboxToken, colors, is
       new mapboxgl.Marker({ element: el }).setLngLat([w.lng, w.lat]).addTo(map);
       bounds.extend([w.lng, w.lat]);
     });
+
+    // Comercios de paso: ícono de local + nombre. Al tocar uno se avisa a la app (WebView o iframe).
+    const stores = ${storesJson};
+    const storeEls = {};
+    const storeIcon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1.5-5h15L21 9"/><path d="M3 9a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0"/><path d="M5 12v8h14v-8"/></svg>';
+    function notifyApp(message) {
+      const text = JSON.stringify(message);
+      if (window.ReactNativeWebView) window.ReactNativeWebView.postMessage(text);
+      else if (window.parent !== window) window.parent.postMessage(text, "*");
+    }
+    stores.forEach((store) => {
+      const el = document.createElement("div");
+      el.className = "depaso-store";
+      const bubble = document.createElement("div");
+      bubble.className = "bubble";
+      bubble.innerHTML = storeIcon;
+      const label = document.createElement("div");
+      label.className = "label";
+      label.textContent = store.name;
+      el.appendChild(bubble);
+      el.appendChild(label);
+      el.addEventListener("click", (event) => { event.stopPropagation(); window.selectStore(store.id, true); });
+      new mapboxgl.Marker({ element: el, anchor: "top" }).setLngLat([store.lng, store.lat]).addTo(map);
+      storeEls[store.id] = { el, store };
+      bounds.extend([store.lng, store.lat]);
+    });
+    window.selectStore = function (id, fromTap) {
+      Object.keys(storeEls).forEach((key) => storeEls[key].el.classList.toggle("selected", key === id));
+      const target = storeEls[id];
+      if (target) map.easeTo({ center: [target.store.lng, target.store.lat], duration: 350 });
+      if (fromTap) notifyApp({ type: "store", id });
+    };
 
     const coordinates = polyline ? decodePolyline(polyline) : waypoints.map((w) => [w.lng, w.lat]);
     map.addSource("route", {

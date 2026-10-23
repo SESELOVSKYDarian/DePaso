@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Platform } from "react-native";
 import {
   cancelAnimation,
   useReducedMotion,
@@ -32,7 +33,10 @@ import type { AppNotification } from "./context";
  * nueva (sólo se conserva la última en cola).
  */
 export function useNotificationTimeline(defaultDuration?: number | null) {
-  const reduced = useReducedMotion();
+  const systemReduced = useReducedMotion();
+  // En Android el efecto de gota (Skia con desenfoque + matriz de alfa) tira errores de animación
+  // y cuelga la app: ahí se usa siempre la versión simple (la tarjeta aparece con un fundido).
+  const reduced = systemReduced || Platform.OS === "android";
 
   const drop = useSharedValue(0);
   const expand = useSharedValue(0);

@@ -228,6 +228,7 @@ sus etiquetas está en [`packages/domain/src/productTypes.ts`](../../packages/do
 | POST | `/geocode` | 🔒 | `{ "address" }` → `{ latitude, longitude }` (503 sin Mapbox) |
 | POST | `/geocode/reverse` | 🔒 | `{ latitude, longitude }` → `{ address }` |
 | POST | `/routes/compute` | 🔒 | `{ waypoints: [2 a 6 puntos], transportMode }` → `{ distanceMeters, durationSeconds, polyline }`. `transportMode`: CAR, MOTORCYCLE, BICYCLE, WALK, PUBLIC_TRANSPORT |
+| POST | `/routes/nearby-stores` | 🔒 | `{ waypoints: [2 a 6 puntos], polyline?, maxDetourMeters?, limit? }` → `{ stores: [{ branchId, storeName, branchName, address, latitude, longitude, detourMeters, detourSeconds, distanceFromRouteMeters }] }`. Los comercios que quedan "de paso" sobre el recorrido, ordenados por desvío (por defecto hasta 1,5 km). El desvío se calcula contra la polyline real si se manda; si no, contra los waypoints |
 | GET | `/config/mapbox-token` | 🔒 | Token público de Mapbox para dibujar el mapa |
 
 ## Optimización de compra (Top 3)
