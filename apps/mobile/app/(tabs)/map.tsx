@@ -4,7 +4,7 @@ import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles, useColors } from "@/lib/theme";
 import { router } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, Modal, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { EmptyState } from "@/components/EmptyState";
@@ -66,7 +66,7 @@ export default function MapScreen() {
   const [isLoadingRoute, setIsLoadingRoute] = useState(false);
   // Mapa a pantalla completa: en el recuadro chico costaba moverse y tocar los comercios.
   const [fullMap, setFullMap] = useState(false);
-  const { routePlan, start } = usePurchase();
+  const { routePlan, start, routePlans, setRoutePlan } = usePurchase();
   const [planPolyline, setPlanPolyline] = useState<string | null>(null);
 
   // El plan sólo vale mientras el recorrido sea el mismo con el que se calculó: si lo editaste
@@ -241,6 +241,32 @@ export default function MapScreen() {
             </Text>
           </View>
         )}
+
+        {routePlans.length > 1 && planIsCurrent ? (
+          <View accessibilityRole="tablist" style={s.planTabs}>
+            {routePlans.map((option) => {
+              const selectedOption = routePlan?.label === option.label;
+              const title = option.label === "FASTEST" ? "Sin desvíos" : option.label === "BALANCED" ? "Intermedio" : "Hipereconómico";
+              return (
+                <Pressable
+                  key={option.label}
+                  accessibilityRole="tab"
+                  accessibilityState={{ selected: selectedOption }}
+                  accessibilityLabel={`Ver la opción ${title}`}
+                  onPress={() => {
+                    setSelectedId(null);
+                    setRoutePlan(option);
+                  }}
+                  style={[s.planTab, selectedOption ? s.planTabSelected : null]}
+                >
+                  <Text style={[s.planTabLabel, selectedOption ? s.planTabLabelSelected : null]} numberOfLines={1}>
+                    {title}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        ) : null}
 
         {plan ? (
           <View style={s.planCard}>
@@ -564,6 +590,11 @@ const useStyles = makeStyles((colors) =>
     stopText: { flex: 1, paddingTop: 4 },
     stopName: { fontFamily: typography.itemTitle.fontFamily, fontSize: 15, color: colors.text.primary },
     address: { fontFamily: typography.caption.fontFamily, fontSize: 12, color: colors.text.secondary, marginTop: 2 },
+    planTabs: { flexDirection: "row", padding: 4, borderRadius: radii.full, backgroundColor: colors.surface.input },
+    planTab: { flex: 1, minHeight: 40, borderRadius: radii.full, alignItems: "center", justifyContent: "center", paddingHorizontal: 4 },
+    planTabSelected: { backgroundColor: colors.brand.navy },
+    planTabLabel: { fontFamily: typography.body.fontFamily, fontSize: 13, color: colors.text.secondary },
+    planTabLabelSelected: { color: colors.text.onNavy, fontWeight: "600" },
     planCard: {
       gap: spacing.sm,
       padding: spacing.md,

@@ -86,7 +86,7 @@ export default function OptimizationScreen() {
   const styles = useStyles();
   const { lists, isLoading: loadingLists } = useLists();
   const { waypoints } = useTodayRoute();
-  const { start, setRoutePlan } = usePurchase();
+  const { start, setRoutePlan, setRoutePlans } = usePurchase();
   const { tierLimitsMeters } = useDetour();
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
   const [plans, setPlans] = useState<OptimizationPlanResponse[] | null>(null);
@@ -115,6 +115,7 @@ export default function OptimizationScreen() {
       setBestPrices(result.bestPrices);
       setTab("options");
       // El mejor equilibrio queda dibujado en el mapa del recorrido.
+      setRoutePlans(result.plans);
       setRoutePlan(result.plans.find((plan) => plan.label === "BALANCED") ?? result.plans[0] ?? null);
     } catch (caught) {
       const code = (caught as { body?: { error?: string } }).body?.error;
