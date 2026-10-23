@@ -7,6 +7,7 @@ export type RouteMapViewProps = Omit<BuildRouteMapHtmlOptions, "colors" | "isDar
   selectedStoreId?: string | null;
   onSelectStore?: (id: string) => void;
   height?: number;
+  fill?: boolean;
 };
 
 /**
@@ -15,7 +16,7 @@ export type RouteMapViewProps = Omit<BuildRouteMapHtmlOptions, "colors" | "isDar
  * (`buildRouteMapHtml`, compartido con `RouteMapView.tsx` nativo). Expo Router resuelve
  * este archivo automáticamente en vez de `RouteMapView.tsx` cuando corre en el navegador.
  */
-export function RouteMapView({ selectedStoreId, onSelectStore, height = 300, ...options }: RouteMapViewProps) {
+export function RouteMapView({ selectedStoreId, onSelectStore, height = 300, fill = false, ...options }: RouteMapViewProps) {
   const { colors, isDark } = useTheme();
   const frameRef = useRef<HTMLIFrameElement>(null);
   const html = useMemo(
@@ -50,7 +51,8 @@ export function RouteMapView({ selectedStoreId, onSelectStore, height = 300, ...
       title="Mapa del recorrido"
       srcDoc={html}
       style={{
-        height,
+        height: fill ? "100%" : height,
+        flex: fill ? 1 : undefined,
         width: "100%",
         border: `1px solid ${colors.border.subtle}`,
         borderRadius: radii.xl,

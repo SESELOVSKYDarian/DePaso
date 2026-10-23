@@ -4,7 +4,7 @@ import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles, useColors } from "@/lib/theme";
 import { router } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Modal, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { EmptyState } from "@/components/EmptyState";
@@ -64,6 +64,8 @@ export default function MapScreen() {
   const [stores, setStores] = useState<NearbyStore[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isLoadingRoute, setIsLoadingRoute] = useState(false);
+  // Mapa a pantalla completa: en el recuadro chico costaba moverse y tocar los comercios.
+  const [fullMap, setFullMap] = useState(false);
   const { routePlan, start } = usePurchase();
   const [planPolyline, setPlanPolyline] = useState<string | null>(null);
 
@@ -211,15 +213,25 @@ export default function MapScreen() {
             <ActivityIndicator color={colors.brand.navy} />
           </View>
         ) : mapboxToken ? (
-          <RouteMapView
-            waypoints={mapWaypoints}
-            polyline={plan ? (planPolyline ?? polyline) : polyline}
-            basePolyline={plan && planPolyline ? polyline : null}
-            mapboxToken={mapboxToken}
-            stores={mapStores}
-            selectedStoreId={selectedId}
-            onSelectStore={setSelectedId}
-          />
+          <View>
+            <RouteMapView
+              waypoints={mapWaypoints}
+              polyline={plan ? (planPolyline ?? polyline) : polyline}
+              basePolyline={plan && planPolyline ? polyline : null}
+              mapboxToken={mapboxToken}
+              stores={mapStores}
+              selectedStoreId={selectedId}
+              onSelectStore={setSelectedId}
+            />
+            <AnimatedPressable
+              accessibilityLabel="Ver el mapa en pantalla completa"
+              onPress={() => setFullMap(true)}
+              style={s.expandButton}
+            >
+              <Ionicons name="expand-outline" size={18} color={colors.text.primary} />
+              <Text style={s.expandLabel}>Ampliar</Text>
+            </AnimatedPressable>
+          </View>
         ) : (
           <View style={s.routeCard}>
             <Ionicons name="navigate-outline" size={30} color={colors.brand.route} />
@@ -378,6 +390,41 @@ export default function MapScreen() {
         ) : !isLoadingRoute && mapboxToken ? (
           <Text style={s.sectionHint}>No hay comercios sobre tu camino. Probá sumando una parada a tu recorrido.</Text>
         ) : null}
+
+        <Modal visible={fullMap && Boolean(mapboxToken)} animationType="slide" onRequestClose={() => setFullMap(false)}>
+          <SafeAreaView style={s.fullMap} edges={["top", "bottom"]}>
+            {mapboxToken ? (
+              <RouteMapView
+                fill
+                waypoints={mapWaypoints}
+                polyline={plan ? (planPolyline ?? polyline) : polyline}
+                basePolyline={plan && planPolyline ? polyline : null}
+                mapboxToken={mapboxToken}
+                stores={mapStores}
+                selectedStoreId={selectedId}
+                onSelectStore={setSelectedId}
+              />
+            ) : null}
+            <AnimatedPressable
+              accessibilityLabel="Cerrar el mapa"
+              onPress={() => setFullMap(false)}
+              style={s.closeMap}
+            >
+              <Ionicons name="close" size={22} color={colors.text.primary} />
+            </AnimatedPressable>
+            {selectedStop || selected ? (
+              <View style={s.fullMapCard}>
+                <Text style={s.storeName}>{(selectedStop ?? selected)!.storeName}</Text>
+                <Text style={s.address} numberOfLines={1}>
+                  {selectedStop ? (selectedStop.address ?? selectedStop.branchName) : selected!.address}
+                </Text>
+                <Text style={s.detourStrong}>
+                  {selectedStop ? formatBlocks(selectedStop.distanceFromRouteMeters) : formatDetour(selected!)}
+                </Text>
+              </View>
+            ) : null}
+          </SafeAreaView>
+        </Modal>
 
         <Text style={s.section}>Paradas del recorrido</Text>
         {waypoints.map((w, i) => (
@@ -559,6 +606,47 @@ const useStyles = makeStyles((colors) =>
       borderColor: colors.border.subtle,
     },
     secondaryActionText: { fontFamily: typography.buttonLabel.fontFamily, fontSize: 14, color: colors.text.primary },
+    expandButton: {
+      position: "absolute",
+      right: spacing.sm,
+      bottom: spacing.sm,
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 6,
+      minHeight: 40,
+      paddingHorizontal: spacing.md,
+      borderRadius: radii.full,
+      backgroundColor: colors.surface.primary,
+      borderWidth: 1,
+      borderColor: colors.border.subtle,
+    },
+    expandLabel: { fontFamily: typography.body.fontFamily, fontWeight: "600", fontSize: 14, color: colors.text.primary },
+    fullMap: { flex: 1, backgroundColor: colors.surface.base },
+    closeMap: {
+      position: "absolute",
+      top: spacing.xl + spacing.lg,
+      left: spacing.lg,
+      width: 48,
+      height: 48,
+      borderRadius: radii.full,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.surface.primary,
+      borderWidth: 1,
+      borderColor: colors.border.subtle,
+    },
+    fullMapCard: {
+      position: "absolute",
+      left: spacing.lg,
+      right: spacing.lg,
+      bottom: spacing.xl,
+      gap: 2,
+      padding: spacing.md,
+      borderRadius: radii.xl,
+      backgroundColor: colors.surface.primary,
+      borderWidth: 1,
+      borderColor: colors.border.subtle,
+    },
     emptyAction: {
       minHeight: 44,
       backgroundColor: colors.brand.navy,

@@ -1,5 +1,5 @@
 import { prisma } from "@depaso/database";
-import { optimizeWithRanking, type OptimizationPlanResult, type StoreCandidateInput } from "@depaso/optimization";
+import { distanceToPathMeters, optimizeWithRanking, type OptimizationPlanResult, type StoreCandidateInput } from "@depaso/optimization";
 import type { TransportMode } from "@depaso/types";
 import { optimizationRunRequestSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
@@ -202,6 +202,28 @@ export async function POST(request: NextRequest) {
       const missingProductNames = plan.missingProductIds.map((id) => names.get(id) ?? "Producto");
       return { ...plan, stops: planned.stops, routeWaypoints: planned.routeWaypoints, missingProductNames };
     });
+    // Para cada producto de la lista: las sucursales donde está más barato (precio por unidad,
+    // sin promos) y qué tan lejos quedan del recorrido. Es la pestaña "Mejores precios".
+    const routePath = parsed.data.routeContext.waypoints;
+    const bestPrices = list.items.map((item: (typeof list.items)[number]) => {
+      const offers = [...candidateMap.values()]
+        .flatMap((store) =>
+          store.offers
+            .filter((offer) => offer.productId === item.productId)
+            .map((offer) => ({
+              storeBranchId: store.storeBranchId,
+              storeName: store.storeName,
+              branchName: store.branchName,
+              address: branchInfo.get(store.storeBranchId)?.address ?? "",
+              price: offer.price,
+              distanceFromRouteMeters: Math.round(distanceToPathMeters(store.location, routePath)),
+            })),
+        )
+        .sort((a, b) => a.price - b.price || a.distanceFromRouteMeters - b.distanceFromRouteMeters)
+        .slice(0, 3);
+      return { productId: item.productId, productName: names.get(item.productId) ?? "Producto", quantity: item.quantity, offers };
+    });
+
     const rankingWithAddress = ranking.map((entry) => ({
       storeBranchId: entry.storeBranchId,
       storeName: entry.storeName,
@@ -218,6 +240,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       plans: await applyPaymentPromos(publicPlans, current.userId, new Date(), promoContext),
       ranking: rankingWithAddress,
+      bestPrices,
     });
   } catch (error) {
     return NextResponse.json(

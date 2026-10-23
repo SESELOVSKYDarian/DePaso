@@ -158,5 +158,25 @@ export type StoreRankingEntryResponse = z.infer<typeof storeRankingEntrySchema>;
 export const optimizationRunResponseSchema = z.object({
   plans: z.array(optimizationPlanResponseSchema).max(3),
   ranking: z.array(storeRankingEntrySchema).default([]),
+  /** Por producto de la lista, las sucursales con el precio más bajo. */
+  bestPrices: z
+    .array(
+      z.object({
+        productId: z.string(),
+        productName: z.string(),
+        quantity: z.number().int().positive(),
+        offers: z.array(
+          z.object({
+            storeBranchId: z.string(),
+            storeName: z.string(),
+            branchName: z.string(),
+            address: z.string(),
+            price: z.number().nonnegative(),
+            distanceFromRouteMeters: z.number().nonnegative(),
+          }),
+        ),
+      }),
+    )
+    .default([]),
 });
 export type OptimizationRunResponse = z.infer<typeof optimizationRunResponseSchema>;

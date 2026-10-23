@@ -11,6 +11,8 @@ export type RouteMapViewProps = Omit<BuildRouteMapHtmlOptions, "colors" | "isDar
   /** Se llama cuando la persona toca un comercio en el mapa. */
   onSelectStore?: (id: string) => void;
   height?: number;
+  /** Ocupa todo el espacio disponible (mapa a pantalla completa). */
+  fill?: boolean;
 };
 
 /**
@@ -22,7 +24,7 @@ export type RouteMapViewProps = Omit<BuildRouteMapHtmlOptions, "colors" | "isDar
  * El HTML sólo se rearma si cambian la ruta, los comercios o el tema: elegir un comercio no
  * recarga el mapa, se le avisa por `injectJavaScript`.
  */
-export function RouteMapView({ selectedStoreId, onSelectStore, height = 300, ...options }: RouteMapViewProps) {
+export function RouteMapView({ selectedStoreId, onSelectStore, height = 300, fill = false, ...options }: RouteMapViewProps) {
   const styles = useStyles();
   const { colors, isDark } = useTheme();
   const webViewRef = useRef<ComponentRef<typeof WebView>>(null);
@@ -53,7 +55,7 @@ export function RouteMapView({ selectedStoreId, onSelectStore, height = 300, ...
   };
 
   return (
-    <View style={[styles.container, { height }]}>
+    <View style={[styles.container, fill ? styles.fill : { height }]}>
       <WebView
         ref={webViewRef}
         originWhitelist={["*"]}
@@ -75,6 +77,11 @@ const useStyles = makeStyles((colors) => StyleSheet.create({
     overflow: "hidden",
     borderWidth: 1,
     borderColor: colors.border.subtle,
+  },
+  fill: {
+    flex: 1,
+    borderRadius: 0,
+    borderWidth: 0,
   },
   webview: {
     flex: 1,

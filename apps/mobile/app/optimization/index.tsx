@@ -1,8 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
-import type { OptimizationPlanResponse, StoreRankingEntryResponse } from "@depaso/validation";
+import type { OptimizationPlanResponse, OptimizationRunResponse, StoreRankingEntryResponse } from "@depaso/validation";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useReducedMotion,
@@ -91,6 +91,9 @@ export default function OptimizationScreen() {
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
   const [plans, setPlans] = useState<OptimizationPlanResponse[] | null>(null);
   const [ranking, setRanking] = useState<StoreRankingEntryResponse[]>([]);
+  const [bestPrices, setBestPrices] = useState<OptimizationRunResponse["bestPrices"]>([]);
+  // Dos vistas separadas para no mezclar todo: las 3 opciones de compra, o dónde está más barato cada producto.
+  const [tab, setTab] = useState<"options" | "prices">("options");
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const activeLists = lists.filter((list) => !list.archivedAt && list.itemCount > 0);
@@ -109,6 +112,8 @@ export default function OptimizationScreen() {
       }
       setPlans(result.plans);
       setRanking(result.ranking);
+      setBestPrices(result.bestPrices);
+      setTab("options");
       // El mejor equilibrio queda dibujado en el mapa del recorrido.
       setRoutePlan(result.plans.find((plan) => plan.label === "BALANCED") ?? result.plans[0] ?? null);
     } catch (caught) {
@@ -117,25 +122,64 @@ export default function OptimizationScreen() {
     } finally { setRunning(false); }
   };
 
-  if (plans) return <SafeAreaView style={styles.container} edges={["top"]}><ScrollView contentContainerStyle={styles.content}>
-    <View style={styles.resultsHead}><View><Text style={styles.eyebrow}>TU TOP 3</Text><Text style={styles.screenTitle}>Comprá mejor, de paso</Text></View><AnimatedPressable accessibilityLabel="Armar otra optimización" haptic={false} onPress={() => setPlans(null)} style={styles.reset}><Ionicons name="refresh" size={19} color={colors.text.primary} accessible={false} /></AnimatedPressable></View>
-    <Text style={styles.intro}>Tres formas de comprar, de menos a más desvío. En cada una te dejamos lo más barato, con las promos de tus medios de pago ya contadas.</Text>
-    <PriceDisclosureBanner />
-    {(["FASTEST", "BALANCED", "CHEAPEST"] as const).filter((label) => !plans.some((plan) => plan.label === label)).map((label) => <View key={label} style={styles.unavailable}><Text style={styles.planTitle}>{labels[label].title}</Text><Text style={styles.meta}>{label === "FASTEST" ? "Ningún comercio con tus productos te queda a 2 cuadras del camino." : label === "BALANCED" ? "No encontramos comercios con tus productos a un desvío razonable." : "Todavía no hay precios para armar esta opción."}</Text></View>)}
-    {plans.map((plan, index) => <PlanCard key={plan.label} plan={plan} index={index} onStart={() => { start(plan); router.push("/purchase"); }} onMap={() => { setRoutePlan(plan); router.navigate("/map"); }} />)}
-    {ranking.length > 0 ? <View style={styles.section}>
-      <Text style={styles.sectionTitle}>Los comercios más baratos para tu lista</Text>
-      <Text style={styles.meta}>Comprando todo en un solo lugar, con promos incluidas.</Text>
-      {ranking.slice(0, 6).map((entry, index) => <View key={entry.storeBranchId} style={styles.rankRow}>
-        <Text style={styles.rankNumber}>{index + 1}</Text>
-        <View style={styles.flex}>
-          <Text style={styles.choiceName}>{entry.storeName}</Text>
-          <Text style={styles.meta} numberOfLines={1}>{entry.address || entry.branchName}</Text>
-          <Text style={styles.meta}>{blocks(entry.distanceFromRouteMeters)}{entry.missingCount > 0 ? ` · le faltan ${entry.missingCount}` : ""}{entry.promoSavings > 0 ? ` · promo ${money(entry.promoSavings)}` : ""}</Text>
+  if (plans) return <SafeAreaView style={styles.container} edges={["top"]}>
+    <View style={styles.resultsTop}>
+      <View style={styles.resultsHead}>
+        <View><Text style={styles.eyebrow}>TU COMPRA</Text><Text style={styles.screenTitle}>Comprá mejor, de paso</Text></View>
+        <AnimatedPressable accessibilityLabel="Armar otra optimización" haptic={false} onPress={() => setPlans(null)} style={styles.reset}><Ionicons name="refresh" size={19} color={colors.text.primary} accessible={false} /></AnimatedPressable>
+      </View>
+      <View accessibilityRole="tablist" style={styles.tabs}>
+        {([["options", "Opciones de compra"], ["prices", "Mejores precios"]] as const).map(([value, title]) => {
+          const selected = tab === value;
+          return (
+            <Pressable
+              key={value}
+              accessibilityRole="tab"
+              accessibilityState={{ selected }}
+              accessibilityLabel={title}
+              onPress={() => setTab(value)}
+              style={[styles.tab, selected ? styles.tabSelected : null]}
+            >
+              <Text style={[styles.tabLabel, selected ? styles.tabLabelSelected : null]}>{title}</Text>
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+    <ScrollView contentContainerStyle={styles.content}>
+    {tab === "options" ? <>
+      <Text style={styles.intro}>Tres formas de comprar, de menos a más desvío. En cada una, lo más barato con las promos de tus medios de pago.</Text>
+      <PriceDisclosureBanner />
+      {plans.map((plan, index) => <PlanCard key={plan.label} plan={plan} index={index} onStart={() => { start(plan); router.push("/purchase"); }} onMap={() => { setRoutePlan(plan); router.navigate("/map"); }} />)}
+      {(["FASTEST", "BALANCED", "CHEAPEST"] as const).filter((label) => !plans.some((plan) => plan.label === label)).map((label) => <View key={label} style={styles.unavailable}><Text style={styles.planTitle}>{labels[label].title}</Text><Text style={styles.meta}>{label === "FASTEST" ? "Ningún comercio con tus productos te queda a 2 cuadras del camino." : label === "BALANCED" ? "No encontramos comercios con tus productos a un desvío razonable." : "Todavía no hay precios para armar esta opción."}</Text></View>)}
+    </> : <>
+      <Text style={styles.intro}>Dónde está más barato cada cosa de tu lista. Precio por unidad, sin promos.</Text>
+      {bestPrices.map((entry) => <View key={entry.productId} style={styles.priceCard}>
+        <View style={styles.priceHead}>
+          <Text style={styles.choiceName} numberOfLines={2}>{entry.productName}</Text>
+          {entry.quantity > 1 ? <Text style={styles.meta}>x{entry.quantity}</Text> : null}
         </View>
-        <Text style={styles.cost}>{money(entry.totalCost)}</Text>
+        {entry.offers.length === 0 ? <Text style={styles.warning}>Ningún comercio cercano lo tiene con precio vigente.</Text> : entry.offers.map((offer, index) => <View key={offer.storeBranchId} style={styles.offerRow}>
+          <View style={[styles.offerBadge, index === 0 ? styles.offerBadgeBest : null]}><Text style={[styles.offerBadgeText, index === 0 ? styles.offerBadgeTextBest : null]}>{index === 0 ? "Más barato" : index + 1}</Text></View>
+          <View style={styles.flex}>
+            <Text style={styles.offerStore} numberOfLines={1}>{offer.storeName} · {offer.branchName}</Text>
+            <Text style={styles.meta} numberOfLines={1}>{blocks(offer.distanceFromRouteMeters)}</Text>
+          </View>
+          <Text style={styles.offerPrice}>{money(offer.price)}</Text>
+        </View>)}
       </View>)}
-    </View> : null}
+      {ranking.length > 0 ? <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Si querés comprar todo en un solo lugar</Text>
+        {ranking.slice(0, 3).map((entry, index) => <View key={entry.storeBranchId} style={styles.rankRow}>
+          <Text style={styles.rankNumber}>{index + 1}</Text>
+          <View style={styles.flex}>
+            <Text style={styles.choiceName}>{entry.storeName}</Text>
+            <Text style={styles.meta}>{blocks(entry.distanceFromRouteMeters)}{entry.missingCount > 0 ? ` · le faltan ${entry.missingCount}` : ""}</Text>
+          </View>
+          <Text style={styles.cost}>{money(entry.totalCost)}</Text>
+        </View>)}
+      </View> : null}
+    </>}
   </ScrollView></SafeAreaView>;
 
   return <SafeAreaView style={styles.container} edges={["top"]}><ScrollView contentContainerStyle={styles.content}>
@@ -165,6 +209,21 @@ const useStyles = makeStyles((colors) => StyleSheet.create({
   missingBox: { gap: 2, padding: spacing.sm, borderRadius: radii.md, borderWidth: 1, borderColor: colors.state.warning },
   missingTitle: { fontFamily: typography.body.fontFamily, fontWeight: "600", fontSize: 13, color: colors.state.warning },
   missingText: { fontFamily: typography.caption.fontFamily, fontSize: 12, lineHeight: 17, color: colors.text.secondary },
+  resultsTop: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg, gap: spacing.md },
+  tabs: { flexDirection: "row", padding: 4, borderRadius: radii.full, backgroundColor: colors.surface.input },
+  tab: { flex: 1, minHeight: 40, borderRadius: radii.full, alignItems: "center", justifyContent: "center" },
+  tabSelected: { backgroundColor: colors.surface.primary },
+  tabLabel: { fontFamily: typography.body.fontFamily, fontSize: 14, color: colors.text.secondary },
+  tabLabelSelected: { color: colors.text.primary, fontWeight: "600" },
+  priceCard: { gap: spacing.xs, padding: spacing.md, borderRadius: radii.xl, borderWidth: 1, borderColor: colors.border.subtle, backgroundColor: colors.surface.primary },
+  priceHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: spacing.sm },
+  offerRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm, minHeight: 44 },
+  offerBadge: { minWidth: 28, paddingHorizontal: 8, paddingVertical: 4, borderRadius: radii.full, backgroundColor: colors.surface.input, alignItems: "center" },
+  offerBadgeBest: { backgroundColor: colors.saving.lime },
+  offerBadgeText: { fontFamily: typography.caption.fontFamily, fontSize: 11, color: colors.text.secondary },
+  offerBadgeTextBest: { color: colors.text.onLime },
+  offerStore: { fontFamily: typography.body.fontFamily, fontSize: 14, color: colors.text.primary },
+  offerPrice: { fontFamily: typography.itemTitle.fontFamily, fontSize: 15, color: colors.text.primary },
   promoBox: { backgroundColor: colors.brand.mint, borderRadius: radii.md, padding: spacing.sm, gap: 2 },
   promoTitle: { fontFamily: typography.body.fontFamily, fontWeight: "600", fontSize: 13, color: colors.text.primary },
   promoText: { fontFamily: typography.caption.fontFamily, fontSize: 12, color: colors.text.secondary },
