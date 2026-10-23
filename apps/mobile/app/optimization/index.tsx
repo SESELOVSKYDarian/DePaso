@@ -54,7 +54,7 @@ function AnalyzingIndicator() {
   );
 }
 
-function PlanCard({ plan, index, onStart }: { plan: OptimizationPlanResponse; index: number; onStart: () => void }) {
+function PlanCard({ plan, index, onStart, onMap }: { plan: OptimizationPlanResponse; index: number; onStart: () => void; onMap: () => void }) {
   const colors = useColors();
   const styles = useStyles();
   const reducedMotion = useReducedMotion();
@@ -71,6 +71,7 @@ function PlanCard({ plan, index, onStart }: { plan: OptimizationPlanResponse; in
     {plan.appliedPromos.map((promo) => <View key={`${promo.retailer}-${promo.label}`} style={styles.promoBox}><Text style={styles.promoTitle}>{promo.retailer}: {promo.label}</Text><Text style={styles.promoText}>Descuento {money(promo.discountAmount)}. {promo.disclaimer}</Text></View>)}
     <Text style={styles.explanation}>{plan.explanation}</Text>
     {plan.missingProductIds.length > 0 ? <Text style={styles.warning}>Hay {plan.missingProductIds.length} producto{plan.missingProductIds.length === 1 ? "" : "s"} sin precio vigente.</Text> : null}
+    <AnimatedPressable accessibilityLabel={`Ver ${meta.title} en el mapa`} haptic={false} onPress={onMap} style={styles.routeAction}><Text style={styles.routeActionText}>Ver mi ruta en el mapa</Text><Ionicons name="map-outline" size={17} color={colors.text.primary} accessible={false} /></AnimatedPressable>
     <AnimatedPressable accessibilityLabel={`Empezar compra con ${meta.title}`} onPress={onStart} style={styles.routeAction}><Text style={styles.routeActionText}>Empezar compra</Text><Ionicons name="arrow-forward" size={17} color={colors.text.primary} accessible={false} /></AnimatedPressable>
   </Animated.View>;
 }
@@ -81,7 +82,7 @@ export default function OptimizationScreen() {
   const styles = useStyles();
   const { lists, isLoading: loadingLists } = useLists();
   const { waypoints } = useTodayRoute();
-  const { start } = usePurchase();
+  const { start, setRoutePlan } = usePurchase();
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
   const [plans, setPlans] = useState<OptimizationPlanResponse[] | null>(null);
   const [running, setRunning] = useState(false);
@@ -101,6 +102,8 @@ export default function OptimizationScreen() {
         return;
       }
       setPlans(result.plans);
+      // El mejor equilibrio queda dibujado en el mapa del recorrido.
+      setRoutePlan(result.plans.find((plan) => plan.label === "BALANCED") ?? result.plans[0] ?? null);
     } catch (caught) {
       const code = (caught as { body?: { error?: string } }).body?.error;
       setError(code === "NO_CURRENT_PRICES" ? "Todavía no encontramos precios vigentes para esta lista." : "No pudimos armar tu Top 3. Probá de nuevo en unos instantes.");
@@ -111,7 +114,7 @@ export default function OptimizationScreen() {
     <View style={styles.resultsHead}><View><Text style={styles.eyebrow}>TU TOP 3</Text><Text style={styles.screenTitle}>Comprá mejor, de paso</Text></View><AnimatedPressable accessibilityLabel="Armar otra optimización" haptic={false} onPress={() => setPlans(null)} style={styles.reset}><Ionicons name="refresh" size={19} color={colors.text.primary} accessible={false} /></AnimatedPressable></View>
     <Text style={styles.intro}>Elegí la opción que mejor encaja con tu día. Los precios provienen de datos vigentes.</Text>
     <PriceDisclosureBanner />
-    {plans.map((plan, index) => <PlanCard key={plan.label} plan={plan} index={index} onStart={() => { start(plan); router.push("/purchase"); }} />)}
+    {plans.map((plan, index) => <PlanCard key={plan.label} plan={plan} index={index} onStart={() => { start(plan); router.push("/purchase"); }} onMap={() => { setRoutePlan(plan); router.navigate("/map"); }} />)}
   </ScrollView></SafeAreaView>;
 
   return <SafeAreaView style={styles.container} edges={["top"]}><ScrollView contentContainerStyle={styles.content}>

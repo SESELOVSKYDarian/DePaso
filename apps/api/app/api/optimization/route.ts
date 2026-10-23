@@ -5,6 +5,7 @@ import { optimizationRunRequestSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
 import { applyPaymentPromos } from "@/lib/applyPromos";
+import { buildPlanRoute, type BranchInfo } from "@/lib/planRoute";
 import { getRouteProvider } from "@/lib/routing";
 
 /**
@@ -181,9 +182,16 @@ export async function POST(request: NextRequest) {
     );
     await persistOptimizationRun(current.userId, parsed.data.shoppingListId, parsed.data.transportMode, plans);
     // `debugScore` es deliberadamente interno; nunca cruza el límite HTTP.
+    const branchInfo = new Map<string, BranchInfo>();
+    for (const price of prices) {
+      const branch = price.storeBranch;
+      branchInfo.set(branch.id, { latitude: branch.latitude, longitude: branch.longitude, address: branch.address });
+    }
     const publicPlans = plans.map((planResult: (typeof plans)[number]) => {
       const { debugScore: _debugScore, ...plan } = planResult;
-      return plan;
+      // Recorrido con las paradas de compra metidas, y qué tan lejos queda cada una del camino.
+      const planned = buildPlanRoute(parsed.data.routeContext.waypoints, plan.stops, branchInfo);
+      return { ...plan, stops: planned.stops, routeWaypoints: planned.routeWaypoints };
     });
     return NextResponse.json({ plans: await applyPaymentPromos(publicPlans, current.userId) });
   } catch (error) {

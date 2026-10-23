@@ -82,6 +82,16 @@ const planStopSchema = z.object({
    * así que el cliente tiraba "No pudimos armar tu Top 3" incluso con una respuesta 200
    * válida del servidor. */
   order: z.number().int().nonnegative(),
+  /** Dónde queda la sucursal y cuánto se desvía del camino para pasar (lo calcula el servidor). */
+  address: z.string().optional(),
+  latitude: z.number().optional(),
+  longitude: z.number().optional(),
+  /** Qué tan lejos queda del recorrido, en línea recta (≈ cuadras de distancia). */
+  distanceFromRouteMeters: z.number().nonnegative().optional(),
+  detourMeters: z.number().nonnegative().optional(),
+  detourSeconds: z.number().nonnegative().optional(),
+  /** Posición de esta parada dentro de `routeWaypoints`. */
+  routeIndex: z.number().int().nonnegative().optional(),
   items: z.array(z.object({
     productId: z.string(),
     productVariantId: z.string().optional(),
@@ -111,6 +121,8 @@ export const optimizationPlanResponseSchema = z.object({
   estimatedSavings: z.number().nonnegative(),
   stores: z.array(z.string()),
   stops: z.array(planStopSchema),
+  /** Recorrido ya con las paradas de compra metidas en el mejor lugar: origen, paradas y destino. */
+  routeWaypoints: z.array(latLngSchema).optional(),
   explanation: z.string(),
 });
 export type OptimizationPlanResponse = z.infer<typeof optimizationPlanResponseSchema>;

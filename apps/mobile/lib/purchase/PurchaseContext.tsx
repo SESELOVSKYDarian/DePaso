@@ -7,19 +7,23 @@ type PurchaseContextValue = {
   start: (plan: OptimizationPlanResponse) => void;
   toggle: (key: string) => void;
   finish: () => void;
+  /** Plan que se dibuja en el mapa del recorrido (elegido o en vista previa). */
+  routePlan: OptimizationPlanResponse | null;
+  setRoutePlan: (plan: OptimizationPlanResponse | null) => void;
 };
 const PurchaseContext = createContext<PurchaseContextValue | null>(null);
 
 /** Modo compra efímero: no altera la lista original ni inventa persistencia antes de definirla. */
 export function PurchaseProvider({ children }: { children: ReactNode }) {
   const [plan, setPlan] = useState<OptimizationPlanResponse | null>(null);
+  const [routePlan, setRoutePlan] = useState<OptimizationPlanResponse | null>(null);
   const [checked, setChecked] = useState<Record<string, boolean>>({});
   const value = useMemo(() => ({
-    plan, checked,
-    start: (next: OptimizationPlanResponse) => { setPlan(next); setChecked({}); },
+    plan, checked, routePlan, setRoutePlan,
+    start: (next: OptimizationPlanResponse) => { setPlan(next); setRoutePlan(next); setChecked({}); },
     toggle: (key: string) => setChecked((previous) => ({ ...previous, [key]: !previous[key] })),
-    finish: () => { setPlan(null); setChecked({}); },
-  }), [plan, checked]);
+    finish: () => { setPlan(null); setRoutePlan(null); setChecked({}); },
+  }), [plan, checked, routePlan]);
   return <PurchaseContext.Provider value={value}>{children}</PurchaseContext.Provider>;
 }
 export function usePurchase() { const value = useContext(PurchaseContext); if (!value) throw new Error("usePurchase debe usarse dentro de PurchaseProvider"); return value; }

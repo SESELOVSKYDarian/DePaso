@@ -18,6 +18,8 @@ export interface BuildRouteMapHtmlOptions {
   isDark?: boolean;
   /** Comercios de paso: se dibujan con ícono y nombre, y avisan cuál se tocó. */
   stores?: RouteMapStore[];
+  /** Recorrido original (sin compras): se dibuja punteado debajo de `polyline` para ver la variación. */
+  basePolyline?: string | null;
 }
 
 export interface RouteMapStore {
@@ -25,6 +27,8 @@ export interface RouteMapStore {
   name: string;
   latitude: number;
   longitude: number;
+  /** Parada de compra del plan: se dibuja más grande y de color de marca. */
+  buy?: boolean;
 }
 
 const MAPBOX_GL_VERSION = "3.7.0";
@@ -39,12 +43,13 @@ const MAPBOX_GL_CSS_INTEGRITY = "sha384-GTsgKcJXGSkBp0M68qpxkz9XovzVH0PwSrjYONvk
  * nativa) como por `RouteMapView.web` (`iframe`, porque `react-native-webview` no tiene
  * build para web). Sin lógica de React/RN acá para poder compartirlo entre ambas.
  */
-export function buildRouteMapHtml({ waypoints, polyline, mapboxToken, colors, isDark = false, stores = [] }: BuildRouteMapHtmlOptions): string {
+export function buildRouteMapHtml({ waypoints, polyline, mapboxToken, colors, isDark = false, stores = [], basePolyline = null }: BuildRouteMapHtmlOptions): string {
   const mapStyle = isDark ? "mapbox://styles/mapbox/dark-v11" : "mapbox://styles/mapbox/streets-v12";
   const waypointsJson = JSON.stringify(waypoints.map((w) => ({ lat: w.latitude, lng: w.longitude })));
   const polylineJson = JSON.stringify(polyline);
+  const basePolylineJson = JSON.stringify(basePolyline);
   // `<` escapado: un nombre de comercio no puede cerrar el <script> del HTML.
-  const storesJson = JSON.stringify(stores.map((s) => ({ id: s.id, name: s.name, lat: s.latitude, lng: s.longitude }))).replace(/</g, "\\u003c");
+  const storesJson = JSON.stringify(stores.map((s) => ({ id: s.id, name: s.name, lat: s.latitude, lng: s.longitude, buy: Boolean(s.buy) }))).replace(/</g, "\\u003c");
 
   return `<!DOCTYPE html>
 <html>
@@ -86,6 +91,8 @@ export function buildRouteMapHtml({ waypoints, polyline, mapboxToken, colors, is
   }
   .depaso-store.selected .bubble { background: ${colors.brand.navy}; color: ${colors.text.onNavy}; transform: scale(1.18); border-color: #fff; }
   .depaso-store.selected { z-index: 5; }
+  .depaso-store.buy .bubble { width: 38px; height: 38px; background: ${colors.brand.navy}; color: ${colors.text.onNavy}; border-color: #fff; }
+  .depaso-store.buy .label { font-size: 12px; max-width: 120px; background: ${colors.brand.navy}; color: ${colors.text.onNavy}; }
 </style>
 </head>
 <body>
@@ -109,6 +116,7 @@ export function buildRouteMapHtml({ waypoints, polyline, mapboxToken, colors, is
   mapboxgl.accessToken = ${JSON.stringify(mapboxToken)};
   const waypoints = ${waypointsJson};
   const polyline = ${polylineJson};
+  const basePolyline = ${basePolylineJson};
 
   const map = new mapboxgl.Map({
     container: "map",
@@ -139,7 +147,7 @@ export function buildRouteMapHtml({ waypoints, polyline, mapboxToken, colors, is
     }
     stores.forEach((store) => {
       const el = document.createElement("div");
-      el.className = "depaso-store";
+      el.className = "depaso-store" + (store.buy ? " buy" : "");
       const bubble = document.createElement("div");
       bubble.className = "bubble";
       bubble.innerHTML = storeIcon;
@@ -161,6 +169,20 @@ export function buildRouteMapHtml({ waypoints, polyline, mapboxToken, colors, is
     };
 
     const coordinates = polyline ? decodePolyline(polyline) : waypoints.map((w) => [w.lng, w.lat]);
+    // Recorrido original, punteado: se ve cuánto cambia con la parada de compra.
+    if (basePolyline) {
+      map.addSource("base-route", {
+        type: "geojson",
+        data: { type: "Feature", properties: {}, geometry: { type: "LineString", coordinates: decodePolyline(basePolyline) } },
+      });
+      map.addLayer({
+        id: "base-route",
+        type: "line",
+        source: "base-route",
+        layout: { "line-join": "round", "line-cap": "round" },
+        paint: { "line-color": ${JSON.stringify(isDark ? "#8E8E93" : "#6B6B70")}, "line-width": 3, "line-dasharray": [1.5, 2], "line-opacity": 0.8 },
+      });
+    }
     map.addSource("route", {
       type: "geojson",
       data: { type: "Feature", properties: {}, geometry: { type: "LineString", coordinates: [coordinates[0]] } },

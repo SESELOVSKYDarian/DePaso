@@ -31,7 +31,7 @@ export function RouteMapView({ selectedStoreId, onSelectStore, height = 300, ...
   const html = useMemo(
     () => buildRouteMapHtml({ ...options, colors, isDark }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [options.waypoints, options.polyline, options.mapboxToken, options.stores, colors, isDark],
+    [options.waypoints, options.polyline, options.mapboxToken, options.stores, options.basePolyline, colors, isDark],
   );
 
   const select = (id: string | null) => {

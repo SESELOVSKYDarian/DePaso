@@ -8,7 +8,7 @@ import { z } from "zod";
 import { latLngSchema } from "./optimize";
 
 export const routeComputeRequestSchema = z.object({
-  waypoints: z.array(latLngSchema).min(2).max(6),
+  waypoints: z.array(latLngSchema).min(2).max(12),
   transportMode: z.enum(["CAR", "MOTORCYCLE", "BICYCLE", "WALK", "PUBLIC_TRANSPORT"]).default("CAR"),
 });
 export type RouteComputeRequest = z.input<typeof routeComputeRequestSchema>;
