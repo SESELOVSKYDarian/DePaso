@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
-import { Modal, Pressable, StyleSheet, View } from "react-native";
+import { Modal, StyleSheet, View } from "react-native";
 import { radii, spacing } from "@depaso/design-tokens";
 import { makeStyles } from "@/lib/theme";
+import { ModalBackdrop } from "./ModalBackdrop";
 
 interface BottomSheetProps {
   visible: boolean;
@@ -18,15 +19,11 @@ interface BottomSheetProps {
 export function BottomSheet({ visible, onClose, children }: BottomSheetProps) {
   const styles = useStyles();
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={styles.backdrop} onPress={onClose} accessibilityLabel="Cerrar">
-        {/* accessible=false: este Pressable sólo existe para frenar la propagación del tap
-         * y cerrar el sheet — sin esto, un lector de pantalla lo enfoca como un control sin
-         * label antes de llegar al contenido real de adentro. */}
-        <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()} accessible={false}>
-          {children}
-        </Pressable>
-      </Pressable>
+    <Modal visible={visible} transparent animationType="fade" statusBarTranslucent onRequestClose={onClose}>
+      {/* Tocar el fondo (oscuro y desenfocado) cierra la hoja. */}
+      <ModalBackdrop onPress={onClose} style={styles.backdrop}>
+        <View style={styles.sheet}>{children}</View>
+      </ModalBackdrop>
     </Modal>
   );
 }
@@ -34,7 +31,6 @@ export function BottomSheet({ visible, onClose, children }: BottomSheetProps) {
 const useStyles = makeStyles((colors) => StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
     justifyContent: "flex-end",
   },
   sheet: {

@@ -2,6 +2,7 @@ import { Modal, StyleSheet, Text, View } from "react-native";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles } from "@/lib/theme";
 import { Button } from "./Button";
+import { ModalBackdrop } from "./ModalBackdrop";
 
 interface DialogProps {
   visible: boolean;
@@ -29,7 +30,7 @@ export function Dialog({
   const styles = useStyles();
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
-      <View style={styles.backdrop}>
+      <ModalBackdrop style={styles.backdrop}>
         <View style={styles.card}>
           <Text style={styles.title}>{title}</Text>
           {description ? <Text style={styles.description}>{description}</Text> : null}
@@ -43,7 +44,7 @@ export function Dialog({
             />
           </View>
         </View>
-      </View>
+      </ModalBackdrop>
     </Modal>
   );
 }
@@ -51,7 +52,6 @@ export function Dialog({
 const useStyles = makeStyles((colors) => StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: "rgba(26, 19, 65, 0.45)",
     alignItems: "center",
     justifyContent: "center",
     padding: spacing.lg,

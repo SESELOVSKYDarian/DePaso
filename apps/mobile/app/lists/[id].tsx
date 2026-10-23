@@ -2,11 +2,12 @@ import type { ShoppingListResponse } from "@depaso/validation";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles, useColors } from "@/lib/theme";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
+import { Dialog } from "@/components/Dialog";
 import { ProductThumb } from "@/components/ProductThumb";
 import { EmptyState } from "@/components/EmptyState";
 import { Skeleton } from "@/components/Skeleton";
@@ -28,6 +29,9 @@ export default function ListDetailScreen() {
   const [shareEmail, setShareEmail] = useState("");
   const [shareOpen, setShareOpen] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+  // Fila que se está actualizando: mientras tanto se ignoran más toques (evita repeticiones).
+  const [busyItemId, setBusyItemId] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   // `itemCount` del resumen compartido (`ListsContext`) — cambia cuando `lists/search.tsx`
   // agrega un producto y vuelve acá. Bug real encontrado probando el flujo completo: sin
   // esto, la pantalla mostraba "vacía" después de agregar un producto porque el detalle
@@ -61,21 +65,28 @@ export default function ListDetailScreen() {
   }, [id, summaryItemCount]);
 
   const handleQuantityChange = async (itemId: string, quantity: number) => {
-    if (quantity < 1) return;
+    if (quantity < 1 || busyItemId) return;
+    setBusyItemId(itemId);
     try {
       const updated = await updateItem(id, itemId, { quantity });
       setList(updated);
     } catch {
       showToast("No pudimos actualizar la cantidad.", "error");
+    } finally {
+      setBusyItemId(null);
     }
   };
 
   const handleRemoveItem = async (itemId: string) => {
+    if (busyItemId) return;
+    setBusyItemId(itemId);
     try {
       const updated = await removeItem(id, itemId);
       setList(updated);
     } catch {
       showToast("No pudimos quitar el producto.", "error");
+    } finally {
+      setBusyItemId(null);
     }
   };
 
@@ -156,30 +167,31 @@ export default function ListDetailScreen() {
       <Stack.Screen
         options={{
           headerRight: () => (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Armar la lista con IA, hablando"
-              hitSlop={10}
-              onPress={openAssistant}
-              style={styles.headerAiButton}
-            >
-              <Ionicons name="sparkles" size={20} color={colors.text.primary} />
-              <Text style={styles.headerAiLabel}>IA</Text>
-            </Pressable>
+            <View style={styles.headerActions}>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={shareLabel}
+                hitSlop={8}
+                onPress={() => setShareOpen((open) => !open)}
+                style={[styles.headerIcon, shareOpen ? styles.headerIconActive : null]}
+              >
+                <Ionicons name="people-outline" size={20} color={colors.text.primary} />
+              </Pressable>
+              {isOwner ? (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Eliminar lista"
+                  hitSlop={8}
+                  onPress={() => setConfirmDelete(true)}
+                  style={styles.headerIcon}
+                >
+                  <Ionicons name="trash-outline" size={20} color={colors.state.errorStrong} />
+                </Pressable>
+              ) : null}
+            </View>
           ),
         }}
       />
-      <AnimatedPressable
-        accessibilityLabel={shareLabel}
-        haptic={false}
-        onPress={() => setShareOpen((open) => !open)}
-        style={styles.shareToggle}
-      >
-        <Ionicons name="people-outline" size={20} color={colors.text.secondary} />
-        <Text style={styles.shareToggleLabel}>{shareLabel}</Text>
-        <Ionicons name={shareOpen ? "chevron-up" : "chevron-down"} size={16} color={colors.text.tertiary} />
-      </AnimatedPressable>
-
       {shareOpen ? (
       <View style={styles.sharePanel}>
         {isOwner ? (
@@ -274,21 +286,25 @@ export default function ListDetailScreen() {
               </View>
               <View style={styles.quantityRow}>
                 <AnimatedPressable
-                  accessibilityLabel="Restar uno"
+                  accessibilityLabel={`Restar uno de ${item.productName}`}
                   haptic={false}
                   onPress={() => void handleQuantityChange(item.id, item.quantity - 1)}
                   style={styles.stepperButton}
                 >
-                  <Text style={styles.stepperLabel}>−</Text>
+                  <Ionicons name="remove" size={18} color={colors.text.primary} />
                 </AnimatedPressable>
-                <Text style={styles.quantity}>{item.quantity}</Text>
+                {busyItemId === item.id ? (
+                  <ActivityIndicator size="small" color={colors.text.primary} style={styles.quantityLoader} />
+                ) : (
+                  <Text style={styles.quantity}>{item.quantity}</Text>
+                )}
                 <AnimatedPressable
-                  accessibilityLabel="Sumar uno"
+                  accessibilityLabel={`Sumar uno de ${item.productName}`}
                   haptic={false}
                   onPress={() => void handleQuantityChange(item.id, item.quantity + 1)}
                   style={styles.stepperButton}
                 >
-                  <Text style={styles.stepperLabel}>+</Text>
+                  <Ionicons name="add" size={18} color={colors.text.primary} />
                 </AnimatedPressable>
               </View>
               <AnimatedPressable
@@ -297,7 +313,7 @@ export default function ListDetailScreen() {
                 onPress={() => void handleRemoveItem(item.id)}
                 style={styles.removeButton}
               >
-                <Text style={styles.removeLabel}>✕</Text>
+                <Ionicons name="trash-outline" size={18} color={colors.text.secondary} />
               </AnimatedPressable>
             </View>
           )}
@@ -307,31 +323,36 @@ export default function ListDetailScreen() {
       <View style={[styles.footer, { paddingBottom: Math.max(spacing.lg, insets.bottom + spacing.sm) }]}>
         <View style={styles.addRow}>
           <AnimatedPressable
-            accessibilityLabel="Agregar producto"
+            accessibilityLabel="Sumar un producto"
             onPress={() => router.push({ pathname: "/lists/search", params: { listId: id } })}
             style={[styles.addButton, styles.addButtonGrow]}
           >
-            <Text style={styles.addLabel}>+ Sumar un producto</Text>
+            <Ionicons name="add" size={20} color={colors.text.onNavy} />
+            <Text style={styles.addLabel}>Sumar producto</Text>
           </AnimatedPressable>
           <AnimatedPressable
-            accessibilityLabel="Armar la lista con IA, hablando"
+            accessibilityLabel="Armar la lista con IA"
             onPress={openAssistant}
-            style={styles.aiButton}
+            style={[styles.aiButton, styles.addButtonGrow]}
           >
-            <Ionicons name="sparkles" size={22} color={colors.text.primary} />
+            <Ionicons name="sparkles" size={18} color={colors.text.primary} />
+            <Text style={styles.aiLabel}>Armar con IA</Text>
           </AnimatedPressable>
         </View>
-        {isOwner ? (
-          <AnimatedPressable
-            accessibilityLabel="Eliminar lista"
-            haptic={false}
-            onPress={() => void handleDeleteList()}
-            style={styles.deleteButton}
-          >
-            <Text style={styles.deleteLabel}>Eliminar lista</Text>
-          </AnimatedPressable>
-        ) : null}
       </View>
+
+      <Dialog
+        visible={confirmDelete}
+        title="¿Eliminar esta lista?"
+        description={`Se borra "${list.name}" con sus ${list.items.length} productos.`}
+        confirmLabel="Eliminar"
+        destructive
+        onConfirm={() => {
+          setConfirmDelete(false);
+          void handleDeleteList();
+        }}
+        onCancel={() => setConfirmDelete(false)}
+      />
     </View>
   );
 }
@@ -487,11 +508,13 @@ const useStyles = makeStyles((colors) => StyleSheet.create({
     textAlign: "center",
   },
   removeButton: {
-    padding: spacing.xxs,
+    width: 40,
+    height: 40,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  removeLabel: {
-    color: colors.text.muted,
-    fontSize: 16,
+  quantityLoader: {
+    minWidth: 20,
   },
   footer: {
     padding: spacing.lg,
@@ -499,22 +522,20 @@ const useStyles = makeStyles((colors) => StyleSheet.create({
     borderTopColor: colors.border.subtle,
     gap: spacing.sm,
   },
-  headerAiButton: {
+  headerActions: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    minHeight: 36,
-    paddingHorizontal: spacing.sm,
-    borderRadius: radii.full,
-    borderWidth: 1,
-    borderColor: colors.border.strong,
-    backgroundColor: colors.surface.primary,
+    gap: spacing.xs,
   },
-  headerAiLabel: {
-    fontFamily: typography.body.fontFamily,
-    fontWeight: "600",
-    fontSize: 14,
-    color: colors.text.primary,
+  headerIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: radii.full,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  headerIconActive: {
+    backgroundColor: colors.surface.input,
   },
   emptyAi: {
     flexDirection: "row",
@@ -540,42 +561,36 @@ const useStyles = makeStyles((colors) => StyleSheet.create({
     flex: 1,
   },
   aiButton: {
-    width: 52,
-    borderRadius: radii.lg,
+    flexDirection: "row",
+    gap: spacing.xs,
+    borderRadius: radii.full,
     borderWidth: 1,
     borderColor: colors.border.strong,
     backgroundColor: colors.surface.primary,
     alignItems: "center",
     justifyContent: "center",
-    minHeight: 44,
+    minHeight: 50,
+  },
+  aiLabel: {
+    fontFamily: typography.title.fontFamily,
+    fontWeight: "600",
+    fontSize: 15,
+    color: colors.text.primary,
   },
   addButton: {
+    flexDirection: "row",
+    gap: spacing.xs,
     backgroundColor: colors.brand.navy,
-    borderRadius: radii.lg,
+    borderRadius: radii.full,
     paddingVertical: spacing.sm,
     alignItems: "center",
     justifyContent: "center",
-    minHeight: 44,
+    minHeight: 50,
   },
   addLabel: {
     fontFamily: typography.title.fontFamily,
     fontWeight: "600",
     fontSize: 16,
     color: colors.text.onNavy,
-  },
-  deleteButton: {
-    borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: colors.state.error,
-    paddingVertical: spacing.sm,
-    alignItems: "center",
-    justifyContent: "center",
-    minHeight: 44,
-  },
-  deleteLabel: {
-    fontFamily: typography.body.fontFamily,
-    fontWeight: "600",
-    fontSize: 15,
-    color: colors.state.error,
   },
 }));

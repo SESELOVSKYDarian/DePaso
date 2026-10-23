@@ -87,7 +87,7 @@ function whereClause(conditions: Prisma.Sql[]): Prisma.Sql {
  * que aparecer en el nombre o en la marca. Con `filters` se acota por tipo y/o marca; sin
  * texto de búsqueda alcanza con un filtro (explorar "Gaseosas" sin escribir nada).
  */
-export async function searchProducts(
+async function searchProductsUncached(
   query: string,
   filters: ProductSearchFilters = {},
   options: { withImages?: boolean } = {},
@@ -187,7 +187,7 @@ export async function searchProducts(
  *  - marcas: sobre lo que matchea el texto y el tipo elegido.
  * Así cada lista se arma sin el filtro propio y siempre se puede cambiar o quitar.
  */
-export async function getProductFacets(query: string, filters: ProductSearchFilters = {}): Promise<ProductFacets> {
+async function getProductFacetsUncached(query: string, filters: ProductSearchFilters = {}): Promise<ProductFacets> {
   const tokens = searchTokens(normalizeQuery(query));
   const text = textConditions(tokens);
 
@@ -224,4 +224,38 @@ export async function getProductFacets(query: string, filters: ProductSearchFilt
       count: row.count,
     })),
   };
+}
+
+/**
+ * Caché en memoria de búsquedas y facetas: el catálogo cambia una vez por día (import de SEPA)
+ * y la misma caja ("Gaseosas") la abren muchas personas. Diez minutos alcanzan y evitan que
+ * cada toque vuelva a recorrer la base. Vive por instancia de la función, no se comparte.
+ */
+const CACHE_TTL_MS = 10 * 60 * 1000;
+const CACHE_MAX = 400;
+const cache = new Map<string, { at: number; value: Promise<unknown> }>();
+
+function cached<T>(key: string, load: () => Promise<T>): Promise<T> {
+  const hit = cache.get(key);
+  if (hit && Date.now() - hit.at < CACHE_TTL_MS) return hit.value as Promise<T>;
+  const value = load();
+  cache.set(key, { at: Date.now(), value });
+  // Si falla no se guarda: el próximo intento vuelve a consultar.
+  value.catch(() => cache.delete(key));
+  if (cache.size > CACHE_MAX) cache.delete(cache.keys().next().value as string);
+  return value;
+}
+
+export function searchProducts(
+  query: string,
+  filters: ProductSearchFilters = {},
+  options: { withImages?: boolean } = {},
+): Promise<ProductSearchResult[]> {
+  const key = ["s", normalizeQuery(query), filters.type ?? "", filters.brandId ?? "", options.withImages === false ? 0 : 1].join("|");
+  return cached(key, () => searchProductsUncached(query, filters, options));
+}
+
+export function getProductFacets(query: string, filters: ProductSearchFilters = {}): Promise<ProductFacets> {
+  const key = ["f", normalizeQuery(query), filters.type ?? "", filters.brandId ?? ""].join("|");
+  return cached(key, () => getProductFacetsUncached(query, filters));
 }

@@ -65,7 +65,7 @@ function RootNavigator() {
         headerTitleStyle: { fontFamily: typography.title.fontFamily, fontSize: 17 },
         headerBackButtonDisplayMode: "minimal",
         // Empujar = deslizar desde la derecha; volver con el gesto de borde (iOS: desde cualquier punto).
-        animation: Platform.OS === "ios" ? "default" : "slide_from_right",
+        animation: Platform.OS === "ios" ? "default" : "ios_from_right",
         gestureEnabled: true,
         fullScreenGestureEnabled: true,
       }}
@@ -231,6 +231,15 @@ export function ErrorBoundary({ error, retry }: { error: Error; retry: () => Pro
   );
 }
 
+/**
+ * Fondo de toda la app con el color del tema. Sin esto, durante la animación de volver atrás
+ * se veía el fondo blanco de la ventana entre una pantalla y otra.
+ */
+function ThemedRoot({ children }: { children: ReactNode }) {
+  const colors = useColors();
+  return <View style={{ flex: 1, backgroundColor: colors.surface.base }}>{children}</View>;
+}
+
 export default function RootLayout() {
   const [fontsLoaded] = useAppFonts();
 
@@ -238,6 +247,7 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <ThemeProvider>
+          <ThemedRoot>
           <StatusBar style="auto" />
           <NavigationThemeBridge>
             <AuthProvider>
@@ -254,6 +264,7 @@ export default function RootLayout() {
               </PlacesProvider>
             </AuthProvider>
           </NavigationThemeBridge>
+          </ThemedRoot>
         </ThemeProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

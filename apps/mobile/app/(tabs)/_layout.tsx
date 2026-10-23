@@ -16,6 +16,8 @@ export default function TabsLayout() {
         headerShown: false,
         // Las pestañas son pares, no una jerarquía: un fundido corto, nunca un deslizamiento.
         animation: "fade",
+        // Fondo del tema detrás de cada pestaña: sin esto el fundido pasaba por blanco.
+        sceneStyle: { backgroundColor: colors.surface.base },
         tabBarActiveTintColor: colors.brand.accentDark,
         tabBarInactiveTintColor: colors.text.secondary,
         tabBarStyle: {

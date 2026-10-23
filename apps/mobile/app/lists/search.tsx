@@ -3,12 +3,13 @@ import { PRODUCT_TYPE_GROUPS, PRODUCT_TYPE_LABELS } from "@depaso/domain";
 import type { ProductFacets, ProductSearchResult } from "@depaso/validation";
 import { router, useLocalSearchParams } from "expo-router";
 import { useEffect, useRef, useState, type ComponentProps } from "react";
-import { FlatList, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles, useColors } from "@/lib/theme";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { EmptyState } from "@/components/EmptyState";
 import { ProductThumb } from "@/components/ProductThumb";
+import { Skeleton } from "@/components/Skeleton";
 import { useToast } from "@/components/Toast";
 import { productsClient } from "@/lib/apiClient";
 import { useLists } from "@/lib/lists/ListsContext";
@@ -30,6 +31,37 @@ const GROUP_ICONS: Record<string, IconName> = {
   bebes: "happy-outline",
   hogar: "home-outline",
 };
+
+/**
+ * Caché de la sesión: volver a una caja ya abierta es instantáneo y al entrar a una categoría
+ * se precargan sus tipos, así el toque siguiente ya tiene los productos.
+ */
+type SearchKey = { q: string; type?: string | undefined; brandId?: string | undefined };
+const resultsCache = new Map<string, Promise<ProductSearchResult[]>>();
+const facetsCache = new Map<string, Promise<ProductFacets>>();
+const keyOf = ({ q, type, brandId }: SearchKey) => [q, type ?? "", brandId ?? ""].join("|");
+
+function cachedSearch(key: SearchKey): Promise<ProductSearchResult[]> {
+  const id = keyOf(key);
+  let hit = resultsCache.get(id);
+  if (!hit) {
+    hit = productsClient.search(key.q, { type: key.type, brandId: key.brandId }).then((r) => r.results);
+    hit.catch(() => resultsCache.delete(id));
+    resultsCache.set(id, hit);
+  }
+  return hit;
+}
+
+function cachedFacets(key: SearchKey): Promise<ProductFacets> {
+  const id = keyOf({ q: key.q, type: key.type });
+  let hit = facetsCache.get(id);
+  if (!hit) {
+    hit = productsClient.facets(key.q, { type: key.type });
+    hit.catch(() => facetsCache.delete(id));
+    facetsCache.set(id, hit);
+  }
+  return hit;
+}
 
 const groupOfType = (typeId: string) => PRODUCT_TYPE_GROUPS.find((group) => group.typeIds.includes(typeId)) ?? null;
 
@@ -84,9 +116,10 @@ export default function ProductSearchScreen() {
     setIsSearching(true);
     const timer = setTimeout(
       async () => {
+        const key = { q: trimmed, type: filters.type, brandId: filters.brandId };
         const [found, options] = await Promise.all([
-          productsClient.search(trimmed, filters).catch(() => null),
-          productsClient.facets(trimmed, { type: typeId ?? undefined }).catch(() => null),
+          cachedSearch(key).then((results) => ({ results })).catch(() => null),
+          cachedFacets(key).catch(() => null),
         ]);
         if (id !== requestId.current) return; // llegó tarde: ya hay una búsqueda más nueva
         // Un error de red no es "no existe": se avisa distinto y se puede reintentar.
@@ -100,6 +133,15 @@ export default function ProductSearchScreen() {
     return () => clearTimeout(timer);
   }, [trimmed, typeId, brand, hasCriteria, retry]);
 
+  useEffect(() => {
+    if (!groupId || typeId) return;
+    const current = PRODUCT_TYPE_GROUPS.find((g) => g.id === groupId);
+    for (const id of current?.typeIds.slice(0, 6) ?? []) {
+      void cachedSearch({ q: "", type: id }).catch(() => undefined);
+      void cachedFacets({ q: "", type: id }).catch(() => undefined);
+    }
+  }, [groupId, typeId]);
+
   const pickType = (id: string | null) => {
     setTypeId(id);
     setBrand(null);
@@ -112,7 +154,8 @@ export default function ProductSearchScreen() {
 
   const handleAdd = async (product: ProductSearchResult) => {
     const variant = product.variants[0];
-    if (!variant) return;
+    // Mientras se agrega uno, los demás toques se ignoran (antes se repetía el producto).
+    if (!variant || addingId) return;
     setAddingId(variant.id);
     try {
       await addItem(listId, { productId: product.id, quantity: 1 });
@@ -235,20 +278,7 @@ export default function ProductSearchScreen() {
             </>
           ) : (
             <>
-              <AnimatedPressable
-                accessibilityLabel="Armar la lista con IA, escribiendo o dictando todo junto"
-                haptic={false}
-                onPress={() => router.push({ pathname: "/lists/assistant", params: { listId } })}
-                style={styles.assistantRow}
-              >
-                <Ionicons name="sparkles-outline" size={20} color={colors.text.primary} />
-                <View style={styles.assistantText}>
-                  <Text style={styles.assistantTitle}>Armar con IA</Text>
-                  <Text style={styles.assistantSub}>Decí todo lo que te falta de corrido</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color={colors.text.tertiary} />
-              </AnimatedPressable>
-              <Text style={styles.sectionLabel}>O explorá por categoría</Text>
+              <Text style={styles.sectionLabel}>Explorá por categoría</Text>
               <View style={styles.grid}>
                 {PRODUCT_TYPE_GROUPS.map((option) => (
                   <AnimatedPressable
@@ -282,7 +312,13 @@ export default function ProductSearchScreen() {
                 </AnimatedPressable>
               }
             />
-          ) : results.length === 0 && !isSearching ? (
+          ) : isSearching && results.length === 0 ? (
+            <View style={styles.list}>
+              {[0, 1, 2, 3, 4, 5].map((index) => (
+                <Skeleton key={index} height={64} borderRadius={radii.md} />
+              ))}
+            </View>
+          ) : results.length === 0 ? (
             <EmptyState
               emoji="🤔"
               title="Ni de paso lo vimos"
@@ -314,7 +350,11 @@ export default function ProductSearchScreen() {
                         </Text>
                       ) : null}
                     </View>
-                    <Text style={styles.addLabel}>{addingId === item.variants[0]?.id ? "…" : "Sumar"}</Text>
+                    {addingId === item.variants[0]?.id ? (
+                      <ActivityIndicator size="small" color={colors.text.primary} />
+                    ) : (
+                      <Text style={[styles.addLabel, addingId ? styles.addDisabled : null]}>Sumar</Text>
+                    )}
                   </AnimatedPressable>
                 );
               }}
@@ -435,6 +475,7 @@ const useStyles = makeStyles((colors) =>
     rowText: { flex: 1 },
     rowName: { fontFamily: typography.body.fontFamily, fontWeight: "600", fontSize: 15, color: colors.text.primary },
     rowMeta: { fontFamily: typography.caption.fontFamily, fontSize: 12, color: colors.text.muted, marginTop: 1 },
+    addDisabled: { opacity: 0.35 },
     addLabel: { fontFamily: typography.body.fontFamily, fontWeight: "600", fontSize: 13, color: colors.text.secondary },
   }),
 );

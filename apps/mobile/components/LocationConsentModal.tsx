@@ -4,6 +4,7 @@ import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles } from "@/lib/theme";
 import { AnimatedPressable } from "./AnimatedPressable";
+import { ModalBackdrop } from "./ModalBackdrop";
 import { consentClient } from "@/lib/apiClient";
 
 export type LocationConsentResult = "granted" | "manual" | "later";
@@ -46,8 +47,8 @@ export function LocationConsentModal({ visible, onClose }: LocationConsentModalP
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={handleManual}>
-      <View style={styles.backdrop}>
+    <Modal visible={visible} transparent animationType="fade" statusBarTranslucent onRequestClose={handleManual}>
+      <ModalBackdrop style={styles.backdrop}>
         <View style={styles.sheet}>
           <Text style={styles.title}>Usar tu ubicación</Text>
           <Text style={styles.body}>
@@ -84,7 +85,7 @@ export function LocationConsentModal({ visible, onClose }: LocationConsentModalP
             <Text style={styles.laterLabel}>Ahora no</Text>
           </Pressable>
         </View>
-      </View>
+      </ModalBackdrop>
     </Modal>
   );
 }
@@ -92,7 +93,6 @@ export function LocationConsentModal({ visible, onClose }: LocationConsentModalP
 const useStyles = makeStyles((colors) => StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: "rgba(26, 19, 65, 0.45)",
     justifyContent: "flex-end",
   },
   sheet: {
