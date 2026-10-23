@@ -124,6 +124,8 @@ export const optimizationPlanResponseSchema = z.object({
   additionalTimeSeconds: z.number().nonnegative(),
   numberOfStops: z.number().int().positive(),
   missingProductIds: z.array(z.string()),
+  /** Nombres de los productos que no se consiguen con este plan. */
+  missingProductNames: z.array(z.string()).default([]),
   priceConfidence: z.enum(["HIGH", "MEDIUM", "LOW"]),
   estimatedSavings: z.number().nonnegative(),
   stores: z.array(z.string()),

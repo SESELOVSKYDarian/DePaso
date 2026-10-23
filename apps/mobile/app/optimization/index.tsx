@@ -62,16 +62,19 @@ function PlanCard({ plan, index, onStart, onMap }: { plan: OptimizationPlanRespo
   const meta = labels[plan.label];
   const recommended = plan.label === "BALANCED";
   const animatedSavings = useCountUp(plan.estimatedSavings, 500);
+  // Un plan que no consigue todo sale "más barato" porque no incluye esos productos: se aclara.
+  const missingCount = plan.missingProductIds.length;
+  const boughtCount = plan.stops.reduce((sum, stop) => sum + stop.items.length, 0);
   return <View style={[styles.plan, recommended && styles.recommended]}>
     <View style={styles.planHead}>
       <View style={[styles.planIcon, recommended && styles.recommendedIcon]} accessible={false}><Ionicons name={meta.icon} size={21} color={colors.text.primary} /></View>
       <View style={styles.flex}><View style={styles.titleLine}><Text style={styles.planTitle}>{meta.title}</Text>{recommended ? <Text style={styles.tag}>RECOMENDADO</Text> : null}</View><Text style={styles.meta}>{meta.subtitle}</Text></View>
     </View>
-    <View style={styles.costRow}><View><Text style={styles.meta}>Costo estimado</Text><Text style={styles.cost}>{money(plan.totalProductCost)}</Text></View>{plan.estimatedSavings > 0 ? <View style={styles.savings}><Text style={styles.savingsText}>Ahorrás {money(animatedSavings)}</Text></View> : null}</View>
+    <View style={styles.costRow}><View><Text style={styles.meta}>{missingCount > 0 ? `Costo de ${boughtCount} de ${boughtCount + missingCount} productos` : "Costo de toda tu lista"}</Text><Text style={styles.cost}>{money(plan.totalProductCost)}</Text></View>{plan.estimatedSavings > 0 ? <View style={styles.savings}><Text style={styles.savingsText}>Ahorrás {money(animatedSavings)}</Text></View> : null}</View>
     <Text style={styles.meta}>{plan.numberOfStops} {plan.numberOfStops === 1 ? "comercio" : "comercios"}  ·  {distance(plan.additionalDistanceMeters)}  ·  {Math.ceil(plan.additionalTimeSeconds / 60)} min</Text>
     {plan.appliedPromos.map((promo) => <View key={`${promo.retailer}-${promo.label}`} style={styles.promoBox}><Text style={styles.promoTitle}>{promo.retailer}: {promo.label}</Text><Text style={styles.promoText}>Descuento {money(promo.discountAmount)}. {promo.disclaimer}</Text></View>)}
     <Text style={styles.explanation}>{plan.explanation}</Text>
-    {plan.missingProductIds.length > 0 ? <Text style={styles.warning}>Hay {plan.missingProductIds.length} producto{plan.missingProductIds.length === 1 ? "" : "s"} sin precio vigente.</Text> : null}
+    {missingCount > 0 ? <View style={styles.missingBox}><Text style={styles.missingTitle}>{missingCount === 1 ? "Falta 1 producto" : `Faltan ${missingCount} productos`}: {(plan.missingProductNames.length > 0 ? plan.missingProductNames : []).join(", ")}</Text><Text style={styles.missingText}>Ningún comercio a este nivel de desvío los tiene con precio vigente, por eso este total es más bajo: no los incluye. Vas a tener que comprarlos en otro lado.</Text></View> : null}
     <AnimatedPressable accessibilityLabel={`Ver ${meta.title} en el mapa`} haptic={false} onPress={onMap} style={styles.routeAction}><Text style={styles.routeActionText}>Ver mi ruta en el mapa</Text><Ionicons name="map-outline" size={17} color={colors.text.primary} accessible={false} /></AnimatedPressable>
     <AnimatedPressable accessibilityLabel={`Empezar compra con ${meta.title}`} onPress={onStart} style={styles.routeAction}><Text style={styles.routeActionText}>Empezar compra</Text><Ionicons name="arrow-forward" size={17} color={colors.text.primary} accessible={false} /></AnimatedPressable>
   </View>;
@@ -159,6 +162,9 @@ const useStyles = makeStyles((colors) => StyleSheet.create({
   unavailable: { gap: 2, padding: spacing.md, borderRadius: radii.xl, borderWidth: 1, borderStyle: "dashed", borderColor: colors.border.subtle },
   rankRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm, padding: spacing.sm, borderRadius: radii.lg, borderWidth: 1, borderColor: colors.border.subtle, backgroundColor: colors.surface.primary },
   rankNumber: { width: 26, fontFamily: typography.heroTitle.fontFamily, fontSize: 18, color: colors.text.secondary, textAlign: "center" },
+  missingBox: { gap: 2, padding: spacing.sm, borderRadius: radii.md, borderWidth: 1, borderColor: colors.state.warning },
+  missingTitle: { fontFamily: typography.body.fontFamily, fontWeight: "600", fontSize: 13, color: colors.state.warning },
+  missingText: { fontFamily: typography.caption.fontFamily, fontSize: 12, lineHeight: 17, color: colors.text.secondary },
   promoBox: { backgroundColor: colors.brand.mint, borderRadius: radii.md, padding: spacing.sm, gap: 2 },
   promoTitle: { fontFamily: typography.body.fontFamily, fontWeight: "600", fontSize: 13, color: colors.text.primary },
   promoText: { fontFamily: typography.caption.fontFamily, fontSize: 12, color: colors.text.secondary },

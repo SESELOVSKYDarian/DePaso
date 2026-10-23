@@ -31,12 +31,12 @@ export interface RouteMapStore {
   buy?: boolean;
 }
 
-const MAPBOX_GL_VERSION = "3.7.0";
+export const MAPBOX_GL_VERSION = "3.7.0";
 // Hashes calculados contra los archivos reales publicados en esta versión exacta (no
 // inventados) — si se sube `MAPBOX_GL_VERSION`, hay que recalcularlos contra los nuevos
 // archivos o el navegador va a bloquear la carga por integridad.
-const MAPBOX_GL_JS_INTEGRITY = "sha384-TgDWG1CxH3UwM5IL34LqCZPI9N5Qnr+getwHh3tUdDD/e4ajSh35TmGG271bDtka";
-const MAPBOX_GL_CSS_INTEGRITY = "sha384-GTsgKcJXGSkBp0M68qpxkz9XovzVH0PwSrjYONvkn3tXtySOSq+a14bG2gVJHwQG";
+export const MAPBOX_GL_JS_INTEGRITY = "sha384-TgDWG1CxH3UwM5IL34LqCZPI9N5Qnr+getwHh3tUdDD/e4ajSh35TmGG271bDtka";
+export const MAPBOX_GL_CSS_INTEGRITY = "sha384-GTsgKcJXGSkBp0M68qpxkz9XovzVH0PwSrjYONvkn3tXtySOSq+a14bG2gVJHwQG";
 
 /**
  * HTML autocontenido con Mapbox GL JS (Fase 17) — usado tanto por `RouteMapView` (WebView

@@ -198,7 +198,9 @@ export async function POST(request: NextRequest) {
       const { debugScore: _debugScore, ...plan } = planResult;
       // Recorrido con las paradas de compra metidas, y qué tan lejos queda cada una del camino.
       const planned = buildPlanRoute(parsed.data.routeContext.waypoints, plan.stops, branchInfo);
-      return { ...plan, stops: planned.stops, routeWaypoints: planned.routeWaypoints };
+      // Nombres de lo que no se consigue a este nivel: la app explica por qué el total es menor.
+      const missingProductNames = plan.missingProductIds.map((id) => names.get(id) ?? "Producto");
+      return { ...plan, stops: planned.stops, routeWaypoints: planned.routeWaypoints, missingProductNames };
     });
     const rankingWithAddress = ranking.map((entry) => ({
       storeBranchId: entry.storeBranchId,

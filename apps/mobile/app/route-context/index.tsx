@@ -2,8 +2,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { ApiError } from "@depaso/api-client";
 import * as Location from "expo-location";
 import { router } from "expo-router";
-import { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { ActivityIndicator, Modal, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles, useColors, withAlpha } from "@/lib/theme";
@@ -15,7 +15,8 @@ import { Dialog } from "@/components/Dialog";
 import { FormField } from "@/components/FormField";
 import { SelectCheckbox } from "@/components/SelectCheckbox";
 import { useToast } from "@/components/Toast";
-import { geocodeClient, routeContextClient } from "@/lib/apiClient";
+import { geocodeClient, mapConfigClient, routeContextClient } from "@/lib/apiClient";
+import { MapPicker } from "@/components/MapPicker";
 import { PLACE_TYPE_META } from "@/lib/placeTypes";
 import { usePlaces } from "@/lib/places/PlacesContext";
 import { useTodayRoute, type TodayWaypoint } from "@/lib/routeContext/TodayRouteContext";
@@ -34,10 +35,12 @@ async function geocodeAddress(address: string) {
   }
 }
 
+const MAR_DEL_PLATA = { latitude: -38.0055, longitude: -57.5426 };
+
 export default function RouteContextScreen() {
   const colors = useColors();
   const styles = useStyles();
-  const { places } = usePlaces();
+  const { places, createPlace } = usePlaces();
   const { waypoints: savedToday, setWaypoints: commitToday } = useTodayRoute();
   const { show: showToast } = useToast();
 
@@ -50,6 +53,15 @@ export default function RouteContextScreen() {
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [askSaveDialog, setAskSaveDialog] = useState<TodayWaypoint | null>(null);
   const [savingPresetName, setSavingPresetName] = useState<string | null>(null);
+  const [isLocating, setIsLocating] = useState(false);
+  const [isSavingPlace, setIsSavingPlace] = useState(false);
+  // Elegir el lugar tocando el mapa.
+  const [mapOpen, setMapOpen] = useState(false);
+  const [mapToken, setMapToken] = useState<string | null>(null);
+  const [picked, setPicked] = useState<{ latitude: number; longitude: number } | null>(null);
+  const [pickedAddress, setPickedAddress] = useState<string | null>(null);
+  const [isResolvingPick, setIsResolvingPick] = useState(false);
+  const pickRequest = useRef(0);
 
   useEffect(() => {
     routeContextClient
@@ -85,21 +97,107 @@ export default function RouteContextScreen() {
     }
   };
 
-  const addCurrentLocation = async () => {
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    if (status !== "granted") {
-      showToast("No pudimos acceder a tu ubicación.", "error");
-      return;
+  /** Dirección legible de un punto; si falla, se describe sin dirección. */
+  const describePoint = async (point: { latitude: number; longitude: number }) => {
+    try {
+      const { address } = await geocodeClient.reverse(point);
+      return address;
+    } catch {
+      return null;
     }
-    const position = await Location.getCurrentPositionAsync({});
-    addWaypoint({
-      key: `current-${Date.now()}`,
-      name: "Ubicación actual",
-      address: "Tu ubicación en este momento",
-      latitude: position.coords.latitude,
-      longitude: position.coords.longitude,
+  };
+
+  const addCurrentLocation = async () => {
+    // Un solo pedido a la vez: el GPS puede tardar y antes cada toque sumaba otra parada.
+    if (isLocating) return;
+    setIsLocating(true);
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") {
+        showToast("No pudimos acceder a tu ubicación.", "error");
+        return;
+      }
+      const position = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+      const point = { latitude: position.coords.latitude, longitude: position.coords.longitude };
+      const address = await describePoint(point);
+      addWaypoint({
+        key: `current-${Date.now()}`,
+        name: "Ubicación actual",
+        address: address ?? "Tu ubicación en este momento",
+        ...point,
+        emoji: "📍",
+      });
+    } catch {
+      showToast("No pudimos leer tu ubicación. Probá de nuevo o elegila en el mapa.", "error");
+    } finally {
+      setIsLocating(false);
+    }
+  };
+
+  const openMapPicker = async () => {
+    setAddSheetVisible(false);
+    setPicked(null);
+    setPickedAddress(null);
+    setMapOpen(true);
+    if (!mapToken) {
+      try {
+        const config = await mapConfigClient.getMapboxToken();
+        setMapToken(config.token);
+      } catch {
+        setMapOpen(false);
+        showToast("No pudimos abrir el mapa. Escribí la dirección.", "error");
+      }
+    }
+  };
+
+  const handlePick = async (point: { latitude: number; longitude: number }) => {
+    const id = ++pickRequest.current;
+    setPicked(point);
+    setPickedAddress(null);
+    setIsResolvingPick(true);
+    const address = await describePoint(point);
+    if (id !== pickRequest.current) return;
+    setPickedAddress(address);
+    setIsResolvingPick(false);
+  };
+
+  const addPickedPoint = () => {
+    if (!picked) return;
+    const address = pickedAddress ?? `${picked.latitude.toFixed(5)}, ${picked.longitude.toFixed(5)}`;
+    const waypoint: TodayWaypoint = {
+      key: `map-${Date.now()}`,
+      name: tempName.trim() || address.split(",")[0] || "Punto del mapa",
+      address,
+      ...picked,
       emoji: "📍",
-    });
+    };
+    addWaypoint(waypoint);
+    setMapOpen(false);
+    setTempName("");
+    setAskSaveDialog(waypoint);
+  };
+
+  /** "¿Guardar este lugar?" → sí: se guarda en Mis lugares y la parada queda vinculada. */
+  const savePlace = async (waypoint: TodayWaypoint) => {
+    if (isSavingPlace) return;
+    setIsSavingPlace(true);
+    try {
+      const created = await createPlace({
+        name: waypoint.name.slice(0, 80),
+        type: "CUSTOM",
+        address: waypoint.address.slice(0, 200),
+        latitude: waypoint.latitude,
+        longitude: waypoint.longitude,
+        isFavorite: false,
+      });
+      setWaypoints((prev) => prev.map((w) => (w.key === waypoint.key ? { ...w, key: created.id, placeId: created.id } : w)));
+      showToast(`Guardamos "${created.name}" en Mis lugares.`, "success");
+    } catch {
+      showToast("No pudimos guardar el lugar. Probá de nuevo.", "error");
+    } finally {
+      setIsSavingPlace(false);
+      setAskSaveDialog(null);
+    }
   };
 
   const handleAddTemporary = async () => {
@@ -257,10 +355,24 @@ export default function RouteContextScreen() {
             accessibilityLabel="Agregar ubicación actual"
             haptic={false}
             onPress={() => void addCurrentLocation()}
+            style={[styles.placeRow, isLocating ? styles.rowBusy : null]}
+          >
+            {isLocating ? (
+              <ActivityIndicator size="small" color={colors.text.primary} />
+            ) : (
+              <Ionicons name="navigate-outline" size={18} color={colors.text.secondary} />
+            )}
+            <Text style={styles.placeName}>{isLocating ? "Buscando dónde estás…" : "Ubicación actual"}</Text>
+          </AnimatedPressable>
+
+          <AnimatedPressable
+            accessibilityLabel="Elegir un lugar en el mapa"
+            haptic={false}
+            onPress={() => void openMapPicker()}
             style={styles.placeRow}
           >
-            <Ionicons name="navigate-outline" size={18} color={colors.text.secondary} />
-            <Text style={styles.placeName}>Ubicación actual</Text>
+            <Ionicons name="map-outline" size={18} color={colors.text.secondary} />
+            <Text style={styles.placeName}>Elegir en el mapa</Text>
           </AnimatedPressable>
 
           <AnimatedPressable
@@ -347,6 +459,17 @@ export default function RouteContextScreen() {
 
       <BottomSheet visible={addSheetVisible} onClose={() => setAddSheetVisible(false)}>
         <Text style={styles.sheetTitle}>Agregar lugar de hoy</Text>
+        <AnimatedPressable
+          accessibilityLabel="Elegir el lugar en el mapa"
+          haptic={false}
+          onPress={() => void openMapPicker()}
+          style={styles.mapOption}
+        >
+          <Ionicons name="map-outline" size={20} color={colors.text.primary} />
+          <Text style={styles.placeName}>Elegir en el mapa</Text>
+          <Ionicons name="chevron-forward" size={18} color={colors.text.secondary} />
+        </AnimatedPressable>
+        <Text style={styles.orLabel}>o escribí la dirección</Text>
         <FormField label="Nombre (opcional)" value={tempName} onChangeText={setTempName} placeholder="Médico, Shopping..." />
         <FormField
           label="Dirección"
@@ -366,23 +489,71 @@ export default function RouteContextScreen() {
         visible={askSaveDialog !== null}
         title="¿Guardar este lugar para otra vez?"
         description={askSaveDialog ? `"${askSaveDialog.name}" quedaría disponible como lugar guardado.` : undefined}
-        confirmLabel="Guardar"
         cancelLabel="No"
         onCancel={() => setAskSaveDialog(null)}
+        confirmLabel={isSavingPlace ? "Guardando…" : "Guardar"}
         onConfirm={() => {
-          // El alta real de UserPlace queda para cuando el usuario lo pida desde Mis
-          // lugares — acá sólo confirmamos la intención (sección 34: nunca guardar un
-          // lugar temporal sin acción explícita). Evita duplicar el formulario de tipo
-          // acá mismo.
-          showToast("Andá a Perfil → Mis lugares para guardarlo con todos sus datos.", "info");
-          setAskSaveDialog(null);
+          // Sección 34: sólo se guarda con la confirmación explícita de este diálogo.
+          if (askSaveDialog) void savePlace(askSaveDialog);
         }}
       />
+
+      <Modal visible={mapOpen} animationType="slide" onRequestClose={() => setMapOpen(false)}>
+        <SafeAreaView style={styles.mapModal} edges={["top", "bottom"]}>
+          <View style={styles.navHeader}>
+            <AnimatedPressable accessibilityLabel="Cerrar el mapa" haptic={false} onPress={() => setMapOpen(false)} style={styles.backButton}>
+              <Ionicons name="close" size={22} color={colors.text.primary} />
+            </AnimatedPressable>
+            <Text style={styles.navTitle}>Elegí el lugar</Text>
+          </View>
+          <View style={styles.mapArea}>
+            {mapToken ? (
+              <MapPicker mapboxToken={mapToken} center={waypoints[waypoints.length - 1] ?? MAR_DEL_PLATA} onPick={(point) => void handlePick(point)} />
+            ) : (
+              <ActivityIndicator style={styles.mapLoader} color={colors.text.primary} />
+            )}
+          </View>
+          <View style={styles.mapFooter}>
+            <View style={styles.pickedRow}>
+              <Ionicons name="location-outline" size={20} color={colors.text.primary} />
+              <Text style={styles.pickedText} numberOfLines={2}>
+                {!picked
+                  ? "Tocá el mapa donde vas a estar. Podés arrastrar el pin."
+                  : isResolvingPick
+                    ? "Buscando la dirección…"
+                    : (pickedAddress ?? "Punto elegido en el mapa")}
+              </Text>
+            </View>
+            <FormField label="Nombre (opcional)" value={tempName} onChangeText={setTempName} placeholder="Médico, Shopping..." />
+            <Button label="Agregar este lugar" onPress={addPickedPoint} disabled={!picked || isResolvingPick} />
+          </View>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
 
 const useStyles = makeStyles((colors) => StyleSheet.create({
+  rowBusy: { opacity: 0.7 },
+  mapOption: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    minHeight: 52,
+    paddingHorizontal: spacing.md,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    borderColor: colors.border.subtle,
+    backgroundColor: colors.surface.base,
+    marginBottom: spacing.sm,
+  },
+  orLabel: { fontFamily: typography.caption.fontFamily, fontSize: 13, color: colors.text.secondary, marginBottom: spacing.xs },
+  mapModal: { flex: 1, backgroundColor: colors.surface.base },
+  mapArea: { flex: 1 },
+  mapLoader: { marginTop: spacing.xl },
+  mapFooter: { padding: spacing.lg, gap: spacing.sm, borderTopWidth: 1, borderTopColor: colors.border.subtle },
+  pickedRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
+  pickedText: { flex: 1, fontFamily: typography.body.fontFamily, fontSize: 15, color: colors.text.primary },
   container: {
     flex: 1,
     backgroundColor: colors.surface.base,
