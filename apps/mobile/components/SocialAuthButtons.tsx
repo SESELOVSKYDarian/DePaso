@@ -6,7 +6,6 @@ import { StyleSheet, View } from "react-native";
 import { spacing } from "@depaso/design-tokens";
 import { authClient } from "@/lib/apiClient";
 import { useAuth } from "@/lib/auth/AuthContext";
-import { requestAuthorizationCode } from "@/lib/auth/oauth";
 import { SocialButton, type SocialProvider } from "./SocialButton";
 import { useToast } from "./Toast";
 
@@ -82,7 +81,16 @@ export function SocialAuthButtons({ mode, consent, onConsentMissing }: SocialAut
 
     setBusy(id);
     try {
-      const authorization = await requestAuthorizationCode({
+      // Se carga recién al tocar: usa módulos nativos (expo-crypto) que algunas versiones de
+      // Expo Go no traen. Importarlo arriba rompía la pantalla de login entera.
+      let oauth: typeof import("@/lib/auth/oauth");
+      try {
+        oauth = await import("@/lib/auth/oauth");
+      } catch {
+        showToast(`El ingreso con ${label} no está disponible en esta versión de la app. Usá email y contraseña.`, "info");
+        return;
+      }
+      const authorization = await oauth.requestAuthorizationCode({
         clientId: info.clientId,
         authorizationEndpoint: info.authorizationEndpoint,
         scopes: info.scopes,
