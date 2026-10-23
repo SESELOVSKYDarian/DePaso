@@ -21,7 +21,7 @@ function parsePrice(raw: string): number | null {
  */
 export default function MerchantPriceFormScreen() {
   const styles = useStyles();
-  const params = useLocalSearchParams<{ priceId?: string; name?: string; price?: string }>();
+  const params = useLocalSearchParams<{ priceId?: string; name?: string; price?: string; displayName?: string }>();
   const { show: showToast } = useToast();
   const isEditing = Boolean(params.priceId);
 
@@ -32,6 +32,7 @@ export default function MerchantPriceFormScreen() {
   const [selectedLabel, setSelectedLabel] = useState("");
   const [priceText, setPriceText] = useState(params.price ?? "");
   const [priceError, setPriceError] = useState<string | undefined>();
+  const [displayName, setDisplayName] = useState(params.displayName ?? "");
 
   const [name, setName] = useState("");
   const [category, setCategory] = useState("");
@@ -83,7 +84,7 @@ export default function MerchantPriceFormScreen() {
 
     if (isEditing && params.priceId) {
       const priceId = params.priceId;
-      await run(() => merchantClient.prices.update(priceId, price), "Precio actualizado");
+      await run(() => merchantClient.prices.update(priceId, price, displayName.trim()), "Guardado");
       return;
     }
 
@@ -126,7 +127,17 @@ export default function MerchantPriceFormScreen() {
   return (
     <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
       {isEditing ? (
-        <Text style={styles.title}>{params.name}</Text>
+        <>
+          <Text style={styles.title}>{params.name}</Text>
+          <FormField
+            label="Nombre en tu góndola (opcional)"
+            value={displayName}
+            onChangeText={setDisplayName}
+            placeholder="Cómo lo llamás vos, si el de arriba no se entiende"
+            autoCapitalize="sentences"
+          />
+          <Text style={styles.hint}>Sólo cambia en tu comercio: el nombre del catálogo queda igual para los demás.</Text>
+        </>
       ) : (
         <View style={styles.tabs}>
           {(["catalog", "new"] as const).map((value) => (
@@ -215,6 +226,7 @@ const useStyles = makeStyles((colors) => StyleSheet.create({
   tabSelected: { borderColor: colors.brand.navy, backgroundColor: colors.brand.mint },
   tabLabel: { fontFamily: typography.body.fontFamily, fontSize: 13, color: colors.text.secondary },
   tabLabelSelected: { color: colors.text.primary, fontWeight: "600" },
+  hint: { fontFamily: typography.caption.fontFamily, fontSize: 12, lineHeight: 17, color: colors.text.secondary, marginTop: -spacing.xs },
   selected: { fontFamily: typography.body.fontFamily, fontSize: 13, color: colors.text.primary, fontWeight: "600" },
   row: {
     backgroundColor: colors.surface.primary,

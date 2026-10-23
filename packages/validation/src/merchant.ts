@@ -13,6 +13,8 @@ export const merchantRequestInputSchema = z.object({
   note: z.string().trim().max(500).optional(),
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
+  /** Sucursal que ya está en DePaso (importada) y el comercio pide administrar. */
+  storeBranchId: z.string().uuid().optional(),
 });
 export type MerchantRequestInput = z.infer<typeof merchantRequestInputSchema>;
 
@@ -26,6 +28,8 @@ export const merchantRequestResponseSchema = z.object({
   rejectionReason: z.string().nullable(),
   createdAt: z.string(),
   reviewedAt: z.string().nullable(),
+  /** Sucursal existente que se reclama (`null` = comercio nuevo). */
+  storeBranchId: z.string().nullable().default(null),
 });
 export type MerchantRequestResponse = z.infer<typeof merchantRequestResponseSchema>;
 
@@ -72,10 +76,25 @@ export type MerchantBranchResponse = z.infer<typeof merchantBranchResponseSchema
 
 export const merchantBranchEnvelopeSchema = z.object({ branch: merchantBranchResponseSchema });
 
+/** Sucursal ya cargada en DePaso que un comercio puede pedir administrar. */
+export const claimableBranchSchema = z.object({
+  id: z.string(),
+  storeName: z.string(),
+  name: z.string(),
+  address: z.string(),
+  latitude: z.number(),
+  longitude: z.number(),
+  priceCount: z.number().int().nonnegative(),
+});
+export type ClaimableBranch = z.infer<typeof claimableBranchSchema>;
+export const claimableBranchesResponseSchema = z.object({ branches: z.array(claimableBranchSchema) });
+
 /** Precio de una variante ya existente en el catálogo. */
 export const merchantPriceInputSchema = z.object({
   productVariantId: z.string().min(1),
   price: z.number().positive().max(9_999_999),
+  /** Cómo lo llama el comercio en su góndola; vacío = el nombre del catálogo. */
+  displayName: z.string().trim().max(120).optional(),
 });
 export type MerchantPriceInput = z.infer<typeof merchantPriceInputSchema>;
 
@@ -100,8 +119,33 @@ export const merchantPriceResponseSchema = z.object({
   unitSize: z.number(),
   price: z.number(),
   updatedAt: z.string(),
+  /** Nombre propio del comercio para este producto, si lo cambió. */
+  displayName: z.string().nullable().default(null),
+  brandName: z.string().nullable().default(null),
+  productType: z.string().nullable().default(null),
+  /** De dónde salió el precio: `MERCHANT` lo cargó el comercio; si no, vino de una fuente pública. */
+  sourceType: z.string().default("MERCHANT"),
 });
 export type MerchantPriceResponse = z.infer<typeof merchantPriceResponseSchema>;
 
-export const merchantPricesResponseSchema = z.object({ prices: z.array(merchantPriceResponseSchema) });
+export const merchantPricesResponseSchema = z.object({
+  prices: z.array(merchantPriceResponseSchema),
+  /** Total que coincide con la búsqueda/filtros (la lista viene paginada). */
+  total: z.number().int().nonnegative().default(0),
+  /** Tipos y marcas presentes en los precios de la sucursal, para filtrar como en el buscador. */
+  facets: z
+    .object({
+      types: z.array(z.object({ id: z.string(), label: z.string(), count: z.number() })),
+      brands: z.array(z.object({ id: z.string(), name: z.string(), count: z.number() })),
+    })
+    .default({ types: [], brands: [] }),
+});
+
+/** Búsqueda en los precios propios: texto, tipo, marca y página. */
+export interface MerchantPriceQuery {
+  q?: string;
+  type?: string;
+  brandId?: string;
+  offset?: number;
+}
 export type MerchantPricesResponse = z.infer<typeof merchantPricesResponseSchema>;

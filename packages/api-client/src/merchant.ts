@@ -2,12 +2,14 @@ import { z } from "zod";
 import {
   adminMerchantRequestResponseSchema,
   adminMerchantRequestsResponseSchema,
+  claimableBranchesResponseSchema,
   merchantBranchEnvelopeSchema,
   merchantPriceResponseSchema,
   merchantPricesResponseSchema,
   merchantRequestResponseSchema,
   myMerchantRequestResponseSchema,
   type MerchantDecisionInput,
+  type MerchantPriceQuery,
   type MerchantPriceInput,
   type MerchantProductInput,
   type MerchantRequestInput,
@@ -24,12 +26,27 @@ export function createMerchantClient(client: DepasoApiClient) {
     submitRequest: (body: MerchantRequestInput) =>
       client.post("/api/merchant/requests", body, createdRequestSchema),
     branch: () => client.get("/api/merchant/branch", merchantBranchEnvelopeSchema),
+    /** Sucursales ya cargadas en DePaso que todavía no tienen comercio a cargo. */
+    claimableBranches: (q: string) =>
+      client.get(`/api/merchant/claimable-branches?q=${encodeURIComponent(q)}`, claimableBranchesResponseSchema),
     prices: {
-      list: () => client.get("/api/merchant/prices", merchantPricesResponseSchema),
+      list: (query: MerchantPriceQuery = {}) => {
+        const params = new URLSearchParams();
+        if (query.q) params.set("q", query.q);
+        if (query.type) params.set("type", query.type);
+        if (query.brandId) params.set("brandId", query.brandId);
+        if (query.offset) params.set("offset", String(query.offset));
+        const suffix = params.toString();
+        return client.get(`/api/merchant/prices${suffix ? `?${suffix}` : ""}`, merchantPricesResponseSchema);
+      },
       set: (body: MerchantPriceInput) =>
         client.post("/api/merchant/prices", body, merchantPriceResponseSchema),
-      update: (id: string, price: number) =>
-        client.patch(`/api/merchant/prices/${id}`, { price }, merchantPriceResponseSchema),
+      update: (id: string, price: number, displayName?: string) =>
+        client.patch(
+          `/api/merchant/prices/${id}`,
+          displayName === undefined ? { price } : { price, displayName },
+          merchantPriceResponseSchema,
+        ),
       remove: (id: string) => client.delete(`/api/merchant/prices/${id}`, okSchema),
     },
     createProduct: (body: MerchantProductInput) =>

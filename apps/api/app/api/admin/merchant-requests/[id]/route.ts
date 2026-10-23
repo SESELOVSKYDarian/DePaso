@@ -9,9 +9,9 @@ interface RouteParams {
 }
 
 /**
- * Aprueba o rechaza una solicitud. Aprobar cambia el rol del usuario a MERCHANT y crea su
- * `Store` + `StoreBranch` propios (con la dirección y coordenadas de la solicitud) en una
- * sola transacción.
+ * Aprueba o rechaza una solicitud. Aprobar cambia el rol del usuario a MERCHANT y, si reclamó
+ * una sucursal ya cargada (importada de SEPA), se la asigna; si no, crea su `Store` +
+ * `StoreBranch` propios con la dirección y coordenadas de la solicitud. Todo en una transacción.
  */
 export async function POST(request: NextRequest, { params }: RouteParams) {
   const admin = await requireAdmin(request);
@@ -29,7 +29,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
   const { decision, reason } = parsed.data;
 
-  const updated = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+  const updated = await prisma
+    .$transaction(async (tx: Prisma.TransactionClient) => {
     const resolved = await tx.merchantRequest.update({
       where: { id },
       data:
@@ -41,6 +42,15 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     if (decision === "APPROVE") {
       await tx.user.update({ where: { id: existing.userId }, data: { role: "MERCHANT" } });
+      // Reclamo de una sucursal ya cargada (p. ej. importada de SEPA): pasa a ser suya.
+      if (existing.storeBranchId) {
+        const claimed = await tx.storeBranch.updateMany({
+          where: { id: existing.storeBranchId, ownerUserId: null },
+          data: { ownerUserId: existing.userId },
+        });
+        if (claimed.count === 0) throw new Error("BRANCH_ALREADY_CLAIMED");
+        return resolved;
+      }
       const store = await tx.store.create({ data: { name: existing.businessName } });
       await tx.storeBranch.create({
         data: {
@@ -54,7 +64,12 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       });
     }
     return resolved;
-  });
+  })
+    .catch((error: unknown) => {
+      if (error instanceof Error && error.message === "BRANCH_ALREADY_CLAIMED") return null;
+      throw error;
+    });
+  if (!updated) return NextResponse.json({ error: "BRANCH_ALREADY_CLAIMED" }, { status: 409 });
 
   return NextResponse.json(toAdminMerchantRequestResponse(updated));
 }

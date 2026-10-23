@@ -37,6 +37,13 @@ export async function POST(request: NextRequest) {
   const pending = await prisma.merchantRequest.findFirst({ where: { userId: user.id, status: "PENDING" } });
   if (pending) return NextResponse.json({ error: "ALREADY_PENDING" }, { status: 409 });
 
+  // Reclamar una sucursal que ya está en DePaso: tiene que existir y no tener dueño.
+  if (parsed.data.storeBranchId) {
+    const branch = await prisma.storeBranch.findUnique({ where: { id: parsed.data.storeBranchId } });
+    if (!branch || branch.status !== "ACTIVE") return NextResponse.json({ error: "BRANCH_NOT_FOUND" }, { status: 404 });
+    if (branch.ownerUserId) return NextResponse.json({ error: "BRANCH_ALREADY_CLAIMED" }, { status: 409 });
+  }
+
   const created = await prisma.merchantRequest.create({
     data: { ...parsed.data, phone: parsed.data.phone ?? null, note: parsed.data.note ?? null, userId: user.id },
   });

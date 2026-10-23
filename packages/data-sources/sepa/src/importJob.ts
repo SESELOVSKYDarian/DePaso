@@ -304,6 +304,11 @@ export async function runSepaImport(options: SepaImportOptions): Promise<SepaImp
       const sourceExternalId = buildSourceExternalId(producto);
 
       const existingPrice = await prisma.price.findFirst({ where: { sourceExternalId } });
+      // Un precio que el comercio editó en DePaso manda sobre la publicación de SEPA: no se pisa.
+      if (existingPrice?.sourceType === "MERCHANT") {
+        pricesAccepted++;
+        continue;
+      }
       if (existingPrice) {
         const changed = Number(existingPrice.price) !== price;
         if (changed) {

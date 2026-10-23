@@ -8,9 +8,9 @@ interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
-const patchSchema = merchantPriceInputSchema.pick({ price: true });
+const patchSchema = merchantPriceInputSchema.pick({ price: true, displayName: true });
 
-/** Cambia el monto de un precio propio; el valor anterior queda en `PriceHistory`. */
+/** Cambia el monto (y, si viene, el nombre propio) de un precio de la sucursal; el valor anterior queda en `PriceHistory`. */
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   const merchant = await requireMerchant(request);
   if (!merchant) return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
@@ -45,6 +45,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         confidence: "HIGH",
         status: "VERIFIED",
         reportedAt: new Date(),
+        ...(parsed.data.displayName !== undefined ? { displayName: parsed.data.displayName.trim() || null } : {}),
       },
       include: merchantPriceInclude,
     });

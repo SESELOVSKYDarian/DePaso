@@ -1,4 +1,5 @@
-import type { MerchantRequest, Price, Product, ProductVariant, User } from "@depaso/database";
+import type { Brand, MerchantRequest, Price, Product, ProductVariant, User } from "@depaso/database";
+import { prettifyBrandName, prettifyProductName } from "./productNames";
 import type {
   AdminMerchantRequestResponse,
   MerchantPriceResponse,
@@ -25,6 +26,7 @@ export function toMerchantRequestResponse(request: MerchantRequest): MerchantReq
     rejectionReason: request.rejectionReason,
     createdAt: request.createdAt.toISOString(),
     reviewedAt: request.reviewedAt ? request.reviewedAt.toISOString() : null,
+    storeBranchId: request.storeBranchId,
   };
 }
 
@@ -40,11 +42,11 @@ export function toAdminMerchantRequestResponse(
 }
 
 export function toMerchantPriceResponse(
-  price: Price & { productVariant: ProductVariant & { product: Product } }
+  price: Price & { productVariant: ProductVariant & { product: Product & { brand: Brand | null } } }
 ): MerchantPriceResponse {
   return {
     id: price.id,
-    productName: price.productVariant.product.name,
+    productName: prettifyProductName(price.productVariant.product.name),
     productVariantId: price.productVariantId,
     productVariantName: price.productVariant.name,
     category: price.productVariant.product.category,
@@ -52,7 +54,11 @@ export function toMerchantPriceResponse(
     unitSize: price.productVariant.unitSize,
     price: Number(price.price),
     updatedAt: price.updatedAt.toISOString(),
+    displayName: price.displayName,
+    brandName: prettifyBrandName(price.productVariant.product.brand?.name),
+    productType: price.productVariant.product.productType,
+    sourceType: price.sourceType,
   };
 }
 
-export const merchantPriceInclude = { productVariant: { include: { product: true } } } as const;
+export const merchantPriceInclude = { productVariant: { include: { product: { include: { brand: true } } } } } as const;

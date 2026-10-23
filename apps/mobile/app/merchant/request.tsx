@@ -1,9 +1,11 @@
-import type { MerchantRequestResponse } from "@depaso/validation";
+import { Ionicons } from "@expo/vector-icons";
+import type { ClaimableBranch, MerchantRequestResponse } from "@depaso/validation";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles, useColors } from "@/lib/theme";
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { Button } from "@/components/Button";
 import { FormField } from "@/components/FormField";
 import { useToast } from "@/components/Toast";
@@ -24,6 +26,57 @@ export default function MerchantRequestScreen() {
   const [note, setNote] = useState("");
   const [errors, setErrors] = useState<{ businessName?: string; address?: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // "Mi comercio ya está en DePaso": se busca la sucursal importada y se pide administrarla.
+  const [mode, setMode] = useState<"claim" | "new">("claim");
+  const [claimQuery, setClaimQuery] = useState("");
+  const [claimResults, setClaimResults] = useState<ClaimableBranch[]>([]);
+  const [claimed, setClaimed] = useState<ClaimableBranch | null>(null);
+  const [isSearchingBranches, setIsSearchingBranches] = useState(false);
+
+  useEffect(() => {
+    if (mode !== "claim") return;
+    let cancelled = false;
+    setIsSearchingBranches(true);
+    const timer = setTimeout(() => {
+      merchantClient
+        .claimableBranches(claimQuery.trim())
+        .then(({ branches }) => {
+          if (!cancelled) setClaimResults(branches);
+        })
+        .catch(() => {
+          if (!cancelled) setClaimResults([]);
+        })
+        .finally(() => {
+          if (!cancelled) setIsSearchingBranches(false);
+        });
+    }, 300);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [claimQuery, mode]);
+
+  const submitClaim = async () => {
+    if (!claimed) return;
+    setIsSubmitting(true);
+    try {
+      const { request } = await merchantClient.submitRequest({
+        businessName: `${claimed.storeName} ${claimed.name}`.trim().slice(0, 80),
+        address: claimed.address,
+        latitude: claimed.latitude,
+        longitude: claimed.longitude,
+        storeBranchId: claimed.id,
+        ...(phone.trim() ? { phone: phone.trim() } : {}),
+        ...(note.trim() ? { note: note.trim() } : {}),
+      });
+      setCurrent(request);
+      showToast("Solicitud enviada. Un administrador la va a revisar.", "success");
+    } catch {
+      showToast("No pudimos enviar la solicitud. Probá de nuevo.", "error");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const load = useCallback(async () => {
     try {
@@ -126,6 +179,72 @@ export default function MerchantRequestScreen() {
         </Text>
       )}
 
+      <View style={styles.tabs}>
+        {(["claim", "new"] as const).map((value) => (
+          <AnimatedPressable
+            key={value}
+            accessibilityLabel={value === "claim" ? "Mi comercio ya aparece en DePaso" : "Es un comercio nuevo"}
+            haptic={false}
+            onPress={() => setMode(value)}
+            style={[styles.tab, mode === value ? styles.tabSelected : null]}
+          >
+            <Text style={[styles.tabLabel, mode === value ? styles.tabLabelSelected : null]}>
+              {value === "claim" ? "Ya aparece en DePaso" : "Es nuevo"}
+            </Text>
+          </AnimatedPressable>
+        ))}
+      </View>
+
+      {mode === "claim" ? (
+        <>
+          <Text style={styles.intro}>
+            Los supermercados que publican precios en SEPA ya están cargados. Buscá el tuyo y pedí administrarlo: vas a
+            poder corregir precios y nombres.
+          </Text>
+          <FormField
+            label="Buscar tu supermercado"
+            value={claimQuery}
+            onChangeText={(text) => {
+              setClaimQuery(text);
+              setClaimed(null);
+            }}
+            placeholder="Nombre o dirección"
+          />
+          {isSearchingBranches ? <ActivityIndicator color={colors.text.secondary} /> : null}
+          {claimResults.map((branch) => {
+            const selected = claimed?.id === branch.id;
+            return (
+              <AnimatedPressable
+                key={branch.id}
+                accessibilityLabel={`Elegir ${branch.storeName}, ${branch.address}`}
+                haptic={false}
+                onPress={() => setClaimed(branch)}
+                style={[styles.branchRow, selected ? styles.branchRowSelected : null]}
+              >
+                <Ionicons name="storefront-outline" size={20} color={colors.text.primary} />
+                <View style={styles.flex}>
+                  <Text style={styles.branchName}>{branch.storeName}</Text>
+                  <Text style={styles.branchMeta} numberOfLines={1}>
+                    {branch.address} · {branch.priceCount} precios
+                  </Text>
+                </View>
+                {selected ? <Ionicons name="checkmark-circle" size={22} color={colors.text.primary} /> : null}
+              </AnimatedPressable>
+            );
+          })}
+          {!isSearchingBranches && claimResults.length === 0 ? (
+            <Text style={styles.intro}>No encontramos sucursales libres con eso. Si tu comercio no está, elegí "Es nuevo".</Text>
+          ) : null}
+          <FormField label="Teléfono (opcional)" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+          <Button
+            label={isSubmitting ? "Enviando..." : claimed ? `Pedir administrar ${claimed.storeName}` : "Elegí tu sucursal"}
+            onPress={() => void submitClaim()}
+            loading={isSubmitting}
+            disabled={!claimed}
+          />
+        </>
+      ) : (
+        <>
       <FormField
         label="Nombre del comercio"
         value={businessName}
@@ -161,6 +280,8 @@ export default function MerchantRequestScreen() {
         onPress={() => void handleSubmit()}
         loading={isSubmitting}
       />
+        </>
+      )}
     </ScrollView>
   );
 }
@@ -168,6 +289,35 @@ export default function MerchantRequestScreen() {
 const useStyles = makeStyles((colors) => StyleSheet.create({
   container: { flexGrow: 1, backgroundColor: colors.surface.base, padding: spacing.lg, gap: spacing.md },
   center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.surface.base },
+  flex: { flex: 1 },
+  tabs: { flexDirection: "row", gap: spacing.sm },
+  tab: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 44,
+    borderRadius: radii.full,
+    borderWidth: 1,
+    borderColor: colors.border.subtle,
+    backgroundColor: colors.surface.primary,
+  },
+  tabSelected: { borderColor: colors.brand.navy, backgroundColor: colors.brand.navy },
+  tabLabel: { fontFamily: typography.body.fontFamily, fontSize: 14, color: colors.text.primary },
+  tabLabelSelected: { color: colors.text.onNavy, fontWeight: "600" },
+  branchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.sm,
+    minHeight: 56,
+    padding: spacing.sm,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    borderColor: colors.border.subtle,
+    backgroundColor: colors.surface.primary,
+  },
+  branchRowSelected: { borderColor: colors.text.primary, borderWidth: 2 },
+  branchName: { fontFamily: typography.itemTitle.fontFamily, fontSize: 15, color: colors.text.primary },
+  branchMeta: { fontFamily: typography.caption.fontFamily, fontSize: 12, color: colors.text.secondary },
   intro: { fontFamily: typography.body.fontFamily, fontSize: 14, color: colors.text.secondary, lineHeight: 20 },
   statusCard: {
     backgroundColor: colors.surface.primary,

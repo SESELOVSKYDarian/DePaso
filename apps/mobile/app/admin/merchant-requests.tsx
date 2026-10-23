@@ -78,6 +78,11 @@ export default function AdminMerchantRequestsScreen() {
         <View style={styles.card}>
           <Text style={styles.name}>{item.businessName}</Text>
           <Text style={styles.meta}>{item.address}</Text>
+          <Text style={styles.meta}>
+            {item.storeBranchId
+              ? "Pide administrar una sucursal que ya está en DePaso (importada)."
+              : "Comercio nuevo: al aprobar se crea su sucursal."}
+          </Text>
           {item.phone ? <Text style={styles.meta}>Tel: {item.phone}</Text> : null}
           <Text style={styles.meta}>
             Solicita: {item.userDisplayName ? `${item.userDisplayName} · ` : ""}

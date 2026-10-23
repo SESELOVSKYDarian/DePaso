@@ -4,7 +4,8 @@ import { Fragment } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { radii, spacing, typography } from "@depaso/design-tokens";
-import { makeStyles, useColors } from "@/lib/theme";
+import { makeStyles, useColors, useTheme } from "@/lib/theme";
+import { usePurchase } from "@/lib/purchase/PurchaseContext";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { Button } from "@/components/Button";
 import { useAuth } from "@/lib/auth/AuthContext";
@@ -22,50 +23,96 @@ export default function HomeScreen() {
   const { user } = useAuth();
   const { waypoints } = useTodayRoute();
   const { lists } = useLists();
+  const { isDark, setMode } = useTheme();
+  const { routePlan } = usePurchase();
 
   const firstName = user?.displayName?.split(" ")[0] ?? "";
   const activeLists = lists.filter((list) => !list.archivedAt).slice(0, 3);
   const hasRoute = waypoints.length >= 2;
+  const listWithItems = lists.find((list) => !list.archivedAt && list.itemCount > 0);
+
+  // Los tres pasos de la app, en orden. El próximo pendiente es la acción principal.
+  const steps = [
+    {
+      key: "list",
+      title: "Armá tu lista",
+      done: Boolean(listWithItems),
+      detail: listWithItems ? `${listWithItems.name}: ${listWithItems.itemCount} productos` : "Escribila, dictala o buscá por categoría.",
+      icon: "list-outline" as const,
+      onPress: () =>
+        listWithItems
+          ? router.push({ pathname: "/lists/[id]", params: { id: listWithItems.id } })
+          : router.push("/lists/form"),
+    },
+    {
+      key: "route",
+      title: "Contanos por dónde pasás",
+      done: hasRoute,
+      detail: hasRoute ? waypoints.map((waypoint) => waypoint.name).join(" → ") : "De dónde salís, tus paradas y a dónde vas.",
+      icon: "navigate-outline" as const,
+      onPress: () => router.push("/route-context"),
+    },
+    {
+      key: "buy",
+      title: "Comprá de paso",
+      done: routePlan !== null,
+      detail: routePlan ? "Ya tenés tu compra armada: miralo en el mapa." : "Te mostramos lo más barato según cuánto te desviás.",
+      icon: "cart-outline" as const,
+      onPress: () => (routePlan ? router.push("/map") : router.push("/optimization")),
+    },
+  ];
+  const nextStep = steps.find((step) => !step.done) ?? steps[2]!;
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.header}>
-          <Text accessibilityRole="header" style={styles.greeting} numberOfLines={1}>
-            Hola{firstName ? `, ${firstName}` : ""}
-          </Text>
-          <Text style={styles.question}>¿Qué te queda de paso hoy?</Text>
+        <View style={styles.headerRow}>
+          <View style={styles.header}>
+            <Text accessibilityRole="header" style={styles.greeting} numberOfLines={1}>
+              Hola{firstName ? `, ${firstName}` : ""}
+            </Text>
+            <Text style={styles.question}>¿Qué te queda de paso hoy?</Text>
+          </View>
+          <AnimatedPressable
+            accessibilityLabel={isDark ? "Pasar a modo claro" : "Pasar a modo oscuro"}
+            onPress={() => setMode(isDark ? "light" : "dark")}
+            style={styles.themeButton}
+          >
+            <Ionicons name={isDark ? "sunny-outline" : "moon-outline"} size={22} color={colors.text.primary} />
+          </AnimatedPressable>
         </View>
 
         <View style={styles.mainCard}>
-          {hasRoute ? (
-            <>
-              <Text style={styles.cardLabel}>Tu recorrido de hoy</Text>
-              <Text style={styles.routeText} numberOfLines={2}>
-                {waypoints.map((waypoint) => waypoint.name).join("  →  ")}
-              </Text>
-              <Button
-                label="Encontrar mi mejor compra"
-                onPress={() => router.push("/optimization")}
-                style={styles.primaryButton}
-              />
-              <Button
-                label="Cambiar recorrido"
-                variant="ghost"
-                onPress={() => router.push("/route-context")}
-              />
-            </>
-          ) : (
-            <>
-              <Text style={styles.cardTitle}>¿Por dónde pasás hoy?</Text>
-              <Text style={styles.cardBody}>Contanos tu recorrido y buscamos dónde conviene comprar.</Text>
-              <Button
-                label="Armar mi recorrido"
-                onPress={() => router.push("/route-context")}
-                style={styles.primaryButton}
-              />
-            </>
-          )}
+          <Text style={styles.cardLabel}>Así se usa DePaso</Text>
+          {steps.map((step, index) => (
+            <AnimatedPressable
+              key={step.key}
+              accessibilityLabel={`Paso ${index + 1}: ${step.title}. ${step.done ? "Listo" : "Pendiente"}. ${step.detail}`}
+              haptic={false}
+              onPress={step.onPress}
+              style={[styles.stepRow, step.key === nextStep.key && !step.done ? styles.stepRowNext : null]}
+            >
+              <View style={[styles.stepBadge, step.done ? styles.stepBadgeDone : null]}>
+                {step.done ? (
+                  <Ionicons name="checkmark" size={18} color={colors.text.onNavy} />
+                ) : (
+                  <Text style={styles.stepNumber}>{index + 1}</Text>
+                )}
+              </View>
+              <View style={styles.stepText}>
+                <Text style={styles.stepTitle}>{step.title}</Text>
+                <Text style={styles.stepDetail} numberOfLines={2}>
+                  {step.detail}
+                </Text>
+              </View>
+              <Ionicons name={step.icon} size={20} color={colors.text.secondary} />
+            </AnimatedPressable>
+          ))}
+          <Button
+            label={nextStep.done ? "Ver mi compra de paso" : nextStep.key === "buy" ? "Encontrar mi mejor compra" : nextStep.title}
+            onPress={nextStep.onPress}
+            style={styles.primaryButton}
+          />
         </View>
 
         <View style={styles.section}>
@@ -132,6 +179,51 @@ const useStyles = makeStyles((colors) =>
       flex: 1,
       backgroundColor: colors.surface.base,
     },
+    headerRow: {
+      flexDirection: "row",
+      alignItems: "flex-start",
+      justifyContent: "space-between",
+      gap: spacing.sm,
+    },
+    themeButton: {
+      width: 48,
+      height: 48,
+      borderRadius: radii.full,
+      alignItems: "center",
+      justifyContent: "center",
+      backgroundColor: colors.surface.primary,
+      borderWidth: 1,
+      borderColor: colors.border.subtle,
+    },
+    stepRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: spacing.sm,
+      minHeight: 64,
+      paddingVertical: spacing.xs,
+      paddingHorizontal: spacing.xs,
+      borderRadius: radii.lg,
+    },
+    stepRowNext: {
+      backgroundColor: colors.surface.input,
+    },
+    stepBadge: {
+      width: 32,
+      height: 32,
+      borderRadius: radii.full,
+      alignItems: "center",
+      justifyContent: "center",
+      borderWidth: 2,
+      borderColor: colors.text.primary,
+    },
+    stepBadgeDone: {
+      backgroundColor: colors.brand.navy,
+      borderColor: colors.brand.navy,
+    },
+    stepNumber: { fontFamily: typography.itemTitle.fontFamily, fontSize: 15, color: colors.text.primary },
+    stepText: { flex: 1, gap: 2 },
+    stepTitle: { fontFamily: typography.itemTitle.fontFamily, fontSize: 16, color: colors.text.primary },
+    stepDetail: { fontFamily: typography.caption.fontFamily, fontSize: 13, lineHeight: 18, color: colors.text.secondary },
     content: {
       paddingHorizontal: spacing.lg,
       paddingTop: spacing.lg,
@@ -139,6 +231,7 @@ const useStyles = makeStyles((colors) =>
       gap: spacing.xl,
     },
     header: {
+      flex: 1,
       gap: spacing.xxs,
     },
     greeting: {

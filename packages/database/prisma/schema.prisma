@@ -195,6 +195,10 @@ model MerchantRequest {
   note            String?
   latitude        Float
   longitude       Float
+  /// Sucursal que ya existe en DePaso (importada de SEPA) y el comercio pide administrar.
+  /// `null` = comercio nuevo: al aprobar se crea su propia sucursal.
+  storeBranchId   String?
+  storeBranch     StoreBranch?          @relation(fields: [storeBranchId], references: [id])
   status          MerchantRequestStatus @default(PENDING)
   reviewedById    String?
   reviewedBy      User?                 @relation("MerchantRequestReviewer", fields: [reviewedById], references: [id])
@@ -205,6 +209,7 @@ model MerchantRequest {
 
   @@index([userId])
   @@index([status])
+  @@index([storeBranchId])
   @@map("merchant_requests")
 }
 
@@ -449,6 +454,7 @@ model StoreBranch {
   storePreferences   StorePreference[]
   optimizationStops  OptimizationPlanStop[]
   dataIssues         BranchDataIssue[]
+  merchantRequests   MerchantRequest[]
 
   @@unique([externalSepaCommerceId, externalSepaBrandId, externalSepaBranchId])
   @@index([storeId])
@@ -517,6 +523,9 @@ model Price {
   /// SEPA) — permite que el import job identifique "ya vi esta observación" sin depender
   /// sólo de `productVariantId`+`storeBranchId` (que puede matchear de forma aproximada).
   sourceExternalId String?
+  /// Cómo lo llama el comercio en su góndola ("Leche entera La Serenísima 1 L"). Sólo para esta
+  /// sucursal: el nombre del catálogo no cambia para los demás comercios.
+  displayName      String?
   reportedAt       DateTime        @default(now())
   validFrom        DateTime        @default(now())
   confidence       ConfidenceLevel
