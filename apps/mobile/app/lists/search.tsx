@@ -142,6 +142,18 @@ export default function ProductSearchScreen() {
     }
   }, [groupId, typeId]);
 
+  // Al abrir el buscador se precargan, de a poco, las cajas más usadas: cuando se tocan ya están.
+  useEffect(() => {
+    const popular = ["gaseosa", "leche", "arroz", "pasta", "yerba", "galletita"];
+    const timers = popular.map((id, index) =>
+      setTimeout(() => {
+        void cachedSearch({ q: "", type: id }).catch(() => undefined);
+        void cachedFacets({ q: "", type: id }).catch(() => undefined);
+      }, 400 + index * 350),
+    );
+    return () => timers.forEach(clearTimeout);
+  }, []);
+
   const pickType = (id: string | null) => {
     setTypeId(id);
     setBrand(null);

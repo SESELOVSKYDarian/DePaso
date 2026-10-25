@@ -328,12 +328,16 @@ model Product {
   /// Tipo derivado del nombre ("gaseosa", "vino"…), ver `classifyProductType` en @depaso/domain.
   /// `null` = no se reconoció; el producto se sigue encontrando por texto.
   productType    String?
+  /// Cuántos precios vigentes tiene el producto en todos los comercios. Se guarda precalculado
+  /// (ver `refreshProductPopularity`) porque contarlo al buscar tardaba ~1,5 s por consulta.
+  popularity     Int      @default(0)
   variants ProductVariant[]
   preferences ProductPreference[]
 
   @@index([category])
   @@index([normalizedName])
   @@index([productType])
+  @@index([productType, popularity(sort: Desc)])
   @@map("products")
 }
 

@@ -125,11 +125,12 @@ async function searchProductsUncached(
         p.category,
         b.name AS "brandName",
         ${tierExpr} AS tier,
+        p.popularity,
         length(p.name) AS name_length
       FROM products p
       LEFT JOIN brands b ON b.id = p."brandId"
       ${whereClause(conditions)}
-      ORDER BY tier, name_length
+      ORDER BY tier, p.popularity DESC, name_length
       LIMIT ${POPULARITY_POOL}
     )
     SELECT
@@ -138,14 +139,9 @@ async function searchProductsUncached(
       cand.category,
       cand."brandName",
       cand.tier::int AS tier,
-      (
-        SELECT count(*)::int
-        FROM product_variants v
-        JOIN prices pr ON pr."productVariantId" = v.id
-        WHERE v."productId" = cand.id AND pr.status <> 'STALE'
-      ) AS popularity
+      cand.popularity
     FROM cand
-    ORDER BY cand.tier, popularity DESC, cand.name_length, cand.name
+    ORDER BY cand.tier, cand.popularity DESC, cand.name_length, cand.name
     LIMIT ${MAX_RESULTS}
   `);
 
