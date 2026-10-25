@@ -76,6 +76,7 @@ export default function PlaceFormScreen() {
   };
 
   const handleSubmit = async () => {
+    if (isSubmitting) return;
     let hasError = false;
     if (!name.trim()) {
       setNameError("Ponele un nombre a este lugar.");

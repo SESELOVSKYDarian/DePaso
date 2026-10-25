@@ -79,7 +79,7 @@ export function DetourPicker() {
         value={intermediateBlocks}
         min={INTERMEDIATE_RANGE.min}
         max={INTERMEDIATE_RANGE.max}
-        step={5}
+        step={1}
         onChange={(intermediate) => setBlocks({ strict: strictBlocks, intermediate })}
       />
     </View>

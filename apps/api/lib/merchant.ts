@@ -21,6 +21,7 @@ export function toMerchantRequestResponse(request: MerchantRequest): MerchantReq
     businessName: request.businessName,
     address: request.address,
     phone: request.phone,
+    contactEmail: request.contactEmail,
     note: request.note,
     status: request.status,
     rejectionReason: request.rejectionReason,
@@ -38,6 +39,7 @@ export function toAdminMerchantRequestResponse(
     userId: request.userId,
     userEmail: request.user.email,
     userDisplayName: request.user.displayName,
+    contactVerifiedAt: request.contactVerifiedAt ? request.contactVerifiedAt.toISOString() : null,
   };
 }
 

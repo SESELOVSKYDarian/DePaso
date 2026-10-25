@@ -35,7 +35,13 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       where: { id },
       data:
         decision === "APPROVE"
-          ? { status: "APPROVED", reviewedById: admin.userId, reviewedAt: new Date() }
+          ? {
+              status: "APPROVED",
+              reviewedById: admin.userId,
+              reviewedAt: new Date(),
+              contactVerifiedAt: new Date(),
+              contactVerifiedBy: admin.userId,
+            }
           : { status: "REJECTED", reviewedById: admin.userId, reviewedAt: new Date(), rejectionReason: reason ?? null },
       include: { user: true },
     });

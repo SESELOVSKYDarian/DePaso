@@ -29,7 +29,7 @@ export default function SetupDoneScreen() {
   return (
     <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
       <View style={styles.content}>
-        <Illustration source={require("../../assets/images/listo.png")} style={styles.illustration} resizeMode="contain" />
+        <Illustration source={require("../../assets/images/listo.png")} darkSource={require("../../assets/images/listo-dark.png")} style={styles.illustration} resizeMode="contain" />
         <Text style={styles.title}>¡Listo!</Text>
         <Text style={styles.subtitle}>Tu cuenta ya está creada.</Text>
 
@@ -70,8 +70,8 @@ const useStyles = makeStyles((colors) => StyleSheet.create({
     paddingHorizontal: spacing.lg,
   },
   illustration: {
-    width: 220,
-    height: 190,
+    width: "100%",
+    height: 300,
     marginBottom: spacing.lg,
   },
   title: {

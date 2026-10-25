@@ -28,6 +28,7 @@ export default function OnboardingScreen() {
         <BrandLogo variant="wordmark" style={styles.wordmark} />
         <Illustration
           source={require("../assets/images/bienvenida.png")}
+          darkSource={require("../assets/images/bienvenida-dark.png")}
           style={styles.illustration}
           resizeMode="contain"
         />
@@ -81,7 +82,7 @@ const useStyles = makeStyles((colors) => StyleSheet.create({
   },
   illustration: {
     width: "100%",
-    height: 220,
+    height: 340,
     marginBottom: spacing.lg,
   },
   title: {

@@ -34,6 +34,8 @@ export default function PlacesSetupScreen() {
   const { places } = usePlaces();
 
   const goNext = () => router.push("/(setup)/detour");
+  // Lugares guardados que no son de los 4 tipos sugeridos (los que se agregan con "Otro lugar").
+  const extraPlaces = places.filter((place) => !SUGGESTED_TYPES.includes(place.type));
 
   return (
     <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
@@ -70,6 +72,27 @@ export default function PlacesSetupScreen() {
               </AnimatedPressable>
             );
           })}
+
+          {extraPlaces.map((place) => (
+            <AnimatedPressable
+              key={place.id}
+              accessibilityLabel={`Editar ${place.name}`}
+              haptic={false}
+              onPress={() => router.push({ pathname: "/(setup)/places-form", params: { id: place.id } })}
+              style={[styles.row, styles.rowSelected]}
+            >
+              <View style={styles.iconCircle}>
+                <Ionicons name={TYPE_ICON[place.type]} size={20} color={colors.text.secondary} />
+              </View>
+              <View style={styles.rowText}>
+                <Text style={styles.rowLabel}>{place.name}</Text>
+                <Text style={styles.rowValue} numberOfLines={1}>
+                  {place.address}
+                </Text>
+              </View>
+              <SelectCheckbox checked />
+            </AnimatedPressable>
+          ))}
 
           <AnimatedPressable
             accessibilityLabel="Agregar otro lugar"

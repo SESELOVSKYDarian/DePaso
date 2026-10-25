@@ -9,7 +9,9 @@ const requestStatusSchema = z.enum(["PENDING", "APPROVED", "REJECTED"]);
 export const merchantRequestInputSchema = z.object({
   businessName: z.string().trim().min(2).max(80),
   address: z.string().trim().min(3).max(200),
-  phone: z.string().trim().max(40).optional(),
+  /** Obligatorios: DePaso se comunica con la persona para verificar que trabaja en el comercio. */
+  phone: z.string().trim().min(6, "Ingresá un teléfono de contacto.").max(40),
+  contactEmail: z.string().trim().email("Ingresá un email de contacto válido.").max(120),
   note: z.string().trim().max(500).optional(),
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
@@ -23,6 +25,7 @@ export const merchantRequestResponseSchema = z.object({
   businessName: z.string(),
   address: z.string(),
   phone: z.string().nullable(),
+  contactEmail: z.string().nullable().default(null),
   note: z.string().nullable(),
   status: requestStatusSchema,
   rejectionReason: z.string().nullable(),
@@ -43,6 +46,7 @@ export const adminMerchantRequestResponseSchema = merchantRequestResponseSchema.
   userId: z.string(),
   userEmail: z.string(),
   userDisplayName: z.string().nullable(),
+  contactVerifiedAt: z.string().nullable().default(null),
 });
 export type AdminMerchantRequestResponse = z.infer<typeof adminMerchantRequestResponseSchema>;
 
@@ -56,8 +60,13 @@ export const merchantDecisionInputSchema = z
   .object({
     decision: z.enum(["APPROVE", "REJECT"]),
     reason: z.string().trim().max(300).optional(),
+    /** Para aprobar hay que confirmar que ya se verificó el vínculo por teléfono o correo. */
+    contactVerified: z.boolean().optional(),
   })
   .superRefine((value, ctx) => {
+    if (value.decision === "APPROVE" && value.contactVerified !== true) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["contactVerified"], message: "Confirmá que verificaste el contacto." });
+    }
     if (value.decision === "REJECT" && !value.reason) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["reason"], message: "Indicá el motivo del rechazo." });
     }

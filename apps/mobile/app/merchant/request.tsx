@@ -23,6 +23,8 @@ export default function MerchantRequestScreen() {
   const [businessName, setBusinessName] = useState("");
   const [address, setAddress] = useState("");
   const [phone, setPhone] = useState("");
+  const [contactEmail, setContactEmail] = useState("");
+  const [contactErrors, setContactErrors] = useState<{ phone?: string; contactEmail?: string }>({});
   const [note, setNote] = useState("");
   const [errors, setErrors] = useState<{ businessName?: string; address?: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -56,8 +58,17 @@ export default function MerchantRequestScreen() {
     };
   }, [claimQuery, mode]);
 
+  /** Teléfono y correo son obligatorios: sirven para confirmar que la persona trabaja en el comercio. */
+  const validateContact = (): boolean => {
+    const next: { phone?: string; contactEmail?: string } = {};
+    if (phone.replace(/\D/g, "").length < 6) next.phone = "Ingresá un teléfono al que podamos llamarte.";
+    if (!/^\S+@\S+\.\S+$/.test(contactEmail.trim())) next.contactEmail = "Ingresá un correo de contacto válido.";
+    setContactErrors(next);
+    return Object.keys(next).length === 0;
+  };
+
   const submitClaim = async () => {
-    if (!claimed) return;
+    if (!claimed || !validateContact()) return;
     setIsSubmitting(true);
     try {
       const { request } = await merchantClient.submitRequest({
@@ -66,7 +77,8 @@ export default function MerchantRequestScreen() {
         latitude: claimed.latitude,
         longitude: claimed.longitude,
         storeBranchId: claimed.id,
-        ...(phone.trim() ? { phone: phone.trim() } : {}),
+        phone: phone.trim(),
+        contactEmail: contactEmail.trim(),
         ...(note.trim() ? { note: note.trim() } : {}),
       });
       setCurrent(request);
@@ -99,7 +111,8 @@ export default function MerchantRequestScreen() {
     if (businessName.trim().length < 2) nextErrors.businessName = "Ingresá el nombre de tu comercio.";
     if (address.trim().length < 3) nextErrors.address = "Ingresá la dirección de tu comercio.";
     setErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) return;
+    const contactOk = validateContact();
+    if (Object.keys(nextErrors).length > 0 || !contactOk) return;
 
     setIsSubmitting(true);
     try {
@@ -113,7 +126,8 @@ export default function MerchantRequestScreen() {
       const { request } = await merchantClient.submitRequest({
         businessName: businessName.trim(),
         address: address.trim(),
-        ...(phone.trim() ? { phone: phone.trim() } : {}),
+        phone: phone.trim(),
+        contactEmail: contactEmail.trim(),
         ...(note.trim() ? { note: note.trim() } : {}),
         latitude: coords.latitude,
         longitude: coords.longitude,
@@ -235,7 +249,31 @@ export default function MerchantRequestScreen() {
           {!isSearchingBranches && claimResults.length === 0 ? (
             <Text style={styles.intro}>No encontramos sucursales libres con eso. Si tu comercio no está, elegí "Es nuevo".</Text>
           ) : null}
-          <FormField label="Teléfono (opcional)" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+          <FormField
+            label="Teléfono de contacto"
+            value={phone}
+            onChangeText={(text) => {
+              setPhone(text);
+              setContactErrors((e) => ({ ...e, phone: undefined }));
+            }}
+            keyboardType="phone-pad"
+            error={contactErrors.phone}
+          />
+          <FormField
+            label="Correo de contacto"
+            value={contactEmail}
+            onChangeText={(text) => {
+              setContactEmail(text);
+              setContactErrors((e) => ({ ...e, contactEmail: undefined }));
+            }}
+            keyboardType="email-address"
+            autoComplete="email"
+            error={contactErrors.contactEmail}
+          />
+          <Text style={styles.intro}>
+            Te vamos a llamar o escribir para confirmar que trabajás en el comercio antes de aprobarlo. Sin esa
+            verificación no se da el alta.
+          </Text>
           <Button
             label={isSubmitting ? "Enviando..." : claimed ? `Pedir administrar ${claimed.storeName}` : "Elegí tu sucursal"}
             onPress={() => void submitClaim()}
@@ -266,7 +304,31 @@ export default function MerchantRequestScreen() {
         autoCapitalize="words"
         error={errors.address}
       />
-      <FormField label="Teléfono (opcional)" value={phone} onChangeText={setPhone} keyboardType="phone-pad" />
+      <FormField
+            label="Teléfono de contacto"
+            value={phone}
+            onChangeText={(text) => {
+              setPhone(text);
+              setContactErrors((e) => ({ ...e, phone: undefined }));
+            }}
+            keyboardType="phone-pad"
+            error={contactErrors.phone}
+          />
+          <FormField
+            label="Correo de contacto"
+            value={contactEmail}
+            onChangeText={(text) => {
+              setContactEmail(text);
+              setContactErrors((e) => ({ ...e, contactEmail: undefined }));
+            }}
+            keyboardType="email-address"
+            autoComplete="email"
+            error={contactErrors.contactEmail}
+          />
+          <Text style={styles.intro}>
+            Te vamos a llamar o escribir para confirmar que trabajás en el comercio antes de aprobarlo. Sin esa
+            verificación no se da el alta.
+          </Text>
       <FormField
         label="Comentario para el administrador (opcional)"
         value={note}

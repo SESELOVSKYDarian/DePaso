@@ -3,8 +3,9 @@ import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles, useColors } from "@/lib/theme";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, FlatList, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, FlatList, Linking, StyleSheet, Text, View } from "react-native";
 import { Button } from "@/components/Button";
+import { Checkbox } from "@/components/Checkbox";
 import { EmptyState } from "@/components/EmptyState";
 import { FormField } from "@/components/FormField";
 import { useToast } from "@/components/Toast";
@@ -20,6 +21,8 @@ export default function AdminMerchantRequestsScreen() {
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [reason, setReason] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
+  // Pedidos cuyo vínculo con el comercio ya se confirmó por teléfono o correo.
+  const [verifiedIds, setVerifiedIds] = useState<Record<string, boolean>>({});
 
   const load = useCallback(async () => {
     try {
@@ -45,7 +48,10 @@ export default function AdminMerchantRequestsScreen() {
     }
     setBusyId(id);
     try {
-      await adminMerchantClient.decide(id, { decision, ...(decision === "REJECT" ? { reason: reason.trim() } : {}) });
+      await adminMerchantClient.decide(id, {
+        decision,
+        ...(decision === "REJECT" ? { reason: reason.trim() } : { contactVerified: verifiedIds[id] === true }),
+      });
       showToast(decision === "APPROVE" ? "Comercio aprobado" : "Solicitud rechazada", "success");
       setRejectingId(null);
       setReason("");
@@ -83,7 +89,19 @@ export default function AdminMerchantRequestsScreen() {
               ? "Pide administrar una sucursal que ya está en DePaso (importada)."
               : "Comercio nuevo: al aprobar se crea su sucursal."}
           </Text>
-          {item.phone ? <Text style={styles.meta}>Tel: {item.phone}</Text> : null}
+          <Text style={styles.contactTitle}>Contacto para verificar</Text>
+          {item.phone ? (
+            <Button label={`Llamar · ${item.phone}`} variant="secondary" onPress={() => void Linking.openURL(`tel:${item.phone}`)} />
+          ) : (
+            <Text style={styles.meta}>Sin teléfono (pedido anterior).</Text>
+          )}
+          {item.contactEmail ? (
+            <Button
+              label={`Escribir · ${item.contactEmail}`}
+              variant="secondary"
+              onPress={() => void Linking.openURL(`mailto:${item.contactEmail}?subject=Tu alta en DePaso`)}
+            />
+          ) : null}
           <Text style={styles.meta}>
             Solicita: {item.userDisplayName ? `${item.userDisplayName} · ` : ""}
             {item.userEmail}
@@ -99,10 +117,25 @@ export default function AdminMerchantRequestsScreen() {
               </View>
             </>
           ) : (
+            <>
+              <Checkbox
+                checked={verifiedIds[item.id] === true}
+                onToggle={(value) => setVerifiedIds((current) => ({ ...current, [item.id]: value }))}
+                accessibilityLabel="Confirmo que verifiqué que trabaja en el comercio"
+              >
+                <Text style={styles.meta}>Ya me comuniqué y confirmé que trabaja en este comercio.</Text>
+              </Checkbox>
             <View style={styles.actions}>
               <Button label="Rechazar" variant="secondary" style={styles.action} onPress={() => setRejectingId(item.id)} />
-              <Button label="Aprobar" style={styles.action} loading={busyId === item.id} onPress={() => void decide(item.id, "APPROVE")} />
+              <Button
+                label="Aprobar"
+                style={styles.action}
+                loading={busyId === item.id}
+                disabled={verifiedIds[item.id] !== true}
+                onPress={() => void decide(item.id, "APPROVE")}
+              />
             </View>
+            </>
           )}
         </View>
       )}
@@ -124,6 +157,7 @@ const useStyles = makeStyles((colors) => StyleSheet.create({
   },
   name: { fontFamily: typography.heroTitle.fontFamily, fontSize: 18, color: colors.text.primary },
   meta: { fontFamily: typography.body.fontFamily, fontSize: 13, color: colors.text.secondary },
+  contactTitle: { fontFamily: typography.itemTitle.fontFamily, fontSize: 14, color: colors.text.primary, marginTop: spacing.xs },
   note: { fontFamily: typography.body.fontFamily, fontSize: 13, color: colors.text.primary, fontStyle: "italic" },
   actions: { flexDirection: "row", gap: spacing.sm, marginTop: spacing.sm },
   action: { flex: 1 },

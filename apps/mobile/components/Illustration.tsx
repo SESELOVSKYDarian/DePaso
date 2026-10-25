@@ -1,41 +1,17 @@
-import { Image, StyleSheet, View, type ImageProps } from "react-native";
-import { radii, spacing } from "@depaso/design-tokens";
+import { Image, type ImageProps, type ImageSourcePropType } from "react-native";
 import { useTheme } from "@/lib/theme";
 
-/** Fondo claro fijo detrás de las ilustraciones en modo oscuro (sus trazos son navy). */
-const PANEL_COLOR = "#F2F2F7";
-
-interface IllustrationProps extends ImageProps {
-  /** Panel más ajustado, para ilustraciones chicas dentro de una tarjeta. */
-  compact?: boolean;
+interface IllustrationProps extends Omit<ImageProps, "source"> {
+  source: ImageSourcePropType;
+  /** Versión para modo oscuro: mismos dibujos con los trazos claros (sin panel ni fondo). */
+  darkSource?: ImageSourcePropType;
 }
 
 /**
- * Ilustración de marca. Las ilustraciones son PNG transparentes con trazos navy: sobre un
- * fondo oscuro se perderían, así que en modo oscuro se apoyan en un panel claro redondeado.
- * En modo claro es simplemente la imagen.
+ * Ilustración de marca: PNG transparente, sin fondo ni tarjeta detrás. En modo oscuro usa la
+ * variante con trazos claros para que se vea sobre el negro.
  */
-export function Illustration({ compact = false, style, ...props }: IllustrationProps) {
+export function Illustration({ source, darkSource, ...props }: IllustrationProps) {
   const { isDark } = useTheme();
-  if (!isDark) return <Image {...props} style={style} />;
-
-  return (
-    <View style={[styles.panel, compact ? styles.compact : null]}>
-      <Image {...props} style={style} />
-    </View>
-  );
+  return <Image {...props} source={isDark && darkSource ? darkSource : source} />;
 }
-
-const styles = StyleSheet.create({
-  panel: {
-    alignSelf: "center",
-    backgroundColor: PANEL_COLOR,
-    borderRadius: radii.xl,
-    padding: spacing.sm,
-    overflow: "hidden",
-  },
-  compact: {
-    padding: spacing.xxs,
-    borderRadius: radii.lg,
-  },
-});

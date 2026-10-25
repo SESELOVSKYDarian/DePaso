@@ -47,7 +47,7 @@ export default function LocationSetupScreen() {
       </View>
 
       <View style={styles.content}>
-        <Illustration source={require("../../assets/images/ubicacion.png")} style={styles.illustration} resizeMode="contain" />
+        <Illustration source={require("../../assets/images/ubicacion.png")} darkSource={require("../../assets/images/ubicacion-dark.png")} style={styles.illustration} resizeMode="contain" />
 
         <View style={styles.badge}>
           <Text style={styles.badgeLabel}>Opcional por ahora</Text>
@@ -104,8 +104,8 @@ const useStyles = makeStyles((colors) => StyleSheet.create({
     paddingTop: spacing.md,
   },
   illustration: {
-    width: 220,
-    height: 190,
+    width: "100%",
+    height: 280,
     marginBottom: spacing.sm,
   },
   badge: {

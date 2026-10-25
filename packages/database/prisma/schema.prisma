@@ -192,9 +192,15 @@ model MerchantRequest {
   businessName    String
   address         String
   phone           String?
+  /// Correo de contacto obligatorio: el equipo de DePaso se comunica por acá o por teléfono para
+  /// confirmar que la persona realmente trabaja en el comercio antes de aprobar.
+  contactEmail    String?
   note            String?
   latitude        Float
   longitude       Float
+  /// Cuándo y quién confirmó el vínculo con el comercio (llamada o correo) al aprobar.
+  contactVerifiedAt DateTime?
+  contactVerifiedBy String?
   /// Sucursal que ya existe en DePaso (importada de SEPA) y el comercio pide administrar.
   /// `null` = comercio nuevo: al aprobar se crea su propia sucursal.
   storeBranchId   String?
