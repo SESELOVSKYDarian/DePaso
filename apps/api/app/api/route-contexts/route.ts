@@ -30,17 +30,22 @@ export async function POST(request: NextRequest) {
   if (!parsed.success) {
     return NextResponse.json({ error: "INVALID_REQUEST", issues: parsed.error.issues }, { status: 400 });
   }
-  const { name, waypointPlaceIds } = parsed.data;
-
-  const ownedCount = await prisma.userPlace.count({
-    where: { id: { in: waypointPlaceIds }, userId: current.userId },
-  });
-  if (ownedCount !== waypointPlaceIds.length) {
+  const { name, stops } = parsed.data;
+  // Los ids de lugares sólo valen si son del usuario (sección 81); se descartan los ajenos.
+  const claimedIds = [...new Set([...parsed.data.waypointPlaceIds, ...(stops?.map((stop) => stop.placeId).filter((id): id is string => Boolean(id)) ?? [])])];
+  const owned = await prisma.userPlace.findMany({ where: { id: { in: claimedIds }, userId: current.userId }, select: { id: true } });
+  const ownedIds = new Set(owned.map((place: { id: string }) => place.id));
+  if (parsed.data.waypointPlaceIds.some((id) => !ownedIds.has(id))) {
     return NextResponse.json({ error: "INVALID_PLACE_IDS" }, { status: 400 });
   }
 
   const context = await prisma.savedRouteContext.create({
-    data: { userId: current.userId, name, waypointPlaceIds },
+    data: {
+      userId: current.userId,
+      name,
+      waypointPlaceIds: stops ? [...ownedIds] : parsed.data.waypointPlaceIds,
+      ...(stops ? { stops: stops.map((stop) => ({ ...stop, placeId: stop.placeId && ownedIds.has(stop.placeId) ? stop.placeId : undefined })) } : {}),
+    },
   });
 
   return NextResponse.json(toRouteContextResponse(context), { status: 201 });

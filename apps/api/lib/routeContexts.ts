@@ -1,11 +1,18 @@
 import type { SavedRouteContext } from "@depaso/database";
-import type { RouteContextResponse } from "@depaso/validation";
+import { savedStopSchema, type RouteContextResponse } from "@depaso/validation";
+import { z } from "zod";
+
+function parseStops(raw: unknown): RouteContextResponse["stops"] {
+  const parsed = z.array(savedStopSchema).safeParse(raw);
+  return parsed.success ? parsed.data : null;
+}
 
 export function toRouteContextResponse(context: SavedRouteContext): RouteContextResponse {
   return {
     id: context.id,
     name: context.name,
     waypointPlaceIds: context.waypointPlaceIds,
+    stops: parseStops(context.stops),
     createdAt: context.createdAt.toISOString(),
   };
 }

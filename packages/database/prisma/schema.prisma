@@ -284,6 +284,10 @@ model SavedRouteContext {
   /// IDs de UserPlace en orden — sin tabla puente porque el orden es parte del significado
   /// y la cardinalidad es chica (contexto de un día, sección 33-35).
   waypointPlaceIds String[]
+  /// Paradas completas tal como se armó la ruta (nombre, dirección y coordenadas), para poder
+  /// guardar también rutas con puntos de hoy, de la ubicación actual o elegidos en el mapa.
+  /// `null` en rutas viejas, que sólo tienen `waypointPlaceIds`.
+  stops            Json?
   createdAt        DateTime @default(now())
 
   @@index([userId])

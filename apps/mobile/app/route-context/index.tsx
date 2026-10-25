@@ -54,6 +54,7 @@ export default function RouteContextScreen() {
   const [askSaveDialog, setAskSaveDialog] = useState<TodayWaypoint | null>(null);
   const [savingPresetName, setSavingPresetName] = useState<string | null>(null);
   const [isLocating, setIsLocating] = useState(false);
+  const [isSavingRoute, setIsSavingRoute] = useState(false);
   const [isSavingPlace, setIsSavingPlace] = useState(false);
   // Elegir el lugar tocando el mapa.
   const [mapOpen, setMapOpen] = useState(false);
@@ -243,6 +244,21 @@ export default function RouteContextScreen() {
   };
 
   const applyPreset = (preset: RouteContextResponse) => {
+    if (preset.stops && preset.stops.length > 0) {
+      setWaypoints(
+        preset.stops.map((stop, index) => ({
+          key: stop.placeId ?? `saved-${preset.id}-${index}`,
+          ...(stop.placeId ? { placeId: stop.placeId } : {}),
+          name: stop.name,
+          address: stop.address,
+          latitude: stop.latitude,
+          longitude: stop.longitude,
+          emoji: stop.emoji,
+        })),
+      );
+      showToast(`Cargaste "${preset.name}"`, "success");
+      return;
+    }
     const resolved = preset.waypointPlaceIds
       .map((id) => places.find((p) => p.id === id))
       .filter((p): p is NonNullable<typeof p> => p !== undefined)
@@ -261,15 +277,37 @@ export default function RouteContextScreen() {
 
   const handleSavePreset = async () => {
     const name = savingPresetName?.trim();
-    const placeIds = waypoints.map((w) => w.placeId).filter((id): id is string => id !== undefined);
-    if (!name || placeIds.length === 0) return;
+    if (!name || waypoints.length < 2 || isSavingRoute) return;
+    setIsSavingRoute(true);
     try {
-      const created = await routeContextClient.create({ name, waypointPlaceIds: placeIds });
+      const created = await routeContextClient.create({
+        name,
+        stops: waypoints.map((w) => ({
+          name: w.name,
+          address: w.address,
+          latitude: w.latitude,
+          longitude: w.longitude,
+          emoji: w.emoji,
+          ...(w.placeId ? { placeId: w.placeId } : {}),
+        })),
+      });
       setPresets((prev) => [created, ...prev]);
       setSavingPresetName(null);
-      showToast("Recorrido guardado.", "success");
+      showToast(`Guardamos "${created.name}". La tenés arriba para usarla cuando quieras.`, "success");
     } catch {
-      showToast("No pudimos guardar el recorrido.", "error");
+      showToast("No pudimos guardar el recorrido. Probá de nuevo.", "error");
+    } finally {
+      setIsSavingRoute(false);
+    }
+  };
+
+  const deletePreset = async (preset: RouteContextResponse) => {
+    try {
+      await routeContextClient.remove(preset.id);
+      setPresets((prev) => prev.filter((p) => p.id !== preset.id));
+      showToast(`Borramos "${preset.name}".`, "info");
+    } catch {
+      showToast("No pudimos borrar la ruta.", "error");
     }
   };
 
@@ -298,11 +336,11 @@ export default function RouteContextScreen() {
 
         {presets.length > 0 ? (
           <>
-            <Text style={styles.sectionTitle}>Tus recorridos guardados</Text>
+            <Text style={styles.sectionTitle}>Tus rutas guardadas</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.presetsRow}>
               {presets.map((preset) => (
+                <View key={preset.id} style={{ flexDirection: "row", alignItems: "center" }}>
                 <AnimatedPressable
-                  key={preset.id}
                   accessibilityLabel={`Usar recorrido ${preset.name}`}
                   haptic={false}
                   onPress={() => applyPreset(preset)}
@@ -310,6 +348,15 @@ export default function RouteContextScreen() {
                 >
                   <Text style={styles.presetLabel}>{preset.name}</Text>
                 </AnimatedPressable>
+                <AnimatedPressable
+                  accessibilityLabel={`Borrar la ruta guardada ${preset.name}`}
+                  haptic={false}
+                  onPress={() => void deletePreset(preset)}
+                  style={styles.presetDelete}
+                >
+                  <Ionicons name="close" size={14} color={colors.text.secondary} />
+                </AnimatedPressable>
+                </View>
               ))}
             </ScrollView>
           </>
@@ -413,10 +460,10 @@ export default function RouteContextScreen() {
           </>
         ) : null}
 
-        {waypoints.some((w) => w.placeId) ? (
+        {waypoints.length >= 2 ? (
           savingPresetName === null ? (
             <Button
-              label="Guardar este recorrido para más adelante"
+              label="Guardar esta ruta con un nombre"
               variant="ghost"
               onPress={() => setSavingPresetName("")}
               style={styles.savePresetTrigger}
@@ -427,11 +474,19 @@ export default function RouteContextScreen() {
                 label="Nombre del recorrido"
                 value={savingPresetName}
                 onChangeText={setSavingPresetName}
-                placeholder="Trabajo → Casa"
+                placeholder="Ej.: Trabajo → Casa, Ruta del sábado"
+                autoFocus
               />
               <View style={styles.savePresetActions}>
                 <Button label="Cancelar" variant="ghost" onPress={() => setSavingPresetName(null)} style={{ flex: 1 }} />
-                <Button label="Guardar" variant="secondary" onPress={() => void handleSavePreset()} style={{ flex: 1 }} />
+                <Button
+                  label={isSavingRoute ? "Guardando…" : "Guardar"}
+                  variant="secondary"
+                  onPress={() => void handleSavePreset()}
+                  loading={isSavingRoute}
+                  disabled={!savingPresetName.trim()}
+                  style={{ flex: 1 }}
+                />
               </View>
             </View>
           )
@@ -535,6 +590,16 @@ export default function RouteContextScreen() {
 
 const useStyles = makeStyles((colors) => StyleSheet.create({
   rowBusy: { opacity: 0.7 },
+  presetDelete: {
+    alignSelf: "center",
+    width: 28,
+    height: 28,
+    marginRight: spacing.xs,
+    borderRadius: radii.full,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.surface.input,
+  },
   mapOption: {
     flexDirection: "row",
     alignItems: "center",
