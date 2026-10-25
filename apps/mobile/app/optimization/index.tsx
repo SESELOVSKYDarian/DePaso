@@ -16,6 +16,7 @@ import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles, useColors } from "@/lib/theme";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
 import { Button } from "@/components/Button";
+import { LoadingOverlay } from "@/components/LoadingOverlay";
 import { PriceDisclosureBanner } from "@/components/PriceDisclosureBanner";
 import { optimizationClient } from "@/lib/apiClient";
 import { useCountUp } from "@/lib/useCountUp";
@@ -94,6 +95,7 @@ export default function OptimizationScreen() {
   const [bestPrices, setBestPrices] = useState<OptimizationRunResponse["bestPrices"]>([]);
   // Dos vistas separadas para no mezclar todo: las 3 opciones de compra, o dónde está más barato cada producto.
   const [tab, setTab] = useState<"options" | "prices">("options");
+  const [hasPaymentMethods, setHasPaymentMethods] = useState(true);
   const [running, setRunning] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const activeLists = lists.filter((list) => !list.archivedAt && list.itemCount > 0);
@@ -113,6 +115,7 @@ export default function OptimizationScreen() {
       setPlans(result.plans);
       setRanking(result.ranking);
       setBestPrices(result.bestPrices);
+      setHasPaymentMethods(result.hasPaymentMethods);
       setTab("options");
       // El mejor equilibrio queda dibujado en el mapa del recorrido.
       setRoutePlans(result.plans);
@@ -151,6 +154,7 @@ export default function OptimizationScreen() {
     {tab === "options" ? <>
       <Text style={styles.intro}>Tres formas de comprar, de menos a más desvío. En cada una, lo más barato con las promos de tus medios de pago.</Text>
       <PriceDisclosureBanner />
+      {!hasPaymentMethods ? <AnimatedPressable accessibilityLabel="Cargar mis billeteras y tarjetas" haptic={false} onPress={() => router.push("/payment-methods")} style={styles.promoHint}><Ionicons name="card-outline" size={20} color={colors.text.primary} /><View style={styles.flex}><Text style={styles.choiceName}>Sumá tus billeteras y tarjetas</Text><Text style={styles.meta}>Así descontamos las promos que tenés (Cuenta DNI, Mercado Pago, MODO, Visa…).</Text></View><Ionicons name="chevron-forward" size={18} color={colors.text.secondary} /></AnimatedPressable> : plans.every((plan) => plan.appliedPromos.length === 0) ? <Text style={styles.meta}>Hoy no encontramos promos de tus medios de pago en estos comercios, así que los precios van sin descuento.</Text> : null}
       {plans.map((plan, index) => <PlanCard key={plan.label} plan={plan} index={index} onStart={() => { start(plan); router.push("/purchase"); }} onMap={() => { setRoutePlan(plan); router.navigate("/map"); }} />)}
       {(["FASTEST", "BALANCED", "CHEAPEST"] as const).filter((label) => !plans.some((plan) => plan.label === label)).map((label) => <View key={label} style={styles.unavailable}><Text style={styles.planTitle}>{labels[label].title}</Text><Text style={styles.meta}>{label === "FASTEST" ? "Ningún comercio con tus productos te queda a 2 cuadras del camino." : label === "BALANCED" ? "No encontramos comercios con tus productos a un desvío razonable." : "Todavía no hay precios para armar esta opción."}</Text></View>)}
     </> : <>
@@ -192,7 +196,7 @@ export default function OptimizationScreen() {
     </View>
     <View style={styles.section}><Text style={styles.sectionTitle}>2. Confirmá tu recorrido</Text><AnimatedPressable accessibilityLabel="Editar recorrido de hoy" haptic={false} onPress={() => router.push("/route-context")} style={styles.choice}><View style={styles.choiceIcon} accessible={false}><Ionicons name="navigate-outline" size={20} color={colors.brand.route} /></View><View style={styles.flex}><Text style={styles.choiceName}>{waypoints.length >= 2 ? `${waypoints[0]?.name ?? "Origen"} → ${waypoints[waypoints.length - 1]?.name ?? "Destino"}` : "Todavía no hay un recorrido completo"}</Text><Text style={styles.meta}>{waypoints.length >= 2 ? `${waypoints.length} paradas para hoy` : "Elegí al menos origen y destino"}</Text></View><Ionicons name="chevron-forward" size={19} color={colors.text.secondary} accessible={false} /></AnimatedPressable></View>
     {error ? <Text accessibilityRole="alert" style={styles.error}>{error}</Text> : null}
-    {running ? <AnalyzingIndicator /> : null}
+    <LoadingOverlay visible={running} title="Armando tu compra de paso" steps={["Mirando tu recorrido…", "Comparando precios cerca de tu camino…", "Sumando las promos de tus medios de pago…", "Buscando dónde parar para ahorrar más…", "Ya casi: ordenando las opciones…"]} />
     <Button label="Ver mi Top 3" loading={running} disabled={!selectedListId || waypoints.length < 2 || running} onPress={run} style={styles.runButton} />
   </ScrollView></SafeAreaView>;
 }
@@ -225,6 +229,7 @@ const useStyles = makeStyles((colors) => StyleSheet.create({
   offerBadgeTextBest: { color: colors.text.onLime },
   offerStore: { fontFamily: typography.body.fontFamily, fontSize: 14, color: colors.text.primary },
   offerPrice: { fontFamily: typography.itemTitle.fontFamily, fontSize: 15, color: colors.text.primary },
+  promoHint: { flexDirection: "row", alignItems: "center", gap: spacing.sm, padding: spacing.md, borderRadius: radii.xl, borderWidth: 1, borderColor: colors.border.subtle, backgroundColor: colors.surface.primary },
   promoBox: { backgroundColor: colors.brand.mint, borderRadius: radii.md, padding: spacing.sm, gap: 2 },
   promoTitle: { fontFamily: typography.body.fontFamily, fontWeight: "600", fontSize: 13, color: colors.text.primary },
   promoText: { fontFamily: typography.caption.fontFamily, fontSize: 12, color: colors.text.secondary },

@@ -18,6 +18,10 @@ interface SocialAuthButtonsProps {
   mode: "login" | "register";
   /** En `register`, la aceptación legal ya marcada. Sin ella no se inicia el flujo. */
   consent?: OAuthLoginRequest["consent"] | null;
+  /** Sólo elegir el método: no inicia sesión, avisa cuál se tocó (paso previo a las declaraciones). */
+  onSelect?: (id: OAuthProviderId) => void;
+  /** Muestra un único proveedor. */
+  only?: OAuthProviderId;
   /** Se llama cuando falta el consentimiento, para que la pantalla lo resalte. */
   onConsentMissing?: () => void;
 }
@@ -34,7 +38,7 @@ function errorMessage(error: unknown, label: string): string {
 }
 
 /** Google, Meta y Discord. La misma lógica sirve para iniciar sesión y para crear la cuenta. */
-export function SocialAuthButtons({ mode, consent, onConsentMissing }: SocialAuthButtonsProps) {
+export function SocialAuthButtons({ mode, consent, onConsentMissing, onSelect, only }: SocialAuthButtonsProps) {
   const styles = useStyles();
   const { loginWithOAuth } = useAuth();
   const { show: showToast } = useToast();
@@ -56,6 +60,10 @@ export function SocialAuthButtons({ mode, consent, onConsentMissing }: SocialAut
 
   const handlePress = async (id: OAuthProviderId) => {
     const label = LABELS[id];
+    if (onSelect) {
+      onSelect(id);
+      return;
+    }
     if (mode === "register" && !consent) {
       onConsentMissing?.();
       showToast("Marcá que sos mayor de edad y aceptá los términos para seguir.", "info");
@@ -112,7 +120,7 @@ export function SocialAuthButtons({ mode, consent, onConsentMissing }: SocialAut
 
   return (
     <View style={styles.group}>
-      {ORDER.map((id) => (
+      {ORDER.filter((id) => !only || id === only).map((id) => (
         <SocialButton
           key={id}
           provider={id}

@@ -12,6 +12,15 @@ export function LegalScreen({ children }: { children: ReactNode }) {
   );
 }
 
+export function LegalHeading({ children }: { children: ReactNode }) {
+  const styles = useStyles();
+  return (
+    <Text accessibilityRole="header" style={styles.heading}>
+      {children}
+    </Text>
+  );
+}
+
 export function LegalParagraph({ children }: { children: ReactNode }) {
   const styles = useStyles();
   return <Text style={styles.paragraph}>{children}</Text>;
@@ -44,6 +53,14 @@ const useStyles = makeStyles((colors) => StyleSheet.create({
   content: {
     padding: spacing.lg,
     paddingBottom: spacing.xxxl,
+  },
+  heading: {
+    fontFamily: typography.title.fontFamily,
+    fontSize: 18,
+    lineHeight: 24,
+    color: colors.text.primary,
+    marginTop: spacing.lg,
+    marginBottom: spacing.sm,
   },
   paragraph: {
     fontFamily: typography.bodyRegular.fontFamily,

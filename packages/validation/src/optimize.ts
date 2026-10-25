@@ -158,6 +158,8 @@ export type StoreRankingEntryResponse = z.infer<typeof storeRankingEntrySchema>;
 export const optimizationRunResponseSchema = z.object({
   plans: z.array(optimizationPlanResponseSchema).max(3),
   ranking: z.array(storeRankingEntrySchema).default([]),
+  /** El usuario cargó billeteras o tarjetas (sin ellas no se aplican promos). */
+  hasPaymentMethods: z.boolean().default(false),
   /** Por producto de la lista, las sucursales con el precio más bajo. */
   bestPrices: z
     .array(

@@ -237,7 +237,10 @@ export async function POST(request: NextRequest) {
       missingCount: entry.missingCount,
       distanceFromRouteMeters: entry.distanceFromRouteMeters,
     }));
+    // Para que la app explique si hay promos o por qué no: sin medios de pago cargados no se descuenta nada.
+    const paymentMethodCount = await prisma.userPaymentMethod.count({ where: { userId: current.userId } });
     return NextResponse.json({
+      hasPaymentMethods: paymentMethodCount > 0,
       plans: await applyPaymentPromos(publicPlans, current.userId, new Date(), promoContext),
       ranking: rankingWithAddress,
       bestPrices,

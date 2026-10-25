@@ -7,7 +7,7 @@ import { PrismaClient } from "@prisma/client";
  * devolvía vacío. En serverless:
  *  - el pooler de Supabase se usa en "transaction mode" (puerto 6543, `pgbouncer=true`), que
  *    reparte pocas conexiones reales entre muchos clientes;
- *  - cada instancia usa una sola conexión (`connection_limit=1`), lo recomendado por Prisma.
+ *  - cada instancia usa pocas conexiones (`connection_limit=3`): con una sola, las consultas de una misma búsqueda se hacían en fila.
  * Fuera de serverless (dev local, scripts) la URL queda como está.
  */
 export function serverlessDatabaseUrl(raw: string | undefined, serverless: boolean): string | undefined {
@@ -22,7 +22,7 @@ export function serverlessDatabaseUrl(raw: string | undefined, serverless: boole
     url.port = "6543";
     url.searchParams.set("pgbouncer", "true");
   }
-  if (!url.searchParams.has("connection_limit")) url.searchParams.set("connection_limit", "1");
+  if (!url.searchParams.has("connection_limit")) url.searchParams.set("connection_limit", "3");
   return url.toString();
 }
 

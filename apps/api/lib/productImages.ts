@@ -16,7 +16,6 @@ const USER_AGENT = "DePasoApp/0.1 (catalogo de precios; contacto: ver repositori
 const MAX_LOOKUPS = 12;
 const CONCURRENCY = 4;
 const REQUEST_TIMEOUT_MS = 4000;
-const RESPONSE_BUDGET_MS = 1800;
 const RECHECK_AFTER_MS = 30 * 24 * 60 * 60 * 1000;
 
 type Lookup = { kind: "found"; url: string } | { kind: "missing" } | { kind: "error" };
@@ -66,43 +65,51 @@ export async function loadProductImages(productIds: string[]): Promise<Map<strin
       else if (!row.imageCheckedAt || row.imageCheckedAt.getTime() < staleBefore) pending.push(row.id);
     }
     const toResolve = pending.slice(0, MAX_LOOKUPS);
-    if (toResolve.length === 0) return images;
-
-    const eanRows = await prisma.$queryRaw<{ id: string; ean: string }[]>(Prisma.sql`
-      SELECT DISTINCT ON (v."productId")
-        v."productId" AS id,
-        split_part(pr."sourceExternalId", '|', 4) AS ean
-      FROM product_variants v
-      JOIN prices pr ON pr."productVariantId" = v.id
-      WHERE v."productId" IN (${Prisma.join(toResolve)})
-        AND pr."sourceExternalId" IS NOT NULL
-    `);
-    const eanByProduct = new Map(
-      eanRows.filter((row) => /^\d{8,14}$/.test(row.ean)).map((row) => [row.id, row.ean] as const)
-    );
-
-    const work = runPool(toResolve, CONCURRENCY, async (productId) => {
-      const ean = eanByProduct.get(productId);
-      if (!ean) {
-        await prisma.product.update({ where: { id: productId }, data: { imageCheckedAt: new Date() } });
-        return;
-      }
-      const result = await lookupImage(ean);
-      if (result.kind === "error") return; // 429/5xx/timeout: no cachear, reintenta la próxima
-      await prisma.product.update({
-        where: { id: productId },
-        data: {
-          imageUrl: result.kind === "found" ? result.url : null,
-          imageCheckedAt: new Date(),
-        },
-      });
-      if (result.kind === "found") images.set(productId, result.url);
-    }).catch(() => undefined);
-
-    after(() => work);
-    await Promise.race([work, new Promise<void>((resolve) => setTimeout(resolve, RESPONSE_BUDGET_MS))]);
+    // La respuesta NUNCA espera a Open Food Facts: se devuelve lo que ya está guardado y las
+    // fotos que faltan se buscan después de responder, para la próxima búsqueda. Esperar acá
+    // sumaba hasta ~2 segundos a cada búsqueda.
+    if (toResolve.length > 0) after(() => resolveMissingImages(toResolve));
   } catch (error) {
     console.error("product images lookup failed", error);
   }
   return new Map(images);
+}
+
+/** Busca en segundo plano las fotos que faltan y las guarda en `Product`. */
+async function resolveMissingImages(toResolve: string[]): Promise<void> {
+  try {
+    const eanRows = await prisma.$queryRaw<{ id: string; ean: string }[]>(Prisma.sql`
+     SELECT DISTINCT ON (v."productId")
+       v."productId" AS id,
+       split_part(pr."sourceExternalId", '|', 4) AS ean
+     FROM product_variants v
+     JOIN prices pr ON pr."productVariantId" = v.id
+     WHERE v."productId" IN (${Prisma.join(toResolve)})
+       AND pr."sourceExternalId" IS NOT NULL
+    `);
+    const eanByProduct = new Map(
+     eanRows.filter((row) => /^\d{8,14}$/.test(row.ean)).map((row) => [row.id, row.ean] as const)
+    );
+
+    const work = runPool(toResolve, CONCURRENCY, async (productId) => {
+     const ean = eanByProduct.get(productId);
+     if (!ean) {
+       await prisma.product.update({ where: { id: productId }, data: { imageCheckedAt: new Date() } });
+       return;
+     }
+     const result = await lookupImage(ean);
+     if (result.kind === "error") return; // 429/5xx/timeout: no cachear, reintenta la próxima
+     await prisma.product.update({
+       where: { id: productId },
+       data: {
+         imageUrl: result.kind === "found" ? result.url : null,
+         imageCheckedAt: new Date(),
+       },
+     });
+    }).catch(() => undefined);
+
+    await work;
+  } catch (error) {
+    console.error("background image resolution failed", error);
+  }
 }

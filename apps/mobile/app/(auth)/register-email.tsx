@@ -1,17 +1,15 @@
 import { ApiError } from "@depaso/api-client";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles } from "@/lib/theme";
-import { MIN_AGE_YEARS, PASSWORD_MIN_LENGTH } from "@depaso/domain";
+import { PASSWORD_MIN_LENGTH } from "@depaso/domain";
 import { Link, router } from "expo-router";
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AnimatedPressable } from "@/components/AnimatedPressable";
-import { Checkbox } from "@/components/Checkbox";
 import { FormField } from "@/components/FormField";
 import { ProgressHeader } from "@/components/ProgressHeader";
-import { useToast } from "@/components/Toast";
-import { useAuth } from "@/lib/auth/AuthContext";
+import { setPendingRegistration } from "@/lib/auth/pendingRegistration";
 
 function registerErrorMessage(error: unknown): string {
   if (error instanceof ApiError && error.status === 409) {
@@ -32,59 +30,29 @@ function registerErrorMessage(error: unknown): string {
  */
 export default function RegisterEmailScreen() {
   const styles = useStyles();
-  const { register } = useAuth();
-  const { show: showToast } = useToast();
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [ageConfirmed, setAgeConfirmed] = useState(false);
-  const [acceptTerms, setAcceptTerms] = useState(false);
-  const [acceptPrivacy, setAcceptPrivacy] = useState(false);
-  const [marketingOptIn, setMarketingOptIn] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async () => {
+  const handleNext = () => {
     const nextFieldErrors: Record<string, string> = {};
     if (!firstName.trim()) nextFieldErrors.firstName = "Ingresá tu nombre.";
-    if (!email) nextFieldErrors.email = "Ingresá tu email.";
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) nextFieldErrors.email = "Ingresá un email válido.";
     if (password.length < PASSWORD_MIN_LENGTH) {
       nextFieldErrors.password = `La contraseña necesita al menos ${PASSWORD_MIN_LENGTH} caracteres.`;
     }
-    if (!ageConfirmed) nextFieldErrors.age = "Tenés que declarar que sos mayor de edad.";
-    if (!acceptTerms) nextFieldErrors.terms = "Tenés que aceptar los Términos y Condiciones.";
-    if (!acceptPrivacy) nextFieldErrors.privacy = "Tenés que leer la Política de Privacidad.";
-
     setFieldErrors(nextFieldErrors);
     if (Object.keys(nextFieldErrors).length > 0) return;
-
-    setError(null);
-    setIsSubmitting(true);
-    try {
-      const displayName = [firstName.trim(), lastName.trim()].filter(Boolean).join(" ");
-      await register({
-        email,
-        password,
-        displayName: displayName || undefined,
-        ageConfirmed18Plus: true,
-        acceptTerms: true,
-        acceptPrivacyNotice: true,
-        marketingOptIn,
-      });
-      router.replace("/(setup)/location");
-    } catch (err) {
-      setError(registerErrorMessage(err));
-    } finally {
-      setIsSubmitting(false);
-    }
+    setPendingRegistration({ firstName, lastName, email: email.trim(), password });
+    router.push({ pathname: "/(auth)/register-consent", params: { provider: "email" } });
   };
 
   return (
     <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
       <View style={styles.header}>
-        <ProgressHeader progress={0.4} onBack={() => router.back()} />
+        <ProgressHeader progress={0.5} onBack={() => router.back()} />
       </View>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
         <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
@@ -113,60 +81,8 @@ export default function RegisterEmailScreen() {
             error={fieldErrors.password}
           />
 
-          <View style={styles.checkboxCard}>
-            <Checkbox
-              checked={ageConfirmed}
-              onToggle={setAgeConfirmed}
-              accessibilityLabel="Declaro ser mayor de edad"
-              error={fieldErrors.age}
-            >
-              <Text style={styles.checkboxLabel}>Declaro tener {MIN_AGE_YEARS} años o más.</Text>
-            </Checkbox>
-
-            <Checkbox
-              checked={acceptTerms}
-              onToggle={setAcceptTerms}
-              accessibilityLabel="Acepto los Términos y Condiciones"
-              error={fieldErrors.terms}
-            >
-              <Text style={styles.checkboxLabel}>
-                Acepto los{" "}
-                <Link href="/legal/terms" style={styles.inlineLink}>
-                  Términos y Condiciones
-                </Link>{" "}
-                de DePaso.
-              </Text>
-            </Checkbox>
-
-            <Checkbox
-              checked={acceptPrivacy}
-              onToggle={setAcceptPrivacy}
-              accessibilityLabel="Leí la Política de Privacidad"
-              error={fieldErrors.privacy}
-            >
-              <Text style={styles.checkboxLabel}>
-                Conocé cómo tratamos tus datos en la{" "}
-                <Link href="/legal/privacy" style={styles.inlineLink}>
-                  Política de Privacidad
-                </Link>
-                .
-              </Text>
-            </Checkbox>
-
-            <Checkbox checked={marketingOptIn} onToggle={setMarketingOptIn} accessibilityLabel="Quiero recibir novedades y promociones">
-              <Text style={styles.checkboxLabel}>Quiero recibir novedades y promociones.</Text>
-            </Checkbox>
-          </View>
-
-          {error ? <Text style={styles.errorBanner}>{error}</Text> : null}
-
-          <AnimatedPressable
-            accessibilityLabel={isSubmitting ? "Creando cuenta..." : "Crear cuenta"}
-            onPress={isSubmitting ? undefined : () => void handleSubmit()}
-            haptic={!isSubmitting}
-            style={[styles.submitButton, isSubmitting ? styles.submitButtonDisabled : null]}
-          >
-            <Text style={styles.submitLabel}>{isSubmitting ? "Creando cuenta..." : "Crear cuenta"}</Text>
+          <AnimatedPressable accessibilityLabel="Siguiente" onPress={handleNext} style={styles.submitButton}>
+            <Text style={styles.submitLabel}>Siguiente</Text>
           </AnimatedPressable>
 
           <Text style={styles.footerNote}>
