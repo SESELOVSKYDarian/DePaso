@@ -1,6 +1,6 @@
 import type { LatLng, RouteProvider } from "@depaso/domain";
 import { generateStoreCombinations } from "./combinations";
-import { computeComboDeviation, type Deviation } from "./deviation";
+import { computeFastComboDeviation, type Deviation } from "./deviation";
 import { buildExplanation } from "./explain";
 import { decodePolyline, distanceToPathMeters } from "./geo";
 import { createMockRouteProvider } from "./mockRouteProvider";
@@ -205,7 +205,7 @@ export async function optimizeWithRanking(
     if (!deviations.has(key)) {
       deviations.set(
         key,
-        computeComboDeviation(routeProvider, waypoints, baseRoute, winner.combo.map((c) => c.location), input.transportMode),
+        computeFastComboDeviation(routeProvider, waypoints, baseRoute, winner.combo.map((c) => c.location), input.transportMode),
       );
     }
   }

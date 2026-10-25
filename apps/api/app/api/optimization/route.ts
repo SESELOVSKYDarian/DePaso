@@ -2,7 +2,7 @@ import { prisma } from "@depaso/database";
 import { distanceToPathMeters, optimizeWithRanking, type OptimizationPlanResult, type StoreCandidateInput } from "@depaso/optimization";
 import type { TransportMode } from "@depaso/types";
 import { optimizationRunRequestSchema } from "@depaso/validation";
-import { NextRequest, NextResponse } from "next/server";
+import { after, NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
 import { applyPaymentPromos, loadPromoContext, promoDiscountForStops } from "@/lib/applyPromos";
 import { buildPlanRoute, type BranchInfo } from "@/lib/planRoute";
@@ -77,6 +77,7 @@ async function persistOptimizationRun(
  * o una preferencia manipulada desde el dispositivo.
  */
 export async function POST(request: NextRequest) {
+  const startedAt = performance.now();
   const current = await getCurrentUser(request);
   if (!current) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
 
@@ -115,6 +116,7 @@ export async function POST(request: NextRequest) {
     }),
   ]);
 
+  const queriesMs = Math.round(performance.now() - startedAt);
   const names = new Map(products.map((product: (typeof products)[number]) => [product.id, product.name]));
   if (names.size !== productIds.length) {
     return NextResponse.json({ error: "LIST_CONTAINS_UNKNOWN_PRODUCT" }, { status: 422 });
@@ -187,7 +189,8 @@ export async function POST(request: NextRequest) {
       },
       getRouteProvider(parsed.data.transportMode)
     );
-    await persistOptimizationRun(current.userId, parsed.data.shoppingListId, parsed.data.transportMode, plans);
+    // El registro para el admin se guarda después de responder: son ~20 escrituras que no tiene por qué esperar el usuario.
+    after(() => persistOptimizationRun(current.userId, parsed.data.shoppingListId, parsed.data.transportMode, plans));
     // `debugScore` es deliberadamente interno; nunca cruza el límite HTTP.
     const branchInfo = new Map<string, BranchInfo>();
     for (const price of prices) {
@@ -224,6 +227,8 @@ export async function POST(request: NextRequest) {
       return { productId: item.productId, productName: names.get(item.productId) ?? "Producto", quantity: item.quantity, offers };
     });
 
+    // Tiempos por etapa en los registros de Vercel, para saber dónde se va el tiempo si vuelve a tardar.
+    console.info("optimization timing", { queriesMs, engineAndRoutesMs: Math.round(performance.now() - startedAt) - queriesMs, products: list.items.length, branches: candidateMap.size });
     const rankingWithAddress = ranking.map((entry) => ({
       storeBranchId: entry.storeBranchId,
       storeName: entry.storeName,

@@ -1,5 +1,6 @@
 import type { LatLng, RouteProvider, RouteResult } from "@depaso/domain";
 import type { TransportMode } from "@depaso/types";
+import { haversineMeters } from "./geo";
 
 export interface Deviation {
   additionalDistanceMeters: number;
@@ -77,5 +78,42 @@ export async function computeComboDeviation(
     additionalDistanceMeters: Math.max(0, finalRoute.distanceMeters - baseRoute.distanceMeters),
     additionalTimeSeconds: Math.max(0, finalRoute.durationSeconds - baseRoute.durationSeconds),
     waypoints: currentWaypoints,
+  };
+}
+
+/**
+ * Desvío de un combo con UNA sola consulta de ruta (en vez de probar cada posición de cada
+ * parada contra el proveedor, que eran ~20 consultas seguidas y tardaba segundos). El orden de
+ * las paradas se decide con distancias en línea recta (inserción más barata) y el proveedor sólo
+ * calcula el recorrido final, que se compara con la ruta base ya calculada.
+ */
+export async function computeFastComboDeviation(
+  routeProvider: RouteProvider,
+  baseWaypoints: LatLng[],
+  baseRoute: RouteResult,
+  candidates: LatLng[],
+  transportMode: TransportMode,
+): Promise<Deviation> {
+  const waypoints = [...baseWaypoints];
+  for (const candidate of candidates) {
+    let bestIndex = 1;
+    let bestExtra = Number.POSITIVE_INFINITY;
+    for (let i = 1; i < waypoints.length; i += 1) {
+      const extra =
+        haversineMeters(waypoints[i - 1]!, candidate) +
+        haversineMeters(candidate, waypoints[i]!) -
+        haversineMeters(waypoints[i - 1]!, waypoints[i]!);
+      if (extra < bestExtra) {
+        bestExtra = extra;
+        bestIndex = i;
+      }
+    }
+    waypoints.splice(bestIndex, 0, candidate);
+  }
+  const finalRoute = await routeProvider.computeRoute(waypoints, transportMode);
+  return {
+    additionalDistanceMeters: Math.max(0, finalRoute.distanceMeters - baseRoute.distanceMeters),
+    additionalTimeSeconds: Math.max(0, finalRoute.durationSeconds - baseRoute.durationSeconds),
+    waypoints,
   };
 }
