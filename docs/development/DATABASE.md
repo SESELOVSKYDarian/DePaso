@@ -1,6 +1,6 @@
 # Base de datos
 
-Postgres + Prisma. Schema completo en `packages/database/prisma/schema.prisma`. Este
+MySQL 8 + Prisma. Schema completo en `packages/database/prisma/schema.prisma`. Este
 documento explica decisiones que el schema no explica por sí solo.
 
 ## Por qué estas entidades
@@ -17,10 +17,11 @@ modelos Prisma. Algunas decisiones de modelado:
   tolerar alias ("coca", "coca cola") sin ensuciar el nombre canónico (sección 37-38).
 - **`Store` / `StoreBranch`:** un precio pertenece a producto + **sucursal**, nunca sólo a
   la cadena (sección 41) — por eso `Price.storeBranchId`, no `storeId`.
-- **`Session`** (agregado en Fase 4, no estaba en la sección 70 del master prompt pero es
-  necesaria para "sesión persistente" — sección 10): guarda el hash SHA-256 del token, no
-  el token — un dump de la tabla no alcanza para robar sesiones activas. `revokedAt`
-  permite revocar sin borrar (logout, eliminar cuenta) manteniendo trazabilidad.
+- **`Session`:** es la tabla de *refresh tokens*. Guarda el hash SHA-256 del refresh token, no el
+  token: un dump de la tabla no alcanza para robar sesiones activas. El access token es un JWT
+  que lleva el `id` de esta fila (`sid`), así que `revokedAt` permite revocar sin borrar
+  (logout, eliminar cuenta) manteniendo trazabilidad. Cada canje de refresh revoca la fila
+  vieja y crea una nueva (rotación).
 - **`UserTrustScore`:** el valor exacto nunca se expone públicamente al usuario
   (BUSINESS-RULES.md p.7) — es un campo interno, no hay endpoint que lo devuelva tal cual
   en este pase (no hay endpoints de trust score todavía, Fase 14).
@@ -32,22 +33,26 @@ modelos Prisma. Algunas decisiones de modelado:
   tiene sentido modelar provincia/país/región todavía, pero tampoco se hardcodeó nada que
   impida agregarlo después (es un string, no un enum cerrado).
 
-## Estado de la base local (actualizado 2026-09-11, Sesión 7)
+## Motor y migraciones
 
-Postgres corriendo de verdad en esta máquina (PostgreSQL 17 nativo, no Docker — ver
-`docs/development/DECISIONS.md` para el porqué y cómo se resolvió un hallazgo de una
-instalación previa del usuario). `prisma migrate dev` corrió (`20260911142832_init`) y el
-seed corrió con datos reales en la tabla: 14 marcas, 100 productos/variantes, 6 comercios,
-23 sucursales, 1388 precios SEED/DEMO. Fase 4/6/7 se probaron de punta a punta contra esta
-base — ver `PROGRESS.md`.
+MySQL 8 (collation `utf8mb4_unicode_ci`: las búsquedas ignoran mayúsculas y acentos). La
+migración inicial es `prisma/migrations/20261027000000_init`. Notas del paso desde Postgres:
 
-En otra máquina o en CI, seguí usando Docker normalmente:
+- Los arrays pasan a columnas `Json` (MySQL no tiene arrays nativos): `localityAliases`,
+  `methodSlugs`, `daysOfWeek`, `waypointPlaceIds`, `missingProductIds`. Se leen con
+  `apps/api/lib/jsonArrays.ts`.
+- El SQL crudo (búsqueda, facetas, popularidad, feed de Inicio) usa `ROW_NUMBER()` en lugar de
+  `DISTINCT ON` y `CONCAT()` en lugar de `||`. Los `COUNT` vuelven como `BigInt` y se convierten.
+
+Local:
 
 ```bash
-docker compose up -d
-pnpm --filter @depaso/database exec prisma migrate dev
+docker compose up -d                                  # MySQL 8 en localhost:3306
+pnpm --filter @depaso/database run migrate:deploy     # aplica las migraciones
 pnpm --filter @depaso/database run seed
 ```
+
+En EasyPanel el contenedor de la API aplica las migraciones al arrancar.
 
 ## Seed de desarrollo
 
@@ -58,11 +63,10 @@ de un centro de Mar del Plata, ~100 productos/variantes con alias, precios aleat
 `DISPUTED` de ejemplo. Explícitamente no representa precios reales — sección 85 del master
 prompt ("los datos ficticios deben marcarse como seed/demo").
 
-Ya corrió contra la base local de esta máquina (ver arriba). Para volver a correrlo (ej.
-después de cambiar el schema, o en otra máquina):
+Para volver a correrlo (por ejemplo después de cambiar el schema):
 
 ```bash
-pnpm --filter @depaso/database exec prisma migrate dev
+pnpm --filter @depaso/database run migrate:deploy
 pnpm --filter @depaso/database run seed
 ```
 

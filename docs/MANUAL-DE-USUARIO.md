@@ -26,8 +26,9 @@ sesión**.
    te deja guardar tus **lugares** habituales (casa, trabajo…). Podés saltearlo y hacerlo más tarde.
 
 ### Iniciar sesión
-Con tu email y contraseña, o con el botón de Google, Meta o Discord. Si ya iniciaste sesión, la
-app **recuerda tu cuenta**: no tenés que volver a entrar cada vez que la abrís.
+Con tu email y contraseña, o con el botón de Google, Meta o Discord. La app **recuerda tu cuenta**:
+no tenés que volver a entrar cada vez que la abrís. Por seguridad, la sesión se renueva sola cada
+15 minutos y dura hasta 30 días sin usar la app.
 
 > Si usás una red social y todavía no tenés cuenta, la app te lleva a crearla primero.
 
@@ -56,11 +57,13 @@ Abajo tenés la barra con cinco pestañas:
 | **Perfil** | Tu cuenta, preferencias y configuración |
 
 ### Inicio
-- Si todavía no armaste el recorrido de hoy, tocá **Armar mi recorrido**: elegís de dónde salís y
-  a dónde vas (de 2 a 6 paradas).
-- Con el recorrido listo, tocá **Encontrar mi mejor compra**: DePaso compara los precios de los
-  comercios cercanos a tu camino y te muestra hasta **3 opciones**.
-- Más abajo ves **tus listas** y podés crear la primera.
+- Arriba hay **una sola tarjeta, "Iniciar mi recorrido"**. Te muestra tu lista y tu recorrido, y el
+  botón cambia según lo que te falte: **Armar mi lista**, **Elegir mi recorrido**, **Iniciar mi
+  recorrido** o **Ver mi compra de paso**.
+- Con la lista y el recorrido listos, el botón compara los precios de los comercios cercanos a tu
+  camino y te muestra hasta **3 opciones**.
+- Más abajo, las novedades de **tus listas**: productos que **subieron o bajaron** de precio hace poco y
+  las **ofertas de hoy** (tus medios de pago aparecen primero, con la etiqueta "Tuya").
 
 ---
 
@@ -115,7 +118,7 @@ sigue funcionando en un **modo básico** que separa tu texto por comas.
 
 ## 5. Encontrar la mejor compra
 
-1. En **Inicio**, armá tu recorrido y tocá **Encontrar mi mejor compra**.
+1. En **Inicio**, tocá **Iniciar mi recorrido** (la app te pide lo que falte: lista y recorrido).
 2. **Paso 1, "Elegí una lista"**: aparecen las listas que tienen al menos un producto.
 3. **Paso 2, "Confirmá tu recorrido"**: revisá el origen y el destino (podés cambiarlos).
 4. Tocá **Ver mi Top 3**. DePaso te muestra **hasta 3 planes**:

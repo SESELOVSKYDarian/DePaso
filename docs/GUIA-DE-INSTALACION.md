@@ -11,9 +11,9 @@ endpoints, la [Referencia de la API](development/API.md).
 | Node.js | **22.13 o más** (LTS) | Todo el proyecto. Expo SDK 58 no soporta versiones anteriores |
 | pnpm | 10.19 | Gestor de paquetes del monorepo (`corepack enable` lo activa) |
 | Git | cualquiera | Clonar el repositorio |
-| PostgreSQL | 14 o más | Base de datos (local con Docker, o Supabase) |
+| MySQL | 8.0 o más | Base de datos (local con Docker, o el servicio MySQL de EasyPanel) |
 | Expo Go | SDK 58 | Probar la app en el celular (Play Store / App Store) |
-| Docker (opcional) | cualquiera | Levantar Postgres local con `docker compose` |
+| Docker (opcional) | cualquiera | Levantar MySQL local con `docker compose` |
 
 > El celular y la PC pueden estar en redes distintas: ver "Probar desde otra red" más abajo.
 
@@ -38,8 +38,8 @@ Nunca subas valores reales a Git (`.env*` está ignorado).
 
 | Variable | Qué es | Ejemplo |
 |---|---|---|
-| `DATABASE_URL` | Conexión a PostgreSQL | `postgresql://depaso:depaso@localhost:5432/depaso?schema=public` |
-| `AUTH_SESSION_SECRET` | Secreto largo y aleatorio por entorno. Firma los códigos y links de recuperación | `openssl rand -base64 32` |
+| `DATABASE_URL` | Conexión a MySQL | `mysql://depaso:depaso@localhost:3306/depaso` |
+| `AUTH_SESSION_SECRET` | Secreto largo y aleatorio por entorno. Firma los JWT de acceso y los códigos de recuperación | `openssl rand -base64 32` |
 
 ### Opcionales (cada una activa una función)
 
@@ -52,7 +52,7 @@ Nunca subas valores reales a Git (`.env*` está ignorado).
 | `DISCORD_CLIENT_ID` + `DISCORD_CLIENT_SECRET` | Login con Discord | Ídem |
 | `LLM_API_KEY`, `LLM_BASE_URL`, `LLM_MODEL` | Asistente de compras con IA | "Modo básico": corta el texto por comas |
 | `STT_API_KEY`, `STT_BASE_URL`, `STT_MODEL` | Micrófono del asistente (voz a texto) | El micrófono avisa y se puede escribir |
-| `CRON_SECRET` | Autoriza al cron de Vercel a sincronizar promos | Solo un admin puede sincronizar |
+| `CRON_SECRET` | Autoriza a los cron jobs de EasyPanel a sincronizar promos | Solo un admin puede sincronizar |
 
 Para **Gmail** como SMTP: activá la verificación en dos pasos y generá una "contraseña de
 aplicación" (cuenta de Google → Seguridad). Usá `SMTP_HOST=smtp.gmail.com`, `SMTP_PORT=587`,
@@ -66,28 +66,26 @@ Para el **login social**, en la consola de cada proveedor registrá como URI de 
 En `apps/mobile/.env` (copiar de `apps/mobile/.env.example`):
 
 ```
-EXPO_PUBLIC_API_URL="https://de-paso-api.vercel.app"   # API desplegada
+EXPO_PUBLIC_API_URL="https://<tu-api>.easypanel.host"   # API desplegada
 # o la API local: http://<IP-de-tu-PC>:3000
 ```
 
 ## 4. Base de datos
 
-### Opción A: PostgreSQL local con Docker
+### Opción A: MySQL local con Docker
 
 ```bash
-docker compose up -d
-pnpm --filter @depaso/database exec prisma migrate deploy
-pnpm --filter @depaso/database run seed        # datos de ejemplo
+docker compose up -d                                    # MySQL 8 en localhost:3306
+pnpm --filter @depaso/database run migrate:deploy       # crea las tablas
+pnpm --filter @depaso/database run seed                 # datos de ejemplo
 ```
 
-### Opción B: Supabase (la que usa el despliegue)
+### Opción B: MySQL de EasyPanel (la que usa el despliegue)
 
-1. Creá un proyecto en supabase.com y copiá la cadena de conexión (modo *session pooler*).
-2. Ponela en `DATABASE_URL` y corré `prisma migrate deploy` como arriba.
-
-> Las migraciones se aplican con un usuario que sea **dueño de las tablas**. Si Supabase
-> rechaza con "must be owner", usá el usuario con el que se crearon (`depaso_app` en el
-> despliegue actual).
+1. En EasyPanel: *Create Service → MySQL*. Anotá usuario, clave, base y nombre del servicio.
+2. La API (servicio App) usa la URL interna: `mysql://USUARIO:CLAVE@NOMBRE-SERVICIO:3306/BASE`.
+3. Al arrancar, el contenedor aplica las migraciones solo. Detalle en
+   [DEPLOY-EASYPANEL.md](development/DEPLOY-EASYPANEL.md).
 
 ### Cargar el catálogo real (opcional)
 
@@ -154,16 +152,14 @@ cd apps/mobile
 eas build -p android --profile preview     # genera el .apk descargable
 ```
 
-El perfil `preview` apunta al API desplegado (`EXPO_PUBLIC_API_URL`).
+El perfil `preview` apunta a la API desplegada (`EXPO_PUBLIC_API_URL`).
 
-## 8. Despliegue del API en Vercel
+## 8. Despliegue de la API en EasyPanel
 
-1. Importá el repositorio en Vercel y elegí `apps/api` como *Root Directory*.
-2. El comando de instalación ya está en `apps/api/vercel.json`
-   (`pnpm install --config.node-linker=isolated`).
-3. Cargá las variables de la sección 3 en *Settings → Environment Variables*.
-4. Cada `git push` a `master` redespliega. Las variables nuevas solo se aplican en un deploy
-   nuevo (*Redeploy*).
+Pasos completos, variables y cron jobs en [DEPLOY-EASYPANEL.md](development/DEPLOY-EASYPANEL.md).
+Resumen: un servicio **MySQL**, un servicio **App** desde GitHub (rama `easypanel`, build con el
+`Dockerfile` de la raíz, puerto 3000), las variables de la sección 3 en *Environment* y los 3 cron
+jobs. La URL pública del servicio App es la que va en `EXPO_PUBLIC_API_URL`.
 
 ## 9. Problemas frecuentes
 
@@ -174,6 +170,6 @@ El perfil `preview` apunta al API desplegado (`EXPO_PUBLIC_API_URL`).
 | `EPERM … rename` al hacer `pnpm install` en Windows | Hay un Metro/Node abierto bloqueando archivos: cerralo y reintentá |
 | La app se queda en el logo | El servidor Metro no está corriendo o se cayó: reiniciá `expo start` |
 | "No pudimos enviar el mail" | Falta o es inválida `SMTP_PASS` (Gmail pide contraseña de aplicación) |
-| El login social dice "no está activado" | Faltan las claves del proveedor o el redeploy |
+| El login social dice "no está activado" | Faltan las claves del proveedor o hay que redesplegar el servicio |
 | Búsqueda sin chips de tipo | Falta correr `pnpm data:sepa:backfill-types` |
 | `/api/health` devuelve 503 | `DATABASE_URL` incorrecta (revisá usuario, contraseña y que esté URL-encodeada) |

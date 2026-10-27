@@ -44,15 +44,15 @@ visual/legal exacto.
 | Capa | Tecnología |
 |---|---|
 | App móvil | React Native 0.88 + **Expo SDK 58** + Expo Router, TypeScript, Context API para el estado global |
-| Sesión persistente | Token guardado en `expo-secure-store` (Keychain / Keystore) |
-| Backend / API | Node.js 22 con Next.js 15 (*route handlers*), API REST |
-| Base de datos | PostgreSQL con Prisma (alojada en Supabase) |
-| Autenticación | Sesiones con token propio (hash en base, 30 días) + OAuth 2.0 con PKCE |
+| Sesión persistente | Access token JWT + refresh token guardados en `expo-secure-store` (Keychain / Keystore) |
+| Backend / API | Node.js 22 con Next.js 15 (*route handlers*), API REST (todos los endpoints son POST) |
+| Base de datos | **MySQL 8** con Prisma (servicio MySQL de EasyPanel) |
+| Autenticación | JWT (access 15 min) + refresh token rotativo (30 días) + login social OAuth 2.0 con PKCE (Google, Facebook, Discord) |
 | Validación | Zod, compartida entre app y API |
 | Mapas y rutas | Mapbox |
 | IA | API compatible con OpenAI (chat) + Whisper para voz |
 | Monorepo | pnpm workspaces + Turborepo |
-| Despliegue | Vercel (API) y EAS Build (APK) |
+| Despliegue | EasyPanel con Docker (API + MySQL) y EAS Build (APK) |
 
 ## Estructura del monorepo
 
@@ -84,7 +84,7 @@ base de datos en la [Guía de instalación](docs/GUIA-DE-INSTALACION.md).
 corepack enable
 pnpm install
 cp .env.example .env                 # completar DATABASE_URL y AUTH_SESSION_SECRET
-docker compose up -d                 # PostgreSQL local (o usar Supabase)
+docker compose up -d                 # MySQL local
 pnpm --filter @depaso/database exec prisma migrate deploy
 pnpm --filter @depaso/database run seed
 pnpm --filter @depaso/api dev        # API en http://localhost:3000
@@ -100,17 +100,34 @@ pnpm test        # tests de todo el monorepo (motor de optimización, auth, etc.
 pnpm build       # build de todo el monorepo
 ```
 
-## Notas técnicas para la evaluación
+## Cumplimiento de la consigna
 
-Decisiones que se apartan de lo más habitual, y por qué:
+| Requisito | Dónde está |
+|---|---|
+| Registro e inicio de sesión | `POST /api/auth/register` y `/login`; pantallas en `apps/mobile/app/(auth)` |
+| Login con 3 redes sociales | Google, Facebook (Meta) y Discord — `apps/api/lib/auth/oauthProviders.ts` |
+| 3 roles con permisos distintos | `USER`, `MERCHANT`, `ADMIN` — `requireMerchant` / `requireAdmin` protegen las rutas; la app muestra paneles según el rol |
+| UI móvil con navegación | Expo Router: tabs (Inicio, Listas, Mapa, Perfil) + pantallas; tema claro/oscuro |
+| API RESTful con CRUD | Listas, ítems, lugares, preferencias, rutas, precios: crear / leer / actualizar / eliminar |
+| Estado global con Context API | `AuthContext`, `ListsContext`, `PlacesContext`, `ThemeContext` en `apps/mobile/lib` |
+| Sesión persistente | Tokens en `expo-secure-store`; la app renueva el access token sola con el refresh token |
+| Manejo de errores | Validación en formularios (Zod) y mensajes por código de error de la API |
+| JWT con acceso y renovación | `apps/api/lib/auth/jwt.ts` y `session.ts`; `POST /api/auth/refresh` |
+| MySQL | `packages/database/prisma/schema.prisma` (provider `mysql`) + migración inicial |
+| Gestión de roles | Rol leído de la base en cada request, nunca del body |
+| Documentación de la API | [docs/development/API.md](docs/development/API.md) |
+| Manual de usuario | [docs/MANUAL-DE-USUARIO.md](docs/MANUAL-DE-USUARIO.md) |
+| Guía de instalación | [docs/GUIA-DE-INSTALACION.md](docs/GUIA-DE-INSTALACION.md) |
+| APK | `eas build -p android --profile preview` (ver la guía, sección 7) |
 
-- **Base de datos: PostgreSQL** (no MySQL). Es el motor definido desde la arquitectura inicial
-  del proyecto (ver [DECISIONS.md](docs/development/DECISIONS.md)) y hoy está alojado en
-  Supabase. El acceso pasa por Prisma, así que el modelo de datos vive en un solo lugar
-  ([`schema.prisma`](packages/database/prisma/schema.prisma)); pasar a MySQL implicaría cambiar
-  el `provider`, regenerar las migraciones y revisar el SQL crudo de la búsqueda de productos.
-- **Sesiones con token propio** en lugar de JWT: el token es opaco, se guarda hasheado (SHA-256)
-  en la tabla `sessions` y se puede revocar al instante (cerrar sesión, cambiar contraseña).
-  Vale 30 días y no hay token de renovación aparte. Detalle en
-  [docs/development/API.md](docs/development/API.md#convenciones).
+## Notas técnicas
+
+- **Todos los endpoints son POST**: ids y filtros viajan en el body JSON, no en la URL. La única
+  excepción es `GET /api/auth/oauth/callback`, la URL a la que Google/Facebook/Discord redirigen
+  (solo redirigen con GET).
+- **JWT**: el access token dura 15 minutos y se firma con `AUTH_SESSION_SECRET` (HS256). El refresh
+  token es opaco, se guarda hasheado en la tabla `sessions` y rota en cada canje. Detalle en
+  [docs/development/API.md](docs/development/API.md#autenticación-con-jwt-access--refresh).
 - **Roles** (`USER`, `MERCHANT`, `ADMIN`) verificados en el servidor en cada ruta protegida.
+- **Base de datos**: Prisma abstrae el motor; el SQL crudo de la búsqueda de productos está escrito
+  para MySQL 8 (ver [DATABASE.md](docs/development/DATABASE.md)).

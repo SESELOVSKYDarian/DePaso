@@ -30,8 +30,8 @@ Corren dentro del contenedor de la API:
 
 | Cuándo | Comando |
 | --- | --- |
-| `0 10 * * *` | `curl -fsS -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/promos/sync` |
-| `30 10 * * *` | `curl -fsS -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/catalog/refresh` |
+| `0 10 * * *` | `curl -fsS -X POST -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/promos/sync` |
+| `30 10 * * *` | `curl -fsS -X POST -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/catalog/refresh` |
 | `0 6 * * *` | `pnpm data:sepa:import --wholesale` |
 
 El import de SEPA es lo que llena `price_history`: con dos corridas en días distintos empiezan a
