@@ -19,3 +19,4 @@ export * from "./routeCompute";
 export * from "./mapConfig";
 export * from "./merchant";
 export * from "./payments";
+export * from "./home";

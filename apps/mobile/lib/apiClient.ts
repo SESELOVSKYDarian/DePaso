@@ -6,6 +6,7 @@ import {
   createConsentClient,
   createMerchantClient,
   createGeocodeClient,
+  createHomeClient,
   createListsClient,
   createOptimizationClient,
   createPaymentsClient,
@@ -49,3 +50,4 @@ export const adminMerchantClient = createAdminMerchantClient(client);
 export const paymentsClient = createPaymentsClient(client);
 export const communityClient = createCommunityClient(client);
 export const assistantClient = createAssistantClient(client);
+export const homeClient = createHomeClient(client);
