@@ -20,14 +20,14 @@
       },
       "channel": "preview",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://de-paso-api.vercel.app"
+        "EXPO_PUBLIC_API_URL": "https://estanga-estanga-darian.evo4vr.easypanel.host"
       }
     },
     "production": {
       "autoIncrement": true,
       "channel": "production",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://de-paso-api.vercel.app"
+        "EXPO_PUBLIC_API_URL": "https://estanga-estanga-darian.evo4vr.easypanel.host"
       }
     }
   },
