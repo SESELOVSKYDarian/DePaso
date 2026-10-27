@@ -1,0 +1,15 @@
+**/node_modules
+**/.next
+**/.turbo
+**/.expo
+.git
+.env
+.env.*
+!.env.example
+apps/mobile/assets
+apps/mobile/android
+apps/mobile/ios
+branding
+docs
+pdf
+*.log

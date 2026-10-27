@@ -1,3 +1,4 @@
+import { asStringArray } from "@/lib/jsonArrays";
 import { prisma } from "@depaso/database";
 import type { AccountExportResponse } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
@@ -57,7 +58,7 @@ export async function GET(request: NextRequest) {
     savedRouteContexts: savedRouteContexts.map((r: (typeof savedRouteContexts)[number]) => ({
       id: r.id,
       name: r.name,
-      waypointPlaceIds: r.waypointPlaceIds,
+      waypointPlaceIds: asStringArray(r.waypointPlaceIds),
       createdAt: r.createdAt.toISOString(),
     })),
     shoppingLists: shoppingLists.map((l: (typeof shoppingLists)[number]) => ({

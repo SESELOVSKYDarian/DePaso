@@ -1,15 +1,18 @@
+# MySQL local para desarrollo. En producción la base la crea EasyPanel (servicio MySQL).
 services:
-  postgres:
-    image: postgres:16-alpine
+  mysql:
+    image: mysql:8.4
     restart: unless-stopped
     environment:
-      POSTGRES_USER: depaso
-      POSTGRES_PASSWORD: depaso
-      POSTGRES_DB: depaso
+      MYSQL_ROOT_PASSWORD: depaso
+      MYSQL_DATABASE: depaso
+      MYSQL_USER: depaso
+      MYSQL_PASSWORD: depaso
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
     ports:
-      - "5432:5432"
+      - "3306:3306"
     volumes:
-      - depaso_postgres_data:/var/lib/postgresql/data
+      - depaso_mysql_data:/var/lib/mysql
 
 volumes:
-  depaso_postgres_data:
+  depaso_mysql_data:

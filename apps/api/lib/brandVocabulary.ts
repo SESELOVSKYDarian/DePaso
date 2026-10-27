@@ -13,10 +13,10 @@ let cache: { at: number; brands: BrandEntry[] } | null = null;
 export async function loadBrands(): Promise<BrandEntry[]> {
   if (cache && Date.now() - cache.at < CACHE_MS) return cache.brands;
   try {
-    const rows = await prisma.$queryRaw<{ id: string; name: string; count: number }[]>`
-      SELECT b.id, b.name, count(*)::int AS count
+    const rows = await prisma.$queryRaw<{ id: string; name: string; count: bigint | number }[]>`
+      SELECT b.id, b.name, count(*) AS count
       FROM products p
-      JOIN brands b ON b.id = p."brandId"
+      JOIN brands b ON b.id = p.brandId
       GROUP BY b.id, b.name
       HAVING count(*) >= ${MIN_PRODUCTS}
       ORDER BY count DESC
@@ -24,7 +24,7 @@ export async function loadBrands(): Promise<BrandEntry[]> {
     `;
     const brands = rows
       .filter((row) => !SKIP.test(row.name.trim()))
-      .map((row) => ({ id: row.id, name: row.name, count: row.count }));
+      .map((row) => ({ id: row.id, name: row.name, count: Number(row.count) }));
     cache = { at: Date.now(), brands };
     return brands;
   } catch (error) {

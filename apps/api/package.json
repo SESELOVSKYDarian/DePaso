@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "next dev",
-    "build": "pnpm --filter @depaso/database run generate && pnpm --filter @depaso/database run migrate:deploy && next build",
-    "start": "next start",
+    "build": "pnpm --filter @depaso/database run generate && next build",
+    "start": "next start -H 0.0.0.0 -p ${PORT:-3000}",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "test": "vitest run"

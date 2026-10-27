@@ -5,12 +5,12 @@
 
 generator client {
   provider      = "prisma-client-js"
-  // Motor para las funciones serverless de Vercel (Linux) además del nativo local.
-  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+  // Motor nativo (local) y el de Linux para el contenedor de EasyPanel.
+  binaryTargets = ["native", "debian-openssl-3.0.x", "linux-musl-openssl-3.0.x"]
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -189,13 +189,13 @@ model MerchantRequest {
   id              String                @id @default(uuid())
   userId          String
   user            User                  @relation("MerchantRequestApplicant", fields: [userId], references: [id], onDelete: Cascade)
-  businessName    String
-  address         String
+  businessName    String @db.VarChar(255)
+  address         String @db.VarChar(255)
   phone           String?
   /// Correo de contacto obligatorio: el equipo de DePaso se comunica por acá o por teléfono para
   /// confirmar que la persona realmente trabaja en el comercio antes de aprobar.
   contactEmail    String?
-  note            String?
+  note            String? @db.Text
   latitude        Float
   longitude       Float
   /// Cuándo y quién confirmó el vínculo con el comercio (llamada o correo) al aprobar.
@@ -209,7 +209,7 @@ model MerchantRequest {
   reviewedById    String?
   reviewedBy      User?                 @relation("MerchantRequestReviewer", fields: [reviewedById], references: [id])
   reviewedAt      DateTime?
-  rejectionReason String?
+  rejectionReason String? @db.Text
   createdAt       DateTime              @default(now())
   updatedAt       DateTime              @updatedAt
 
@@ -269,9 +269,9 @@ model UserPlace {
   id         String    @id @default(uuid())
   userId     String
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name       String
+  name       String @db.VarChar(255)
   type       PlaceType
-  address    String
+  address    String @db.VarChar(255)
   latitude   Float
   longitude  Float
   isFavorite Boolean   @default(false)
@@ -286,10 +286,10 @@ model SavedRouteContext {
   id               String   @id @default(uuid())
   userId           String
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name             String
+  name             String @db.VarChar(255)
   /// IDs de UserPlace en orden — sin tabla puente porque el orden es parte del significado
   /// y la cardinalidad es chica (contexto de un día, sección 33-35).
-  waypointPlaceIds String[]
+  waypointPlaceIds Json
   /// Paradas completas tal como se armó la ruta (nombre, dirección y coordenadas), para poder
   /// guardar también rutas con puntos de hoy, de la ubicación actual o elegidos en el mapa.
   /// `null` en rutas viejas, que sólo tienen `waypointPlaceIds`.
@@ -316,14 +316,14 @@ model Product {
   id       String    @id @default(uuid())
   brandId  String?
   brand    Brand?    @relation(fields: [brandId], references: [id])
-  name     String
+  name     String @db.VarChar(255)
   /// Sección 8 — nombre normalizado (lowercase, sin acentos, espacios colapsados) para
   /// matching tolerante a variaciones sin depender sólo de EAN.
-  normalizedName String?
+  normalizedName String? @db.VarChar(255)
   category String
   /// Foto frontal (Open Food Facts, resuelta por EAN a demanda desde la búsqueda). `null` +
   /// `imageCheckedAt` seteado = ya se buscó y no hay foto; no se vuelve a pedir por un tiempo.
-  imageUrl       String?
+  imageUrl       String? @db.Text
   imageCheckedAt DateTime?
   /// Tipo derivado del nombre ("gaseosa", "vino"…), ver `classifyProductType` en @depaso/domain.
   /// `null` = no se reconoció; el producto se sigue encontrando por texto.
@@ -345,7 +345,7 @@ model ProductVariant {
   id        String   @id @default(uuid())
   productId String
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  name      String
+  name      String @db.VarChar(255)
   ean       String?  @unique
   /// `true` sólo si `ean` pasó la validación de checksum GTIN (8/12/13/14 dígitos) — el
   /// campo `productos_ean` de SEPA repite el mismo valor de `id_producto` sin indicar si es
@@ -367,7 +367,7 @@ model ProductAlias {
   id               String         @id @default(uuid())
   productVariantId String
   productVariant   ProductVariant @relation(fields: [productVariantId], references: [id], onDelete: Cascade)
-  alias            String
+  alias            String @db.VarChar(255)
 
   @@index([alias])
   @@map("product_aliases")
@@ -384,7 +384,7 @@ model ProductAlias {
 model StoreCompany {
   id              String         @id @default(uuid())
   cuit            String         @unique
-  legalName       String
+  legalName       String @db.VarChar(255)
   source          ImportSourceType?
   sourceUpdatedAt DateTime?
   createdAt       DateTime       @default(now())
@@ -397,7 +397,7 @@ model StoreCompany {
 
 model Store {
   id      String        @id @default(uuid())
-  name    String
+  name    String @db.VarChar(255)
   /// Nullable — las `Store` cargadas a mano (Fase 11, antes de esta migración) no tienen
   /// empresa asociada todavía.
   companyId String?
@@ -405,7 +405,7 @@ model Store {
   /// `id_bandera` de SEPA — junto con `companyId` identifica una bandera de forma estable
   /// entre corridas de import (sección 24, "nunca requerir deploy para un comercio nuevo").
   externalSepaBrandId String?
-  normalizedName      String?
+  normalizedName      String? @db.VarChar(255)
 
   branches StoreBranch[]
   aliases  StoreAlias[]
@@ -420,8 +420,8 @@ model StoreAlias {
   id              String @id @default(uuid())
   storeId         String
   store           Store  @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  alias           String
-  normalizedAlias String
+  alias           String @db.VarChar(255)
+  normalizedAlias String @db.VarChar(255)
 
   @@index([normalizedAlias])
   @@map("store_aliases")
@@ -431,8 +431,8 @@ model StoreBranch {
   id        String  @id @default(uuid())
   storeId   String
   store     Store   @relation(fields: [storeId], references: [id], onDelete: Cascade)
-  name      String
-  address   String
+  name      String @db.VarChar(255)
+  address   String @db.VarChar(255)
   latitude  Float
   longitude Float
   /// Alcance de lanzamiento sólo Mar del Plata (sección 42) — campo simple, sin jerarquía
@@ -483,7 +483,7 @@ model BranchDataIssue {
   storeBranchId String
   storeBranch   StoreBranch @relation(fields: [storeBranchId], references: [id], onDelete: Cascade)
   type          String
-  detail        String
+  detail        String @db.Text
   resolvedAt    DateTime?
   createdAt     DateTime    @default(now())
 
@@ -506,7 +506,7 @@ model MarketRegion {
   maxLongitude    Float
   /// Variantes normalizadas de `sucursales_localidad` que cuentan como "dentro" (sección
   /// 15 — SEPA trae "Mar del Plata"/"MAR DEL PLATA"/"Mar Del Plata" inconsistente).
-  localityAliases String[]
+  localityAliases Json
 
   branches StoreBranch[]
 
@@ -527,9 +527,9 @@ model Price {
   /// Promociones tal como las publica la fuente (sección 9) — nunca se aplican solas sin
   /// validar sus condiciones (BUSINESS-RULES.md p.10); se muestran como alternativa.
   promoPrice1       Decimal?        @db.Decimal(12, 2)
-  promoDescription1 String?
+  promoDescription1 String? @db.Text
   promoPrice2       Decimal?        @db.Decimal(12, 2)
-  promoDescription2 String?
+  promoDescription2 String? @db.Text
   currency         String          @default("ARS")
   sourceType       PriceSourceType
   sourceReference  String?
@@ -539,7 +539,7 @@ model Price {
   sourceExternalId String?
   /// Cómo lo llama el comercio en su góndola ("Leche entera La Serenísima 1 L"). Sólo para esta
   /// sucursal: el nombre del catálogo no cambia para los demás comercios.
-  displayName      String?
+  displayName      String? @db.VarChar(255)
   reportedAt       DateTime        @default(now())
   validFrom        DateTime        @default(now())
   confidence       ConfidenceLevel
@@ -564,7 +564,7 @@ model PriceHistory {
   amount           Decimal     @db.Decimal(12, 2)
   status           PriceStatus
   changedAt        DateTime    @default(now())
-  changeReason     String
+  changeReason     String @db.VarChar(255)
 
   @@index([priceId])
   @@map("price_history")
@@ -579,8 +579,8 @@ model PriceReport {
   storeBranch       StoreBranch @relation(fields: [storeBranchId], references: [id], onDelete: Cascade)
   reportedPrice     Decimal     @db.Decimal(12, 2)
   requiresPromotion Boolean     @default(false)
-  promotionNote     String?
-  photoEvidenceUrl  String?
+  promotionNote     String? @db.Text
+  photoEvidenceUrl  String? @db.Text
   goodFaithDeclared Boolean     @default(false)
   createdAt         DateTime    @default(now())
 
@@ -608,7 +608,7 @@ model CommunityModerationEvent {
   targetPriceReportId String?
   targetPriceReport   PriceReport?        @relation(fields: [targetPriceReportId], references: [id])
   targetUserId        String?
-  reason              String
+  reason              String @db.Text
   createdAt           DateTime            @default(now())
   createdByAdminId    String?
 
@@ -635,7 +635,7 @@ model DataImportRun {
   rowsAccepted         Int              @default(0)
   rowsRejected         Int              @default(0)
   branchesDetected     Int              @default(0)
-  error                String?
+  error                String? @db.Text
 
   anomalies ImportAnomaly[]
 
@@ -657,8 +657,8 @@ model ImportAnomaly {
   importRunId String
   importRun   DataImportRun @relation(fields: [importRunId], references: [id], onDelete: Cascade)
   type        String
-  rawRow      String
-  reason      String
+  rawRow      String @db.Text
+  reason      String @db.Text
   needsReview Boolean       @default(false)
   createdAt   DateTime      @default(now())
 
@@ -674,7 +674,7 @@ model ShoppingList {
   id         String    @id @default(uuid())
   userId     String
   user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name       String
+  name       String @db.VarChar(255)
   archivedAt DateTime?
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
@@ -722,19 +722,19 @@ model PaymentPromo {
   id              String   @id @default(uuid())
   /// Id de la fuente — permite re-sincronizar sin duplicar.
   externalId      String   @unique
-  retailer        String
+  retailer        String @db.VarChar(255)
   /// Nombre normalizado del comercio, para matchear contra `Store.normalizedName`/`name`.
-  normalizedRetailer String
+  normalizedRetailer String @db.VarChar(255)
   bank            String?
   /// Slugs del catálogo `PAYMENT_METHODS`; vacío = promo general (sin medio de pago específico).
-  methodSlugs     String[]
+  methodSlugs     Json
   discountPercent Float
   /// Tope de reintegro en ARS por compra/día (null = sin tope informado).
   capAmount       Float?
   /// 0 = domingo … 6 = sábado; vacío = todos los días.
-  daysOfWeek      Int[]
-  validityNote    String?
-  sourceUrl       String?
+  daysOfWeek      Json
+  validityNote    String? @db.Text
+  sourceUrl       String? @db.Text
   source          String?
   active          Boolean  @default(true)
   syncedAt        DateTime @default(now())
@@ -749,7 +749,7 @@ model ShoppingListItem {
   shoppingList   ShoppingList @relation(fields: [shoppingListId], references: [id], onDelete: Cascade)
   productId      String
   quantity       Int          @default(1)
-  note           String?
+  note           String? @db.Text
 
   @@index([shoppingListId])
   @@map("shopping_list_items")
@@ -813,10 +813,10 @@ model OptimizationPlan {
   additionalDistanceMeters Int
   additionalTimeSeconds    Int
   numberOfStops            Int
-  missingProductIds        String[]
+  missingProductIds        Json
   priceConfidence           ConfidenceLevel
   estimatedSavings          Decimal         @db.Decimal(12, 2)
-  explanation                String
+  explanation                String @db.Text
 
   stops OptimizationPlanStop[]
 

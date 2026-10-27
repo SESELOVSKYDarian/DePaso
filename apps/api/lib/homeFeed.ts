@@ -1,3 +1,4 @@
+import { loadActivePromos } from "./promoRows";
 import { paymentMethodLabel } from "@depaso/domain";
 import { Prisma, prisma } from "@depaso/database";
 import type { HomeFeedResponse } from "@depaso/validation";
@@ -36,7 +37,7 @@ export async function buildHomeFeed(userId: string, now: Date = new Date()): Pro
       take: WATCHED_PRODUCTS_MAX,
     }),
     prisma.userPaymentMethod.findMany({ where: { userId }, select: { methodSlug: true } }),
-    prisma.paymentPromo.findMany({ where: { active: true } }),
+    loadActivePromos(),
   ]);
 
   const productIds = items.map((item: (typeof items)[number]) => item.productId);
@@ -47,24 +48,28 @@ export async function buildHomeFeed(userId: string, now: Date = new Date()): Pro
     productIds.length === 0
       ? []
       : await prisma.$queryRaw<ChangeRow[]>(Prisma.sql`
-          SELECT DISTINCT ON (v."productId")
-            v."productId" AS "productId",
-            p.name AS "productName",
-            s.name AS "storeName",
-            ph.amount::float AS previous,
-            pr.price::float AS current
-          FROM price_history ph
-          JOIN prices pr ON pr.id = ph."priceId"
-          JOIN product_variants v ON v.id = ph."productVariantId"
-          JOIN products p ON p.id = v."productId"
-          JOIN store_branches sb ON sb.id = ph."storeBranchId"
-          JOIN stores s ON s.id = sb."storeId"
-          WHERE v."productId" IN (${Prisma.join(productIds)})
-            AND ph."changedAt" > ${new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000)}
-            AND pr.status <> 'STALE'
-            AND ph.amount > 0
-            AND ph.amount <> pr.price
-          ORDER BY v."productId", abs(pr.price - ph.amount) / ph.amount DESC
+          SELECT ranked.productId, ranked.productName, ranked.storeName, ranked.previous, ranked.current
+          FROM (
+            SELECT
+              v.productId AS productId,
+              p.name AS productName,
+              s.name AS storeName,
+              CAST(ph.amount AS DOUBLE) AS previous,
+              CAST(pr.price AS DOUBLE) AS current,
+              ROW_NUMBER() OVER (PARTITION BY v.productId ORDER BY ABS(pr.price - ph.amount) / ph.amount DESC) AS position
+            FROM price_history ph
+            JOIN prices pr ON pr.id = ph.priceId
+            JOIN product_variants v ON v.id = ph.productVariantId
+            JOIN products p ON p.id = v.productId
+            JOIN store_branches sb ON sb.id = ph.storeBranchId
+            JOIN stores s ON s.id = sb.storeId
+            WHERE v.productId IN (${Prisma.join(productIds)})
+              AND ph.changedAt > ${new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000)}
+              AND pr.status <> 'STALE'
+              AND ph.amount > 0
+              AND ph.amount <> pr.price
+          ) ranked
+          WHERE ranked.position = 1
         `);
 
   const priceChanges = changes

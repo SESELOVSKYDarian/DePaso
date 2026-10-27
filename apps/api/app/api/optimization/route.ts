@@ -2,7 +2,8 @@ import { prisma } from "@depaso/database";
 import { distanceToPathMeters, optimizeWithRanking, type OptimizationPlanResult, type StoreCandidateInput } from "@depaso/optimization";
 import type { TransportMode } from "@depaso/types";
 import { optimizationRunRequestSchema } from "@depaso/validation";
-import { after, NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { runInBackground } from "@/lib/background";
 import { getCurrentUser } from "@/lib/auth/currentUser";
 import { applyPaymentPromos, loadPromoContext, promoDiscountForStops } from "@/lib/applyPromos";
 import { buildPlanRoute, type BranchInfo } from "@/lib/planRoute";
@@ -190,7 +191,7 @@ export async function POST(request: NextRequest) {
       getRouteProvider(parsed.data.transportMode)
     );
     // El registro para el admin se guarda después de responder: son ~20 escrituras que no tiene por qué esperar el usuario.
-    after(() => persistOptimizationRun(current.userId, parsed.data.shoppingListId, parsed.data.transportMode, plans));
+    runInBackground(() => persistOptimizationRun(current.userId, parsed.data.shoppingListId, parsed.data.transportMode, plans));
     // `debugScore` es deliberadamente interno; nunca cruza el límite HTTP.
     const branchInfo = new Map<string, BranchInfo>();
     for (const price of prices) {

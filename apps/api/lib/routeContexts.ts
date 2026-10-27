@@ -1,3 +1,4 @@
+import { asStringArray } from "./jsonArrays";
 import type { SavedRouteContext } from "@depaso/database";
 import { savedStopSchema, type RouteContextResponse } from "@depaso/validation";
 import { z } from "zod";
@@ -11,7 +12,7 @@ export function toRouteContextResponse(context: SavedRouteContext): RouteContext
   return {
     id: context.id,
     name: context.name,
-    waypointPlaceIds: context.waypointPlaceIds,
+    waypointPlaceIds: asStringArray(context.waypointPlaceIds),
     stops: parseStops(context.stops),
     createdAt: context.createdAt.toISOString(),
   };

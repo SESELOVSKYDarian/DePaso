@@ -1,3 +1,4 @@
+import { loadActivePromos, type PromoRow } from "./promoRows";
 import { paymentMethodLabel } from "@depaso/domain";
 import { prisma } from "@depaso/database";
 import type { AppliedPromo } from "@depaso/validation";
@@ -28,7 +29,7 @@ function formatMoney(value: number): string {
   return `$${Math.round(value).toLocaleString("es-AR")}`;
 }
 
-type Promos = Awaited<ReturnType<typeof prisma.paymentPromo.findMany>>;
+type Promos = PromoRow[];
 
 /** Promos activas + medios de pago del usuario + día: lo necesario para calcular descuentos. */
 export interface PromoContext {
@@ -42,7 +43,7 @@ export async function loadPromoContext(userId: string, now: Date = new Date()): 
   const methods = await prisma.userPaymentMethod.findMany({ where: { userId } });
   const userMethodSlugs = methods.map((method: (typeof methods)[number]) => method.methodSlug);
   if (userMethodSlugs.length === 0) return null;
-  const promos = await prisma.paymentPromo.findMany({ where: { active: true } });
+  const promos = await loadActivePromos();
   if (promos.length === 0) return null;
   return { promos, userMethodSlugs, weekday: argentinaWeekday(now) };
 }

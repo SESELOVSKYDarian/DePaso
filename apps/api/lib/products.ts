@@ -23,8 +23,8 @@ interface RankedRow {
   name: string;
   category: string;
   brandName: string | null;
-  tier: number;
-  popularity: number;
+  tier: bigint | number;
+  popularity: bigint | number;
 }
 
 /** Minúsculas, sin acentos, espacios colapsados — igual que `Product.normalizedName`. */
@@ -41,7 +41,7 @@ function escapeLike(token: string): string {
   return token.replace(/[\\%_]/g, (char) => `\\${char}`);
 }
 
-const nameExpr = Prisma.sql`COALESCE(p."normalizedName", lower(p.name))`;
+const nameExpr = Prisma.sql`COALESCE(p.normalizedName, lower(p.name))`;
 const brandExpr = Prisma.sql`lower(COALESCE(b.name, ''))`;
 
 /** Palabras de la búsqueda que realmente filtran (sin conectores). */
@@ -63,8 +63,8 @@ function textConditions(tokens: string[]): Prisma.Sql[] {
 
 function filterConditions(filters: ProductSearchFilters): Prisma.Sql[] {
   const conditions: Prisma.Sql[] = [];
-  if (filters.type) conditions.push(Prisma.sql`p."productType" = ${filters.type}`);
-  if (filters.brandId) conditions.push(Prisma.sql`p."brandId" = ${filters.brandId}`);
+  if (filters.type) conditions.push(Prisma.sql`p.productType = ${filters.type}`);
+  if (filters.brandId) conditions.push(Prisma.sql`p.brandId = ${filters.brandId}`);
   return conditions;
 }
 
@@ -111,7 +111,7 @@ async function searchProductsUncached(
           return Prisma.sql`CASE
             WHEN ${nameExpr} = ${normalized} THEN 0
             WHEN ${allInName} AND ${nameExpr} LIKE ${`${first} %`} THEN 1
-            WHEN ${allInName} AND (' ' || ${nameExpr} || ' ') LIKE ${`% ${first} %`} THEN 2
+            WHEN ${allInName} AND CONCAT(' ', ${nameExpr}, ' ') LIKE ${`% ${first} %`} THEN 2
             WHEN ${allInName} THEN 3
             ELSE 4
           END`;
@@ -123,12 +123,12 @@ async function searchProductsUncached(
         p.id,
         p.name,
         p.category,
-        b.name AS "brandName",
+        b.name AS brandName,
         ${tierExpr} AS tier,
         p.popularity,
-        length(p.name) AS name_length
+        CHAR_LENGTH(p.name) AS name_length
       FROM products p
-      LEFT JOIN brands b ON b.id = p."brandId"
+      LEFT JOIN brands b ON b.id = p.brandId
       ${whereClause(conditions)}
       ORDER BY tier, p.popularity DESC, name_length
       LIMIT ${POPULARITY_POOL}
@@ -137,8 +137,8 @@ async function searchProductsUncached(
       cand.id,
       cand.name,
       cand.category,
-      cand."brandName",
-      cand.tier::int AS tier,
+      cand.brandName,
+      cand.tier AS tier,
       cand.popularity
     FROM cand
     ORDER BY cand.tier, cand.popularity DESC, cand.name_length, cand.name
@@ -188,22 +188,22 @@ async function getProductFacetsUncached(query: string, filters: ProductSearchFil
   const text = textConditions(tokens);
 
   const typeConditions = [...text, ...filterConditions({ brandId: filters.brandId })];
-  const brandConditions = [...text, ...filterConditions({ type: filters.type }), Prisma.sql`p."brandId" IS NOT NULL`];
+  const brandConditions = [...text, ...filterConditions({ type: filters.type }), Prisma.sql`p.brandId IS NOT NULL`];
 
   const [typeRows, brandRows] = await Promise.all([
-    prisma.$queryRaw<{ id: string; count: number }[]>(Prisma.sql`
-      SELECT p."productType" AS id, count(*)::int AS count
+    prisma.$queryRaw<{ id: string; count: bigint | number }[]>(Prisma.sql`
+      SELECT p.productType AS id, count(*) AS count
       FROM products p
-      LEFT JOIN brands b ON b.id = p."brandId"
-      ${whereClause([...typeConditions, Prisma.sql`p."productType" IS NOT NULL`])}
-      GROUP BY p."productType"
+      LEFT JOIN brands b ON b.id = p.brandId
+      ${whereClause([...typeConditions, Prisma.sql`p.productType IS NOT NULL`])}
+      GROUP BY p.productType
       ORDER BY count DESC
       LIMIT ${MAX_FACET_TYPES}
     `),
-    prisma.$queryRaw<{ id: string; name: string; count: number }[]>(Prisma.sql`
-      SELECT b.id, b.name, count(*)::int AS count
+    prisma.$queryRaw<{ id: string; name: string; count: bigint | number }[]>(Prisma.sql`
+      SELECT b.id, b.name, count(*) AS count
       FROM products p
-      JOIN brands b ON b.id = p."brandId"
+      JOIN brands b ON b.id = p.brandId
       ${whereClause(brandConditions)}
       GROUP BY b.id, b.name
       ORDER BY count DESC, b.name
@@ -212,12 +212,12 @@ async function getProductFacetsUncached(query: string, filters: ProductSearchFil
   ]);
 
   return {
-    types: typeRows.map((row) => ({ id: row.id, label: PRODUCT_TYPE_LABELS[row.id] ?? row.id, count: row.count })),
+    types: typeRows.map((row) => ({ id: row.id, label: PRODUCT_TYPE_LABELS[row.id] ?? row.id, count: Number(row.count) })),
     // "S/D", "Genérico" o vacío no son marcas para elegir.
     brands: brandRows.filter((row) => !/^(s\/?d|gen[eé]rico|sin marca|\s*)$/i.test(row.name.trim())).map((row) => ({
       id: row.id,
       name: prettifyBrandName(row.name) ?? row.name,
-      count: row.count,
+      count: Number(row.count),
     })),
   };
 }

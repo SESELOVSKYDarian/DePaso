@@ -1,5 +1,5 @@
 import { Prisma, prisma } from "@depaso/database";
-import { after } from "next/server";
+import { runInBackground } from "./background";
 
 /**
  * Fotos de producto desde Open Food Facts, resueltas por EAN a demanda.
@@ -7,7 +7,7 @@ import { after } from "next/server";
  * El catálogo de SEPA no trae imágenes. El EAN sale del cuarto segmento de
  * `prices.sourceExternalId` (`id_comercio|id_bandera|id_sucursal|id_producto`). Se pide la foto
  * sólo de los resultados que se están mostrando, con presupuesto de tiempo corto: lo que no
- * llega a tiempo se termina de resolver en segundo plano (`after`) y aparece en la próxima
+ * llega a tiempo se termina de resolver en segundo plano (`runInBackground`) y aparece en la próxima
  * búsqueda. Lo resuelto — incluso "no hay foto" — se guarda en `Product` para no volver a pedir.
  */
 
@@ -68,7 +68,7 @@ export async function loadProductImages(productIds: string[]): Promise<Map<strin
     // La respuesta NUNCA espera a Open Food Facts: se devuelve lo que ya está guardado y las
     // fotos que faltan se buscan después de responder, para la próxima búsqueda. Esperar acá
     // sumaba hasta ~2 segundos a cada búsqueda.
-    if (toResolve.length > 0) after(() => resolveMissingImages(toResolve));
+    if (toResolve.length > 0) runInBackground(() => resolveMissingImages(toResolve));
   } catch (error) {
     console.error("product images lookup failed", error);
   }
@@ -79,13 +79,14 @@ export async function loadProductImages(productIds: string[]): Promise<Map<strin
 async function resolveMissingImages(toResolve: string[]): Promise<void> {
   try {
     const eanRows = await prisma.$queryRaw<{ id: string; ean: string }[]>(Prisma.sql`
-     SELECT DISTINCT ON (v."productId")
-       v."productId" AS id,
-       split_part(pr."sourceExternalId", '|', 4) AS ean
+     SELECT v.productId AS id,
+       MAX(SUBSTRING_INDEX(SUBSTRING_INDEX(pr.sourceExternalId, '|', 4), '|', -1)) AS ean
      FROM product_variants v
-     JOIN prices pr ON pr."productVariantId" = v.id
-     WHERE v."productId" IN (${Prisma.join(toResolve)})
-       AND pr."sourceExternalId" IS NOT NULL
+     JOIN prices pr ON pr.productVariantId = v.id
+     WHERE v.productId IN (${Prisma.join(toResolve)})
+       AND pr.sourceExternalId IS NOT NULL
+       AND SUBSTRING_INDEX(SUBSTRING_INDEX(pr.sourceExternalId, '|', 4), '|', -1) REGEXP '^[0-9]{8,14}$'
+     GROUP BY v.productId
     `);
     const eanByProduct = new Map(
      eanRows.filter((row) => /^\d{8,14}$/.test(row.ean)).map((row) => [row.id, row.ean] as const)
