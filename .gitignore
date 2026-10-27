@@ -49,3 +49,14 @@ coverage/
 
 # Credenciales de cuentas de prueba (nunca subir)
 .env.test-user
+
+# skills / agentes / ia
+.skills/
+skills/
+.agents/
+.agent/
+.ai/
+.codex/
+.claude/
+.cursor/
+.windsurf/

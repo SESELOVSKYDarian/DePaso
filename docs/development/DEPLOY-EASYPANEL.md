@@ -9,7 +9,7 @@ DATABASE_URL=mysql://USUARIO:CLAVE@NOMBRE-DEL-SERVICIO-MYSQL:3306/BASE
 ```
 
 ## 2. API
-**Create Service → App**, origen GitHub `SESELOVSKYDarian/DePaso`, rama `master`, build con
+**Create Service → App**, origen GitHub `SESELOVSKYDarian/DePaso`, rama `easypanel`, build con
 **Dockerfile** (`Dockerfile` en la raíz). Puerto del contenedor: `3000`. Dominio: el que te da
 EasyPanel (esa es la URL de la API). Al arrancar, el contenedor aplica las migraciones solo.
 
