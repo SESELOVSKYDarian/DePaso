@@ -6,19 +6,6 @@ import { toStorePreferenceResponse } from "@/lib/preferences";
 
 const include = { storeBranch: { include: { store: true } } } as const;
 
-/** Preferencias de comercio por categoría (Fase 10, sección 87). */
-export async function GET(request: NextRequest) {
-  const current = await getCurrentUser(request);
-  if (!current) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
-
-  const prefs = await prisma.storePreference.findMany({
-    where: { userId: current.userId },
-    include,
-  });
-
-  return NextResponse.json({ preferences: prefs.map(toStorePreferenceResponse) });
-}
-
 export async function POST(request: NextRequest) {
   const current = await getCurrentUser(request);
   if (!current) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });

@@ -16,17 +16,17 @@ const moderationActionResponseSchema = z.object({ id: z.string(), createdAt: z.s
 export function createAdminOpsClient(client: DepasoApiClient) {
   return {
     users: {
-      list: () => client.get("/api/admin/users", usersSchema),
+      list: () => client.post("/api/admin/users", {}, usersSchema),
     },
     priceReports: {
-      list: () => client.get("/api/admin/price-reports", priceReportsSchema),
+      list: () => client.post("/api/admin/price-reports", {}, priceReportsSchema),
     },
     moderation: {
       act: (body: ModerationActionInput) =>
         client.post("/api/admin/moderation", body, moderationActionResponseSchema),
     },
     optimizationRuns: {
-      list: () => client.get("/api/admin/optimization-runs", optimizationRunsSchema),
+      list: () => client.post("/api/admin/optimization-runs", {}, optimizationRunsSchema),
     },
   };
 }

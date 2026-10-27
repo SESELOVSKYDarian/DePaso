@@ -10,20 +10,20 @@ export interface ProductFilters {
   brandId?: string | undefined;
 }
 
-function toQuery(q: string, filters: ProductFilters): string {
-  const params = new URLSearchParams();
-  if (q) params.set("q", q);
-  if (filters.type) params.set("type", filters.type);
-  if (filters.brandId) params.set("brandId", filters.brandId);
-  return params.toString();
+function toBody(q: string, filters: ProductFilters): Record<string, string> {
+  const body: Record<string, string> = {};
+  if (q) body.q = q;
+  if (filters.type) body.type = filters.type;
+  if (filters.brandId) body.brandId = filters.brandId;
+  return body;
 }
 
 /** Búsqueda de catálogo y filtros — ver apps/api/app/api/products/{search,facets}. */
 export function createProductsClient(client: DepasoApiClient) {
   return {
     search: (q: string, filters: ProductFilters = {}) =>
-      client.get(`/api/products/search?${toQuery(q, filters)}`, searchSchema),
+      client.post("/api/products/search", toBody(q, filters), searchSchema),
     facets: (q: string, filters: ProductFilters = {}) =>
-      client.get(`/api/products/facets?${toQuery(q, filters)}`, productFacetsSchema),
+      client.post("/api/products/facets", toBody(q, filters), productFacetsSchema),
   };
 }

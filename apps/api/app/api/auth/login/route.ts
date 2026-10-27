@@ -47,6 +47,8 @@ export async function POST(request: NextRequest) {
     },
     token: session.token,
     expiresAt: session.expiresAt,
+    refreshToken: session.refreshToken,
+    refreshExpiresAt: session.refreshExpiresAt,
   });
   setSessionCookie(response, session.token);
   return response;

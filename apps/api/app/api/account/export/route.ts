@@ -3,6 +3,7 @@ import { prisma } from "@depaso/database";
 import type { AccountExportResponse } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
+import { postAsQuery } from "@/lib/http/postAdapter";
 
 /**
  * Derecho de acceso — "Descargar/solicitar datos" (LEGAL.md p.14). Auto-servicio e
@@ -10,7 +11,7 @@ import { getCurrentUser } from "@/lib/auth/currentUser";
  * corridos, y un export instantáneo es estrictamente mejor para el titular que uno
  * encolado. Junta las categorías bajo `userId` del inventario de LEGAL.md p.5.
  */
-export async function GET(request: NextRequest) {
+async function handle(request: NextRequest) {
   const current = await getCurrentUser(request);
   if (!current) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
 
@@ -96,3 +97,6 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json(body);
 }
+
+// Todos los endpoints son POST: los parametros llegan en el body.
+export const POST = postAsQuery(handle);

@@ -4,6 +4,6 @@ import type { DepasoApiClient } from "./client";
 /** Novedades de Inicio — ver apps/api/app/api/home/feed. */
 export function createHomeClient(client: DepasoApiClient) {
   return {
-    feed: () => client.get("/api/home/feed", homeFeedResponseSchema),
+    feed: () => client.post("/api/home/feed", {}, homeFeedResponseSchema),
   };
 }

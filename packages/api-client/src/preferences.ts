@@ -15,16 +15,16 @@ const storePrefsSchema = z.object({ preferences: z.array(storePreferenceResponse
 export function createPreferencesClient(client: DepasoApiClient) {
   return {
     products: {
-      list: () => client.get("/api/preferences/products", productPrefsSchema),
+      list: () => client.post("/api/preferences/products/list", {}, productPrefsSchema),
       set: (body: ProductPreferenceInput) =>
         client.post("/api/preferences/products", body, productPreferenceResponseSchema),
-      remove: (productId: string) => client.delete(`/api/preferences/products/${productId}`, okSchema),
+      remove: (productId: string) => client.post("/api/preferences/products/delete", { productId }, okSchema),
     },
     stores: {
-      list: () => client.get("/api/preferences/stores", storePrefsSchema),
+      list: () => client.post("/api/preferences/stores/list", {}, storePrefsSchema),
       set: (body: StorePreferenceInput) =>
         client.post("/api/preferences/stores", body, storePreferenceResponseSchema),
-      remove: (id: string) => client.delete(`/api/preferences/stores/${id}`, okSchema),
+      remove: (id: string) => client.post("/api/preferences/stores/delete", { id }, okSchema),
     },
   };
 }

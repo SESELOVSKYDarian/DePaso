@@ -8,9 +8,9 @@ const listSchema = z.object({ routeContexts: z.array(routeContextResponseSchema)
 /** Contextos de ruta guardados — ver apps/api/app/api/route-contexts. */
 export function createRouteContextClient(client: DepasoApiClient) {
   return {
-    list: () => client.get("/api/route-contexts", listSchema),
+    list: () => client.post("/api/route-contexts/list", {}, listSchema),
     create: (body: RouteContextInput) =>
       client.post("/api/route-contexts", body, routeContextResponseSchema),
-    remove: (id: string) => client.delete(`/api/route-contexts/${id}`, okSchema),
+    remove: (id: string) => client.post("/api/route-contexts/delete", { id }, okSchema),
   };
 }

@@ -11,6 +11,9 @@ export interface AuthSession {
    * así (la implementación de referencia guarda un hash, no el token). */
   token: string;
   expiresAt: string;
+  /** Refresh token (sólo lo devuelve createSession / refreshSession). */
+  refreshToken?: string;
+  refreshExpiresAt?: string;
 }
 
 export interface AuthProvider {

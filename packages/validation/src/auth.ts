@@ -116,9 +116,17 @@ export type AuthUserResponse = z.infer<typeof authUserResponseSchema>;
 
 export const authResponseSchema = z.object({
   user: authUserResponseSchema,
+  /** Access token (JWT, vida corta). */
   token: z.string(),
   expiresAt: z.string(),
+  /** Refresh token: sirve para pedir un access token nuevo sin volver a loguearse. */
+  refreshToken: z.string(),
+  refreshExpiresAt: z.string(),
   /** Sólo en login social: `true` si esta llamada creó la cuenta (dispara el setup inicial). */
   isNewAccount: z.boolean().optional(),
 });
 export type AuthResponse = z.infer<typeof authResponseSchema>;
+
+/** Canje de refresh token por un par nuevo de tokens. */
+export const refreshRequestSchema = z.object({ refreshToken: z.string().min(10) });
+export type RefreshRequest = z.infer<typeof refreshRequestSchema>;

@@ -22,32 +22,31 @@ const okSchema = z.object({ ok: z.literal(true) });
 /** Flujo de comercio, lado usuario/comercio — ver apps/api/app/api/merchant. */
 export function createMerchantClient(client: DepasoApiClient) {
   return {
-    myRequest: () => client.get("/api/merchant/requests", myMerchantRequestResponseSchema),
+    myRequest: () => client.post("/api/merchant/requests/list", {}, myMerchantRequestResponseSchema),
     submitRequest: (body: MerchantRequestInput) =>
       client.post("/api/merchant/requests", body, createdRequestSchema),
-    branch: () => client.get("/api/merchant/branch", merchantBranchEnvelopeSchema),
+    branch: () => client.post("/api/merchant/branch", {}, merchantBranchEnvelopeSchema),
     /** Sucursales ya cargadas en DePaso que todavía no tienen comercio a cargo. */
     claimableBranches: (q: string) =>
-      client.get(`/api/merchant/claimable-branches?q=${encodeURIComponent(q)}`, claimableBranchesResponseSchema),
+      client.post("/api/merchant/claimable-branches", { q }, claimableBranchesResponseSchema),
     prices: {
       list: (query: MerchantPriceQuery = {}) => {
-        const params = new URLSearchParams();
-        if (query.q) params.set("q", query.q);
-        if (query.type) params.set("type", query.type);
-        if (query.brandId) params.set("brandId", query.brandId);
-        if (query.offset) params.set("offset", String(query.offset));
-        const suffix = params.toString();
-        return client.get(`/api/merchant/prices${suffix ? `?${suffix}` : ""}`, merchantPricesResponseSchema);
+        const body: Record<string, string | number> = {};
+        if (query.q) body.q = query.q;
+        if (query.type) body.type = query.type;
+        if (query.brandId) body.brandId = query.brandId;
+        if (query.offset) body.offset = query.offset;
+        return client.post("/api/merchant/prices/list", body, merchantPricesResponseSchema);
       },
       set: (body: MerchantPriceInput) =>
         client.post("/api/merchant/prices", body, merchantPriceResponseSchema),
       update: (id: string, price: number, displayName?: string) =>
-        client.patch(
-          `/api/merchant/prices/${id}`,
-          displayName === undefined ? { price } : { price, displayName },
+        client.post(
+          "/api/merchant/prices/update",
+          displayName === undefined ? { id, price } : { id, price, displayName },
           merchantPriceResponseSchema,
         ),
-      remove: (id: string) => client.delete(`/api/merchant/prices/${id}`, okSchema),
+      remove: (id: string) => client.post("/api/merchant/prices/delete", { id }, okSchema),
     },
     createProduct: (body: MerchantProductInput) =>
       client.post("/api/merchant/products", body, merchantPriceResponseSchema),
@@ -58,7 +57,7 @@ export function createMerchantClient(client: DepasoApiClient) {
 export function createAdminMerchantClient(client: DepasoApiClient) {
   return {
     list: (status: "PENDING" | "APPROVED" | "REJECTED" = "PENDING") =>
-      client.get(`/api/admin/merchant-requests?status=${status}`, adminMerchantRequestsResponseSchema),
+      client.post("/api/admin/merchant-requests", { status }, adminMerchantRequestsResponseSchema),
     decide: (id: string, body: MerchantDecisionInput) =>
       client.post(`/api/admin/merchant-requests/${id}`, body, adminMerchantRequestResponseSchema),
   };

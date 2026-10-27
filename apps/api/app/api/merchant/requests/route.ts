@@ -5,18 +5,6 @@ import { getCurrentUser } from "@/lib/auth/currentUser";
 import { checkRateLimit } from "@/lib/auth/rateLimit";
 import { toMerchantRequestResponse } from "@/lib/merchant";
 
-/** Última solicitud del usuario actual (o `null` si nunca pidió ser comercio). */
-export async function GET(request: NextRequest) {
-  const current = await getCurrentUser(request);
-  if (!current) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
-
-  const latest = await prisma.merchantRequest.findFirst({
-    where: { userId: current.userId },
-    orderBy: { createdAt: "desc" },
-  });
-  return NextResponse.json({ request: latest ? toMerchantRequestResponse(latest) : null });
-}
-
 /** Un usuario común pide pasar a rol comercio; queda PENDING hasta que un admin resuelva. */
 export async function POST(request: NextRequest) {
   const current = await getCurrentUser(request);

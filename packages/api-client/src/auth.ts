@@ -21,16 +21,17 @@ export function createAuthClient(client: DepasoApiClient) {
   return {
     register: (body: RegisterRequest) => client.post("/api/auth/register", body, authResponseSchema),
     login: (body: LoginRequest) => client.post("/api/auth/login", body, authResponseSchema),
+    refresh: (refreshToken: string) => client.post("/api/auth/refresh", { refreshToken }, authResponseSchema),
     logout: () => client.post("/api/auth/logout", undefined, okSchema),
-    providers: () => client.get("/api/auth/providers", oauthProvidersResponseSchema),
+    providers: () => client.post("/api/auth/providers", {}, oauthProvidersResponseSchema),
     oauthLogin: (provider: OAuthProviderId, body: OAuthLoginRequest) =>
       client.post(`/api/auth/oauth/${provider}`, body, authResponseSchema),
     forgotPassword: (body: ForgotPasswordRequest) => client.post("/api/auth/forgot-password", body, okSchema),
     verifyResetCode: (body: VerifyResetCodeRequest) => client.post("/api/auth/verify-reset-code", body, okSchema),
     resetPassword: (body: ResetPasswordRequest) => client.post("/api/auth/reset-password", body, okSchema),
-    me: () => client.get("/api/auth/me", authUserResponseSchema),
+    me: () => client.post("/api/auth/me", {}, authUserResponseSchema),
     updateProfile: (body: UpdateProfileRequest) =>
-      client.patch("/api/auth/me", body, authUserResponseSchema),
-    deleteAccount: () => client.delete("/api/auth/account", okSchema),
+      client.post("/api/auth/me/update", body, authUserResponseSchema),
+    deleteAccount: () => client.post("/api/auth/account/delete", {}, okSchema),
   };
 }

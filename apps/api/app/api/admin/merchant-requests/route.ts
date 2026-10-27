@@ -2,9 +2,10 @@ import { prisma } from "@depaso/database";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
 import { toAdminMerchantRequestResponse } from "@/lib/merchant";
+import { postAsQuery } from "@/lib/http/postAdapter";
 
 /** Bandeja del admin. `?status=` filtra (por defecto PENDING); `pendingCount` alimenta el badge. */
-export async function GET(request: NextRequest) {
+async function handle(request: NextRequest) {
   const admin = await requireAdmin(request);
   if (!admin) return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
 
@@ -26,3 +27,6 @@ export async function GET(request: NextRequest) {
     pendingCount,
   });
 }
+
+// Todos los endpoints son POST: los parametros llegan en el body.
+export const POST = postAsQuery(handle);

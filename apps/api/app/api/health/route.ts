@@ -1,10 +1,11 @@
 import { prisma } from "@depaso/database";
 import { NextResponse } from "next/server";
+import { postAsQuery } from "@/lib/http/postAdapter";
 
 export const dynamic = "force-dynamic";
 
 /** Chequeo de salud: verifica que la API llegue a la base. No expone credenciales ni URLs. */
-export async function GET() {
+async function handle() {
   try {
     await prisma.$queryRaw`SELECT 1`;
     return NextResponse.json({ ok: true });
@@ -15,3 +16,6 @@ export async function GET() {
     return NextResponse.json({ ok: false, name, code, message }, { status: 503 });
   }
 }
+
+// Todos los endpoints son POST: los parametros llegan en el body.
+export const POST = postAsQuery(handle);

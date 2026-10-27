@@ -2,6 +2,7 @@ import { Platform } from "react-native";
 import * as SecureStore from "expo-secure-store";
 
 const TOKEN_KEY = "depaso_session_token";
+const REFRESH_TOKEN_KEY = "depaso_refresh_token";
 const ONBOARDING_SEEN_KEY = "depaso_onboarding_seen";
 
 /**
@@ -42,8 +43,19 @@ export async function setStoredToken(token: string): Promise<void> {
   await store.setItem(TOKEN_KEY, token);
 }
 
+export async function getStoredRefreshToken(): Promise<string | null> {
+  return store.getItem(REFRESH_TOKEN_KEY);
+}
+
+/** Guarda el par de tokens de la sesión: access (corto) + refresh (largo). */
+export async function setStoredSession(accessToken: string, refreshToken: string): Promise<void> {
+  await store.setItem(TOKEN_KEY, accessToken);
+  await store.setItem(REFRESH_TOKEN_KEY, refreshToken);
+}
+
 export async function clearStoredToken(): Promise<void> {
   await store.deleteItem(TOKEN_KEY);
+  await store.deleteItem(REFRESH_TOKEN_KEY);
 }
 
 const THEME_MODE_KEY = "depaso_theme_mode";

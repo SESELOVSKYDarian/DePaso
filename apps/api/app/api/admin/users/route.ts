@@ -2,6 +2,7 @@ import { prisma } from "@depaso/database";
 import type { AdminUserResponse } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
+import { postAsQuery } from "@/lib/http/postAdapter";
 
 /**
  * Vista de usuarios (Fase 20) — sólo lectura. No hay cambio de rol self-service acá a
@@ -9,7 +10,7 @@ import { requireAdmin } from "@/lib/auth/requireAdmin";
  * agrandar una brecha ya documentada, no cerrarla. Para eso sigue existiendo el script
  * `packages/database/scripts/promote-admin.mjs`, fuera del alcance HTTP.
  */
-export async function GET(request: NextRequest) {
+async function handle(request: NextRequest) {
   const admin = await requireAdmin(request);
   if (!admin) return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
 
@@ -38,3 +39,6 @@ export async function GET(request: NextRequest) {
   };
   return NextResponse.json(body);
 }
+
+// Todos los endpoints son POST: los parametros llegan en el body.
+export const POST = postAsQuery(handle);

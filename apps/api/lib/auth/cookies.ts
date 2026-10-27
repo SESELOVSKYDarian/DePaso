@@ -1,5 +1,5 @@
 import type { NextResponse } from "next/server";
-import { SESSION_TTL_DAYS } from "@depaso/domain";
+import { ACCESS_TOKEN_TTL_MINUTES } from "@depaso/domain";
 import { SESSION_COOKIE_NAME } from "./request";
 
 export function setSessionCookie(response: NextResponse, token: string): void {
@@ -8,7 +8,7 @@ export function setSessionCookie(response: NextResponse, token: string): void {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    maxAge: SESSION_TTL_DAYS * 24 * 60 * 60,
+    maxAge: ACCESS_TOKEN_TTL_MINUTES * 60,
   });
 }
 

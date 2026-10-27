@@ -107,6 +107,8 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
       },
       token: session.token,
       expiresAt: session.expiresAt,
+      refreshToken: session.refreshToken,
+      refreshExpiresAt: session.refreshExpiresAt,
       isNewAccount: created,
     },
     { status: created ? 201 : 200 }

@@ -6,13 +6,13 @@ import type {
   RegisterRequest,
 } from "@depaso/validation";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
-import { authClient } from "../apiClient";
+import { authClient, setSessionExpiredHandler } from "../apiClient";
 import {
   clearStoredToken,
   getOnboardingSeen,
   getStoredToken,
   setOnboardingSeen as persistOnboardingSeen,
-  setStoredToken,
+  setStoredSession,
 } from "./secureStore";
 
 interface AuthContextValue {
@@ -66,8 +66,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     void bootstrap();
+
+    // si el refresh token ya no sirve, se cierra la sesión y la app vuelve al login
+    setSessionExpiredHandler(() => {
+      setPostSignupDone(true);
+      setUser(null);
+    });
     return () => {
       cancelled = true;
+      setSessionExpiredHandler(null);
     };
   }, []);
 
@@ -80,21 +87,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = useCallback(async (body: RegisterRequest) => {
     const result = await authClient.register(body);
-    await setStoredToken(result.token);
+    await setStoredSession(result.token, result.refreshToken);
     setPostSignupDone(false);
     setUser(result.user);
   }, []);
 
   const login = useCallback(async (body: LoginRequest) => {
     const result = await authClient.login(body);
-    await setStoredToken(result.token);
+    await setStoredSession(result.token, result.refreshToken);
     setPostSignupDone(true);
     setUser(result.user);
   }, []);
 
   const loginWithOAuth = useCallback(async (provider: OAuthProviderId, body: OAuthLoginRequest) => {
     const result = await authClient.oauthLogin(provider, body);
-    await setStoredToken(result.token);
+    await setStoredSession(result.token, result.refreshToken);
     setPostSignupDone(!result.isNewAccount);
     setUser(result.user);
   }, []);

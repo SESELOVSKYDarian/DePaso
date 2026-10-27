@@ -2,6 +2,7 @@ import { prisma } from "@depaso/database";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
 import { toStoreBranchResponse } from "@/lib/catalogAdmin";
+import { postAsQuery } from "@/lib/http/postAdapter";
 
 /**
  * Lectura pública de sucursales (cualquier usuario autenticado, no sólo ADMIN) — a
@@ -9,7 +10,7 @@ import { toStoreBranchResponse } from "@/lib/catalogAdmin";
  * usuario elija un comercio preferido (Fase 10) o, más adelante, lo vea en el mapa (Fase 17).
  * No expone nada que un CRUD de escritura necesite proteger.
  */
-export async function GET(request: NextRequest) {
+async function handle(request: NextRequest) {
   const current = await getCurrentUser(request);
   if (!current) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
 
@@ -20,3 +21,6 @@ export async function GET(request: NextRequest) {
   });
   return NextResponse.json({ branches: branches.map(toStoreBranchResponse) });
 }
+
+// Todos los endpoints son POST: los parametros llegan en el body.
+export const POST = postAsQuery(handle);

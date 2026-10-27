@@ -25,5 +25,8 @@ export const MIN_AGE_YEARS = 18;
  */
 export const PASSWORD_MIN_LENGTH = 8;
 
-/** TTL de sesión — "sesión persistente" (sección 10), valor MVP no definido en docs. */
+/** Vida del refresh token = cuánto dura la sesión persistente (sección 10), valor MVP no definido en docs. */
 export const SESSION_TTL_DAYS = 30;
+
+/** Vida del access token (JWT). Se renueva solo con el refresh token. */
+export const ACCESS_TOKEN_TTL_MINUTES = 15;

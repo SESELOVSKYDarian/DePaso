@@ -12,10 +12,10 @@ const placesListSchema = z.object({ places: z.array(userPlaceResponseSchema) });
 /** Lugares guardados — ver apps/api/app/api/places. */
 export function createPlacesClient(client: DepasoApiClient) {
   return {
-    list: () => client.get("/api/places", placesListSchema),
+    list: () => client.post("/api/places/list", {}, placesListSchema),
     create: (body: UserPlaceInput) => client.post("/api/places", body, userPlaceResponseSchema),
     update: (id: string, body: UserPlaceUpdate) =>
-      client.patch(`/api/places/${id}`, body, userPlaceResponseSchema),
-    remove: (id: string) => client.delete(`/api/places/${id}`, okSchema),
+      client.post("/api/places/update", { id, ...body }, userPlaceResponseSchema),
+    remove: (id: string) => client.post("/api/places/delete", { id }, okSchema),
   };
 }

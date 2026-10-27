@@ -2,6 +2,7 @@ import { Prisma, prisma } from "@depaso/database";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
 import { normalizeName } from "@/lib/merchant";
+import { postAsQuery } from "@/lib/http/postAdapter";
 
 const MAX_RESULTS = 30;
 
@@ -10,7 +11,7 @@ const MAX_RESULTS = 30;
  * SEPA o cargadas por un admin) y todavía no tienen comercio a cargo. Un supermercado las busca
  * por nombre o dirección y pide administrarla en vez de cargarse de cero.
  */
-export async function GET(request: NextRequest) {
+async function handle(request: NextRequest) {
   const current = await getCurrentUser(request);
   if (!current) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
 
@@ -49,3 +50,6 @@ export async function GET(request: NextRequest) {
     })),
   });
 }
+
+// Todos los endpoints son POST: los parametros llegan en el body.
+export const POST = postAsQuery(handle);

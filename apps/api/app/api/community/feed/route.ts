@@ -3,6 +3,7 @@ import { communityFeedQuerySchema, type CommunityFeedItem } from "@depaso/valida
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
 import { prettifyBrandName, prettifyProductName } from "@/lib/productNames";
+import { postAsQuery } from "@/lib/http/postAdapter";
 
 const COMMUNITY_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;
 const MAX_ITEMS = 30;
@@ -21,7 +22,7 @@ function sizeLabel(unit: string, size: number): string | null {
  *   moderación, de cualquier persona (anónimos).
  * - `mine`: todos los reportes propios, con su estado.
  */
-export async function GET(request: NextRequest) {
+async function handle(request: NextRequest) {
   const current = await getCurrentUser(request);
   if (!current) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
 
@@ -85,3 +86,6 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({ items });
 }
+
+// Todos los endpoints son POST: los parametros llegan en el body.
+export const POST = postAsQuery(handle);

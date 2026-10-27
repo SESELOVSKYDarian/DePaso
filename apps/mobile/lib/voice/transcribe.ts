@@ -1,5 +1,6 @@
 import { File } from "expo-file-system";
 import { API_BASE_URL } from "../config";
+import { refreshAccessToken } from "../apiClient";
 import { getStoredToken } from "../auth/secureStore";
 
 export type TranscribeFailure = "not_configured" | "too_large" | "rate_limited" | "failed";
@@ -41,14 +42,22 @@ export async function transcribeRecording(uri: string): Promise<string> {
     throw new TranscribeError("failed", `file_read:${shortReason(error)}`);
   }
 
-  let response: Response;
-  try {
-    // Sin Content-Type: fetch arma el multipart con su boundary.
-    response = await fetch(`${API_BASE_URL}/api/ai/transcribe`, {
+  // Sin Content-Type: fetch arma el multipart con su boundary.
+  const send = (accessToken: string | null) =>
+    fetch(`${API_BASE_URL}/api/ai/transcribe`, {
       method: "POST",
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {},
       body: form,
     });
+
+  let response: Response;
+  try {
+    response = await send(token);
+    // access token vencido: renuevo y reintento una vez
+    if (response.status === 401 && token) {
+      const fresh = await refreshAccessToken();
+      if (fresh) response = await send(fresh);
+    }
   } catch (error) {
     throw new TranscribeError("failed", `no_connection:${shortReason(error)}`);
   }

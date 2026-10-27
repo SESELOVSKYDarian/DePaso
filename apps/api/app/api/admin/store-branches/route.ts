@@ -4,21 +4,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
 import { toStoreBranchResponse } from "@/lib/catalogAdmin";
 
-/** CRUD de sucursales (Fase 11). `?storeId=` filtra por comercio. */
-export async function GET(request: NextRequest) {
-  const admin = await requireAdmin(request);
-  if (!admin) return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
-
-  const storeId = request.nextUrl.searchParams.get("storeId");
-  const branches = await prisma.storeBranch.findMany({
-    where: storeId ? { storeId } : undefined,
-    include: { store: true },
-    orderBy: { name: "asc" },
-    take: 200,
-  });
-  return NextResponse.json({ branches: branches.map(toStoreBranchResponse) });
-}
-
 export async function POST(request: NextRequest) {
   const admin = await requireAdmin(request);
   if (!admin) return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });

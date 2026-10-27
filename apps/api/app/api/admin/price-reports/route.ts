@@ -2,9 +2,10 @@ import { prisma } from "@depaso/database";
 import type { AdminPriceReportResponse } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
+import { postAsQuery } from "@/lib/http/postAdapter";
 
 /** Reportes comunitarios para revisión de moderación (Fase 20, FLOWS.md "Flujo de moderación y apelación" p.8). */
-export async function GET(request: NextRequest) {
+async function handle(request: NextRequest) {
   const admin = await requireAdmin(request);
   if (!admin) return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
 
@@ -49,3 +50,6 @@ export async function GET(request: NextRequest) {
   };
   return NextResponse.json(body);
 }
+
+// Todos los endpoints son POST: los parametros llegan en el body.
+export const POST = postAsQuery(handle);

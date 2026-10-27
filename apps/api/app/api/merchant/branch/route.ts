@@ -1,9 +1,10 @@
 import { prisma } from "@depaso/database";
 import { NextRequest, NextResponse } from "next/server";
 import { requireMerchant } from "@/lib/auth/requireMerchant";
+import { postAsQuery } from "@/lib/http/postAdapter";
 
 /** Sucursal propia del comercio autenticado. */
-export async function GET(request: NextRequest) {
+async function handle(request: NextRequest) {
   const merchant = await requireMerchant(request);
   if (!merchant) return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
 
@@ -24,3 +25,6 @@ export async function GET(request: NextRequest) {
     },
   });
 }
+
+// Todos los endpoints son POST: los parametros llegan en el body.
+export const POST = postAsQuery(handle);

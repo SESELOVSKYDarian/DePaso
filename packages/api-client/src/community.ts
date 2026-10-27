@@ -5,6 +5,6 @@ import type { DepasoApiClient } from "./client";
 export function createCommunityClient(client: DepasoApiClient) {
   return {
     feed: (scope: CommunityFeedScope) =>
-      client.get(`/api/community/feed?scope=${scope}`, communityFeedResponseSchema),
+      client.post("/api/community/feed", { scope }, communityFeedResponseSchema),
   };
 }
