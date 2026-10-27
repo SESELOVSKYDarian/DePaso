@@ -47,7 +47,7 @@ Monorepo pnpm + Turborepo. Todo lo de un tema vive en una sola carpeta.
 | `validation/` | Esquemas zod compartidos entre API y app (validación en las dos puntas). |
 | `api-client/` | Cliente HTTP tipado que usa la app; un archivo por tema. |
 | `domain/`, `types/` | Reglas, constantes y tipos de negocio. |
-| `optimization/` | Motor de recorridos (sin ssobrecostos, intermedio, hipereconómico). |
+| `optimization/` | Motor de recorridos (sin desvíos, intermedio, hipereconómico). |
 | `geo/` | Distancias, zonas y normalización de direcciones. |
 | `data-sources/sepa/` | Importador de precios SEPA (`pnpm data:sepa:import`). |
 | `data-sources/mapbox/` | Mapas y rutas. |
