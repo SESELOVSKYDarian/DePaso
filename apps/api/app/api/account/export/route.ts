@@ -1,4 +1,3 @@
-import { asStringArray } from "@/lib/jsonArrays";
 import { prisma } from "@depaso/database";
 import type { AccountExportResponse } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
@@ -22,7 +21,7 @@ async function handle(request: NextRequest) {
       prisma.userProfile.findUnique({ where: { userId } }),
       prisma.userConsent.findMany({ where: { userId } }),
       prisma.userPlace.findMany({ where: { userId } }),
-      prisma.savedRouteContext.findMany({ where: { userId } }),
+      prisma.savedRouteContext.findMany({ where: { userId }, include: { stops: true } }),
       prisma.shoppingList.findMany({ where: { userId }, include: { items: true } }),
       prisma.productPreference.findMany({ where: { userId } }),
       prisma.storePreference.findMany({ where: { userId } }),
@@ -59,7 +58,7 @@ async function handle(request: NextRequest) {
     savedRouteContexts: savedRouteContexts.map((r: (typeof savedRouteContexts)[number]) => ({
       id: r.id,
       name: r.name,
-      waypointPlaceIds: asStringArray(r.waypointPlaceIds),
+      waypointPlaceIds: r.stops.flatMap((stop: { placeId: string | null }) => (stop.placeId ? [stop.placeId] : [])),
       createdAt: r.createdAt.toISOString(),
     })),
     shoppingLists: shoppingLists.map((l: (typeof shoppingLists)[number]) => ({

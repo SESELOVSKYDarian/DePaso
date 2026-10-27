@@ -24,10 +24,9 @@ export const storeBranchInputSchema = z.object({
   address: z.string().trim().min(1).max(200),
   latitude: z.number().min(-90).max(90),
   longitude: z.number().min(-180).max(180),
-  /// Alcance de lanzamiento sólo Mar del Plata (sección 42) — mismo default que el schema.
-  city: z.string().trim().min(1).max(80).default("Mar del Plata"),
+  /// Nombre de la región/ciudad (ej. "Mar del Plata"); si falta se usa la primera región habilitada.
+  city: z.string().trim().min(1).max(80).optional(),
 });
-/** `z.input` — `city` tiene default. */
 export type StoreBranchInput = z.input<typeof storeBranchInputSchema>;
 export const storeBranchUpdateSchema = storeBranchInputSchema.partial();
 export type StoreBranchUpdate = z.infer<typeof storeBranchUpdateSchema>;

@@ -1,7 +1,7 @@
 import { prisma } from "@depaso/database";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
-import { toStoreBranchResponse } from "@/lib/catalogAdmin";
+import { branchInclude, toStoreBranchResponse } from "@/lib/catalogAdmin";
 import { postAsQuery } from "@/lib/http/postAdapter";
 
 /** CRUD de sucursales (Fase 11). `?storeId=` filtra por comercio. */
@@ -12,7 +12,7 @@ async function handle(request: NextRequest) {
   const storeId = request.nextUrl.searchParams.get("storeId");
   const branches = await prisma.storeBranch.findMany({
     where: storeId ? { storeId } : undefined,
-    include: { store: true },
+    include: branchInclude,
     orderBy: { name: "asc" },
     take: 200,
   });

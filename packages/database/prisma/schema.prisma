@@ -278,26 +278,44 @@ model UserPlace {
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
 
+  routeStops SavedRouteStop[]
+
   @@index([userId])
   @@map("user_places")
 }
 
 model SavedRouteContext {
-  id               String   @id @default(uuid())
-  userId           String
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  name             String @db.VarChar(255)
-  /// IDs de UserPlace en orden — sin tabla puente porque el orden es parte del significado
-  /// y la cardinalidad es chica (contexto de un día, sección 33-35).
-  waypointPlaceIds Json
-  /// Paradas completas tal como se armó la ruta (nombre, dirección y coordenadas), para poder
-  /// guardar también rutas con puntos de hoy, de la ubicación actual o elegidos en el mapa.
-  /// `null` en rutas viejas, que sólo tienen `waypointPlaceIds`.
-  stops            Json?
-  createdAt        DateTime @default(now())
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String   @db.VarChar(255)
+  createdAt DateTime @default(now())
+
+  /// Paradas completas en orden (origen, paradas, destino).
+  stops SavedRouteStop[]
 
   @@index([userId])
   @@map("saved_route_contexts")
+}
+
+/// Una parada de un recorrido guardado. Se guarda completa (nombre, dirección y coordenadas)
+/// para poder incluir puntos de hoy, de la ubicación actual o elegidos en el mapa; `placeId`
+/// sólo se completa si la parada es un lugar guardado del usuario.
+model SavedRouteStop {
+  contextId String
+  context   SavedRouteContext @relation(fields: [contextId], references: [id], onDelete: Cascade)
+  position  Int
+  name      String            @db.VarChar(255)
+  address   String            @db.VarChar(255)
+  latitude  Float
+  longitude Float
+  emoji     String            @db.VarChar(16)
+  placeId   String?
+  place     UserPlace?        @relation(fields: [placeId], references: [id], onDelete: SetNull)
+
+  @@id([contextId, position])
+  @@index([placeId])
+  @@map("saved_route_stops")
 }
 
 // ---------------------------------------------------------------------------
@@ -339,6 +357,7 @@ model Product {
   @@index([productType])
   @@index([productType, popularity(sort: Desc)])
   @@map("products")
+  planMisses OptimizationPlanMissingProduct[]
 }
 
 model ProductVariant {
@@ -435,9 +454,6 @@ model StoreBranch {
   address   String @db.VarChar(255)
   latitude  Float
   longitude Float
-  /// Alcance de lanzamiento sólo Mar del Plata (sección 42) — campo simple, sin jerarquía
-  /// geográfica completa todavía.
-  city      String  @default("Mar del Plata")
 
   /// IDs de SEPA (sección 5) — la terna identifica una sucursal de forma estable entre
   /// corridas de import. Nullable: sucursales cargadas a mano no tienen estos IDs.
@@ -447,10 +463,6 @@ model StoreBranch {
   street                 String?
   streetNumber           String?
   postalCode             String?
-  province               String?
-  /// Horario por día, tal como lo publica SEPA — forma libre (`{ "lunes": "08:00 a 21:30" }`),
-  /// no se modela un horario estructurado todavía (no lo pide ninguna fase actual).
-  openingHours           Json?
   source                 ImportSourceType?
   sourceUpdatedAt        DateTime?
   /// Sección 68 — nunca se borra una sucursal por no aparecer en un import; se marca.
@@ -463,6 +475,8 @@ model StoreBranch {
   createdAt              DateTime          @default(now())
   updatedAt              DateTime          @default(now()) @updatedAt
 
+  /// Ciudad y provincia salen de `marketRegion` (no se repiten acá).
+  hours              StoreBranchHours[]
   prices             Price[]
   priceReports       PriceReport[]
   storePreferences   StorePreference[]
@@ -475,6 +489,17 @@ model StoreBranch {
   @@index([marketRegionId])
   @@index([ownerUserId])
   @@map("store_branches")
+}
+
+/// Horario de una sucursal por día, tal como lo publica SEPA (ej. día "lunes", "08:00 a 21:30").
+model StoreBranchHours {
+  branchId String
+  branch   StoreBranch @relation(fields: [branchId], references: [id], onDelete: Cascade)
+  day      String      @db.VarChar(16)
+  hours    String      @db.VarChar(64)
+
+  @@id([branchId, day])
+  @@map("store_branch_hours")
 }
 
 /// Sección 43 — SEPA vs. locator oficial no coinciden: registrar, nunca pisar en silencio.
@@ -504,13 +529,22 @@ model MarketRegion {
   maxLatitude     Float
   minLongitude    Float
   maxLongitude    Float
-  /// Variantes normalizadas de `sucursales_localidad` que cuentan como "dentro" (sección
-  /// 15 — SEPA trae "Mar del Plata"/"MAR DEL PLATA"/"Mar Del Plata" inconsistente).
-  localityAliases Json
 
-  branches StoreBranch[]
+  branches   StoreBranch[]
+  /// Variantes de `sucursales_localidad` que cuentan como "dentro" de la región (sección 15).
+  localities MarketRegionLocality[]
 
   @@map("market_regions")
+}
+
+/// Una variante de nombre de localidad que SEPA trae para la región ("MAR DEL PLATA", etc.).
+model MarketRegionLocality {
+  regionId String
+  region   MarketRegion @relation(fields: [regionId], references: [id], onDelete: Cascade)
+  alias    String       @db.VarChar(120)
+
+  @@id([regionId, alias])
+  @@map("market_region_localities")
 }
 
 // ---------------------------------------------------------------------------
@@ -559,8 +593,6 @@ model PriceHistory {
   id               String      @id @default(uuid())
   priceId          String
   price            Price       @relation(fields: [priceId], references: [id], onDelete: Cascade)
-  productVariantId String
-  storeBranchId    String
   amount           Decimal     @db.Decimal(12, 2)
   status           PriceStatus
   changedAt        DateTime    @default(now())
@@ -726,21 +758,42 @@ model PaymentPromo {
   /// Nombre normalizado del comercio, para matchear contra `Store.normalizedName`/`name`.
   normalizedRetailer String @db.VarChar(255)
   bank            String?
-  /// Slugs del catálogo `PAYMENT_METHODS`; vacío = promo general (sin medio de pago específico).
-  methodSlugs     Json
   discountPercent Float
   /// Tope de reintegro en ARS por compra/día (null = sin tope informado).
   capAmount       Float?
-  /// 0 = domingo … 6 = sábado; vacío = todos los días.
-  daysOfWeek      Json
   validityNote    String? @db.Text
   sourceUrl       String? @db.Text
   source          String?
   active          Boolean  @default(true)
   syncedAt        DateTime @default(now())
 
+  /// Medios de pago de la promo; sin filas = promo general (sin medio específico).
+  methods         PaymentPromoMethod[]
+  /// Días en que rige; sin filas = todos los días.
+  days            PaymentPromoDay[]
+
   @@index([normalizedRetailer])
   @@map("payment_promos")
+}
+
+/// Un medio de pago (slug del catálogo `PAYMENT_METHODS`) al que aplica la promo.
+model PaymentPromoMethod {
+  promoId    String
+  promo      PaymentPromo @relation(fields: [promoId], references: [id], onDelete: Cascade)
+  methodSlug String       @db.VarChar(64)
+
+  @@id([promoId, methodSlug])
+  @@map("payment_promo_methods")
+}
+
+/// Un día de la semana en que rige la promo: 0 = domingo … 6 = sábado.
+model PaymentPromoDay {
+  promoId   String
+  promo     PaymentPromo @relation(fields: [promoId], references: [id], onDelete: Cascade)
+  dayOfWeek Int
+
+  @@id([promoId, dayOfWeek])
+  @@map("payment_promo_days")
 }
 
 model ShoppingListItem {
@@ -813,12 +866,12 @@ model OptimizationPlan {
   additionalDistanceMeters Int
   additionalTimeSeconds    Int
   numberOfStops            Int
-  missingProductIds        Json
   priceConfidence           ConfidenceLevel
   estimatedSavings          Decimal         @db.Decimal(12, 2)
   explanation                String @db.Text
 
-  stops OptimizationPlanStop[]
+  stops           OptimizationPlanStop[]
+  missingProducts OptimizationPlanMissingProduct[]
 
   @@index([optimizationRunId])
   @@map("optimization_plans")
@@ -842,11 +895,22 @@ model OptimizationPlanItem {
   id                      String               @id @default(uuid())
   optimizationPlanStopId  String
   optimizationPlanStop    OptimizationPlanStop @relation(fields: [optimizationPlanStopId], references: [id], onDelete: Cascade)
-  productId               String
   productVariantId        String
   quantity                Int
   unitPrice                Decimal              @db.Decimal(12, 2)
 
   @@index([optimizationPlanStopId])
   @@map("optimization_plan_items")
+}
+
+/// Producto de la lista que ningún comercio del plan tenía a la venta.
+model OptimizationPlanMissingProduct {
+  optimizationPlanId String
+  optimizationPlan   OptimizationPlan @relation(fields: [optimizationPlanId], references: [id], onDelete: Cascade)
+  productId          String
+  product            Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@id([optimizationPlanId, productId])
+  @@index([productId])
+  @@map("optimization_plan_missing_products")
 }

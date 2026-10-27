@@ -33,14 +33,44 @@ modelos Prisma. Algunas decisiones de modelado:
   tiene sentido modelar provincia/país/región todavía, pero tampoco se hardcodeó nada que
   impida agregarlo después (es un string, no un enum cerrado).
 
+## Normalización (3FN)
+
+La base cumple **tercera forma normal**:
+
+- **1FN**: no hay listas ni JSON dentro de una celda; cada valor repetido vive en su propia tabla.
+- **2FN**: las tablas con clave compuesta (`payment_promo_methods`, `store_branch_hours`…) solo tienen
+  columnas que dependen de la clave completa.
+- **3FN**: ninguna columna depende de otra columna que no sea la clave.
+
+Tablas que salieron de columnas con listas o con datos repetidos:
+
+| Antes | Ahora |
+|---|---|
+| `payment_promos.methodSlugs` (lista) | tabla `payment_promo_methods (promoId, methodSlug)` |
+| `payment_promos.daysOfWeek` (lista) | tabla `payment_promo_days (promoId, dayOfWeek)` |
+| `market_regions.localityAliases` (lista) | tabla `market_region_localities (regionId, alias)` |
+| `saved_route_contexts.waypointPlaceIds` + `stops` (JSON) | tabla `saved_route_stops (contextId, position, …)` |
+| `store_branches.openingHours` (JSON) | tabla `store_branch_hours (branchId, day, hours)` |
+| `optimization_plans.missingProductIds` (lista) | tabla `optimization_plan_missing_products` |
+| `store_branches.city` y `province` (dependían de la región) | se leen de `market_regions` vía `marketRegionId` |
+| `price_history.productVariantId` y `storeBranchId` (dependían de `priceId`) | se leen de `prices` |
+| `optimization_plan_items.productId` (dependía de la variante) | se lee de `product_variants` |
+
+Decisiones que se mantienen a propósito:
+
+- `normalizedName` / `normalizedAlias` / `normalizedRetailer`: texto normalizado (sin tildes ni
+  mayúsculas) guardado para buscar rápido con índice. Es una columna de búsqueda, no un dato nuevo.
+- Los totales de `optimization_plans` (`totalProductCost`, `estimatedEffectiveCost`, ahorro) son el
+  **resultado congelado** del optimizador ese día; no se pueden recalcular después porque los
+  precios y promociones cambian.
+- `user_trust_scores.reportsSubmitted/reportsConfirmed` son contadores cacheados para no contar
+  `price_reports` en cada consulta.
+
 ## Motor y migraciones
 
 MySQL 8 (collation `utf8mb4_unicode_ci`: las búsquedas ignoran mayúsculas y acentos). La
-migración inicial es `prisma/migrations/20261027000000_init`. Notas del paso desde Postgres:
+migración inicial es `prisma/migrations/20261027000000_init` (35 tablas de dominio + 6 de normalización). Notas del paso desde Postgres:
 
-- Los arrays pasan a columnas `Json` (MySQL no tiene arrays nativos): `localityAliases`,
-  `methodSlugs`, `daysOfWeek`, `waypointPlaceIds`, `missingProductIds`. Se leen con
-  `apps/api/lib/jsonArrays.ts`.
 - El SQL crudo (búsqueda, facetas, popularidad, feed de Inicio) usa `ROW_NUMBER()` en lugar de
   `DISTINCT ON` y `CONCAT()` en lugar de `||`. Los `COUNT` vuelven como `BigInt` y se convierten.
 

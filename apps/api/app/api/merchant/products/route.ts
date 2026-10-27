@@ -59,8 +59,6 @@ export async function POST(request: NextRequest) {
     await tx.priceHistory.create({
       data: {
         priceId: existing.id,
-        productVariantId: variant.id,
-        storeBranchId: merchant.branchId,
         amount: existing.price,
         status: existing.status,
         changeReason: "Actualizado por el comercio",

@@ -72,8 +72,6 @@ async function applyPriceDecision(
         prisma.priceHistory.create({
           data: {
             priceId: existingPrice.id,
-            productVariantId,
-            storeBranchId,
             amount: existingPrice.price,
             status: existingPrice.status,
             changeReason: decision.changeReason,
@@ -112,8 +110,6 @@ async function applyPriceDecision(
       prisma.priceHistory.create({
         data: {
           priceId: existingPrice.id,
-          productVariantId,
-          storeBranchId,
           amount: existingPrice.price,
           status: existingPrice.status,
           changeReason: decision.changeReason,

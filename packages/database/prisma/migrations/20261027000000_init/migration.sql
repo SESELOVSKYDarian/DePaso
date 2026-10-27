@@ -98,12 +98,25 @@ CREATE TABLE `saved_route_contexts` (
     `id` VARCHAR(191) NOT NULL,
     `userId` VARCHAR(191) NOT NULL,
     `name` VARCHAR(255) NOT NULL,
-    `waypointPlaceIds` JSON NOT NULL,
-    `stops` JSON NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
     INDEX `saved_route_contexts_userId_idx`(`userId`),
     PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `saved_route_stops` (
+    `contextId` VARCHAR(191) NOT NULL,
+    `position` INTEGER NOT NULL,
+    `name` VARCHAR(255) NOT NULL,
+    `address` VARCHAR(255) NOT NULL,
+    `latitude` DOUBLE NOT NULL,
+    `longitude` DOUBLE NOT NULL,
+    `emoji` VARCHAR(16) NOT NULL,
+    `placeId` VARCHAR(191) NULL,
+
+    INDEX `saved_route_stops_placeId_idx`(`placeId`),
+    PRIMARY KEY (`contextId`, `position`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -204,15 +217,12 @@ CREATE TABLE `store_branches` (
     `address` VARCHAR(255) NOT NULL,
     `latitude` DOUBLE NOT NULL,
     `longitude` DOUBLE NOT NULL,
-    `city` VARCHAR(191) NOT NULL DEFAULT 'Mar del Plata',
     `externalSepaCommerceId` VARCHAR(191) NULL,
     `externalSepaBrandId` VARCHAR(191) NULL,
     `externalSepaBranchId` VARCHAR(191) NULL,
     `street` VARCHAR(191) NULL,
     `streetNumber` VARCHAR(191) NULL,
     `postalCode` VARCHAR(191) NULL,
-    `province` VARCHAR(191) NULL,
-    `openingHours` JSON NULL,
     `source` ENUM('SEPA_MINORISTA', 'SEPA_MAYORISTA') NULL,
     `sourceUpdatedAt` DATETIME(3) NULL,
     `status` ENUM('ACTIVE', 'POSSIBLY_INACTIVE', 'INACTIVE', 'CLOSED') NOT NULL DEFAULT 'ACTIVE',
@@ -226,6 +236,15 @@ CREATE TABLE `store_branches` (
     INDEX `store_branches_ownerUserId_idx`(`ownerUserId`),
     UNIQUE INDEX `store_branches_externalSepaCommerceId_externalSepaBrandId_ex_key`(`externalSepaCommerceId`, `externalSepaBrandId`, `externalSepaBranchId`),
     PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `store_branch_hours` (
+    `branchId` VARCHAR(191) NOT NULL,
+    `day` VARCHAR(16) NOT NULL,
+    `hours` VARCHAR(64) NOT NULL,
+
+    PRIMARY KEY (`branchId`, `day`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -253,10 +272,17 @@ CREATE TABLE `market_regions` (
     `maxLatitude` DOUBLE NOT NULL,
     `minLongitude` DOUBLE NOT NULL,
     `maxLongitude` DOUBLE NOT NULL,
-    `localityAliases` JSON NOT NULL,
 
     UNIQUE INDEX `market_regions_slug_key`(`slug`),
     PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `market_region_localities` (
+    `regionId` VARCHAR(191) NOT NULL,
+    `alias` VARCHAR(120) NOT NULL,
+
+    PRIMARY KEY (`regionId`, `alias`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -290,8 +316,6 @@ CREATE TABLE `prices` (
 CREATE TABLE `price_history` (
     `id` VARCHAR(191) NOT NULL,
     `priceId` VARCHAR(191) NOT NULL,
-    `productVariantId` VARCHAR(191) NOT NULL,
-    `storeBranchId` VARCHAR(191) NOT NULL,
     `amount` DECIMAL(12, 2) NOT NULL,
     `status` ENUM('VERIFIED', 'COMMUNITY_CONFIRMED', 'DISPUTED', 'IN_REVIEW', 'STALE', 'LOW_CONFIDENCE') NOT NULL,
     `changedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
@@ -421,10 +445,8 @@ CREATE TABLE `payment_promos` (
     `retailer` VARCHAR(255) NOT NULL,
     `normalizedRetailer` VARCHAR(255) NOT NULL,
     `bank` VARCHAR(191) NULL,
-    `methodSlugs` JSON NOT NULL,
     `discountPercent` DOUBLE NOT NULL,
     `capAmount` DOUBLE NULL,
-    `daysOfWeek` JSON NOT NULL,
     `validityNote` TEXT NULL,
     `sourceUrl` TEXT NULL,
     `source` VARCHAR(191) NULL,
@@ -434,6 +456,22 @@ CREATE TABLE `payment_promos` (
     UNIQUE INDEX `payment_promos_externalId_key`(`externalId`),
     INDEX `payment_promos_normalizedRetailer_idx`(`normalizedRetailer`),
     PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `payment_promo_methods` (
+    `promoId` VARCHAR(191) NOT NULL,
+    `methodSlug` VARCHAR(64) NOT NULL,
+
+    PRIMARY KEY (`promoId`, `methodSlug`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `payment_promo_days` (
+    `promoId` VARCHAR(191) NOT NULL,
+    `dayOfWeek` INTEGER NOT NULL,
+
+    PRIMARY KEY (`promoId`, `dayOfWeek`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
@@ -497,7 +535,6 @@ CREATE TABLE `optimization_plans` (
     `additionalDistanceMeters` INTEGER NOT NULL,
     `additionalTimeSeconds` INTEGER NOT NULL,
     `numberOfStops` INTEGER NOT NULL,
-    `missingProductIds` JSON NOT NULL,
     `priceConfidence` ENUM('HIGH', 'MEDIUM', 'LOW') NOT NULL,
     `estimatedSavings` DECIMAL(12, 2) NOT NULL,
     `explanation` TEXT NOT NULL,
@@ -521,13 +558,21 @@ CREATE TABLE `optimization_plan_stops` (
 CREATE TABLE `optimization_plan_items` (
     `id` VARCHAR(191) NOT NULL,
     `optimizationPlanStopId` VARCHAR(191) NOT NULL,
-    `productId` VARCHAR(191) NOT NULL,
     `productVariantId` VARCHAR(191) NOT NULL,
     `quantity` INTEGER NOT NULL,
     `unitPrice` DECIMAL(12, 2) NOT NULL,
 
     INDEX `optimization_plan_items_optimizationPlanStopId_idx`(`optimizationPlanStopId`),
     PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `optimization_plan_missing_products` (
+    `optimizationPlanId` VARCHAR(191) NOT NULL,
+    `productId` VARCHAR(191) NOT NULL,
+
+    INDEX `optimization_plan_missing_products_productId_idx`(`productId`),
+    PRIMARY KEY (`optimizationPlanId`, `productId`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
@@ -555,6 +600,12 @@ ALTER TABLE `user_places` ADD CONSTRAINT `user_places_userId_fkey` FOREIGN KEY (
 ALTER TABLE `saved_route_contexts` ADD CONSTRAINT `saved_route_contexts_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `saved_route_stops` ADD CONSTRAINT `saved_route_stops_contextId_fkey` FOREIGN KEY (`contextId`) REFERENCES `saved_route_contexts`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `saved_route_stops` ADD CONSTRAINT `saved_route_stops_placeId_fkey` FOREIGN KEY (`placeId`) REFERENCES `user_places`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `products` ADD CONSTRAINT `products_brandId_fkey` FOREIGN KEY (`brandId`) REFERENCES `brands`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -579,7 +630,13 @@ ALTER TABLE `store_branches` ADD CONSTRAINT `store_branches_marketRegionId_fkey`
 ALTER TABLE `store_branches` ADD CONSTRAINT `store_branches_ownerUserId_fkey` FOREIGN KEY (`ownerUserId`) REFERENCES `users`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `store_branch_hours` ADD CONSTRAINT `store_branch_hours_branchId_fkey` FOREIGN KEY (`branchId`) REFERENCES `store_branches`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `branch_data_issues` ADD CONSTRAINT `branch_data_issues_storeBranchId_fkey` FOREIGN KEY (`storeBranchId`) REFERENCES `store_branches`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `market_region_localities` ADD CONSTRAINT `market_region_localities_regionId_fkey` FOREIGN KEY (`regionId`) REFERENCES `market_regions`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `prices` ADD CONSTRAINT `prices_productVariantId_fkey` FOREIGN KEY (`productVariantId`) REFERENCES `product_variants`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
@@ -618,6 +675,12 @@ ALTER TABLE `shopping_list_members` ADD CONSTRAINT `shopping_list_members_userId
 ALTER TABLE `user_payment_methods` ADD CONSTRAINT `user_payment_methods_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `users`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE `payment_promo_methods` ADD CONSTRAINT `payment_promo_methods_promoId_fkey` FOREIGN KEY (`promoId`) REFERENCES `payment_promos`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `payment_promo_days` ADD CONSTRAINT `payment_promo_days_promoId_fkey` FOREIGN KEY (`promoId`) REFERENCES `payment_promos`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE `shopping_list_items` ADD CONSTRAINT `shopping_list_items_shoppingListId_fkey` FOREIGN KEY (`shoppingListId`) REFERENCES `shopping_lists`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -649,4 +712,10 @@ ALTER TABLE `optimization_plan_stops` ADD CONSTRAINT `optimization_plan_stops_st
 
 -- AddForeignKey
 ALTER TABLE `optimization_plan_items` ADD CONSTRAINT `optimization_plan_items_optimizationPlanStopId_fkey` FOREIGN KEY (`optimizationPlanStopId`) REFERENCES `optimization_plan_stops`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `optimization_plan_missing_products` ADD CONSTRAINT `optimization_plan_missing_products_optimizationPlanId_fkey` FOREIGN KEY (`optimizationPlanId`) REFERENCES `optimization_plans`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `optimization_plan_missing_products` ADD CONSTRAINT `optimization_plan_missing_products_productId_fkey` FOREIGN KEY (`productId`) REFERENCES `products`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 

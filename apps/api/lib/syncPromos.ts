@@ -21,10 +21,20 @@ export async function syncPaymentPromos(): Promise<{ fetched: number; accepted: 
 
   const syncedAt = new Date();
   for (const promo of accepted) {
+    // medios de pago y días van en tablas hijas (sin repetidos)
+    const { methodSlugs, daysOfWeek, ...fields } = promo;
+    const methods = [...new Set(methodSlugs)].map((methodSlug) => ({ methodSlug }));
+    const days = [...new Set(daysOfWeek)].map((dayOfWeek) => ({ dayOfWeek }));
     await prisma.paymentPromo.upsert({
       where: { externalId: promo.externalId },
-      create: { ...promo, active: true, syncedAt },
-      update: { ...promo, active: true, syncedAt },
+      create: { ...fields, active: true, syncedAt, methods: { create: methods }, days: { create: days } },
+      update: {
+        ...fields,
+        active: true,
+        syncedAt,
+        methods: { deleteMany: {}, create: methods },
+        days: { deleteMany: {}, create: days },
+      },
     });
   }
   await prisma.paymentPromo.updateMany({

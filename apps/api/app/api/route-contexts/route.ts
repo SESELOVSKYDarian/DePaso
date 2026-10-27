@@ -2,7 +2,7 @@ import { prisma } from "@depaso/database";
 import { routeContextInputSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
-import { toRouteContextResponse } from "@/lib/routeContexts";
+import { routeContextInclude, toRouteContextResponse } from "@/lib/routeContexts";
 
 export async function POST(request: NextRequest) {
   const current = await getCurrentUser(request);
@@ -16,19 +16,27 @@ export async function POST(request: NextRequest) {
   const { name, stops } = parsed.data;
   // Los ids de lugares sólo valen si son del usuario (sección 81); se descartan los ajenos.
   const claimedIds = [...new Set([...parsed.data.waypointPlaceIds, ...(stops?.map((stop) => stop.placeId).filter((id): id is string => Boolean(id)) ?? [])])];
-  const owned = await prisma.userPlace.findMany({ where: { id: { in: claimedIds }, userId: current.userId }, select: { id: true } });
-  const ownedIds = new Set(owned.map((place: { id: string }) => place.id));
-  if (parsed.data.waypointPlaceIds.some((id) => !ownedIds.has(id))) {
+  const owned = await prisma.userPlace.findMany({ where: { id: { in: claimedIds }, userId: current.userId } });
+  const ownedById = new Map(owned.map((place) => [place.id, place]));
+  if (parsed.data.waypointPlaceIds.some((id) => !ownedById.has(id))) {
     return NextResponse.json({ error: "INVALID_PLACE_IDS" }, { status: 400 });
   }
+
+  // Rutas con sólo ids de lugares: las paradas se arman con los datos del lugar guardado.
+  const rows = stops
+    ? stops.map((stop) => ({ ...stop, placeId: stop.placeId && ownedById.has(stop.placeId) ? stop.placeId : null }))
+    : parsed.data.waypointPlaceIds.map((id) => {
+        const place = ownedById.get(id)!;
+        return { name: place.name, address: place.address, latitude: place.latitude, longitude: place.longitude, emoji: "📍", placeId: id };
+      });
 
   const context = await prisma.savedRouteContext.create({
     data: {
       userId: current.userId,
       name,
-      waypointPlaceIds: stops ? [...ownedIds] : parsed.data.waypointPlaceIds,
-      ...(stops ? { stops: stops.map((stop) => ({ ...stop, placeId: stop.placeId && ownedIds.has(stop.placeId) ? stop.placeId : undefined })) } : {}),
+      stops: { create: rows.map((row, position) => ({ position, ...row })) },
     },
+    include: routeContextInclude,
   });
 
   return NextResponse.json(toRouteContextResponse(context), { status: 201 });

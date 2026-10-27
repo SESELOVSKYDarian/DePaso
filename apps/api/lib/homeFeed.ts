@@ -59,9 +59,9 @@ export async function buildHomeFeed(userId: string, now: Date = new Date()): Pro
               ROW_NUMBER() OVER (PARTITION BY v.productId ORDER BY ABS(pr.price - ph.amount) / ph.amount DESC) AS position
             FROM price_history ph
             JOIN prices pr ON pr.id = ph.priceId
-            JOIN product_variants v ON v.id = ph.productVariantId
+            JOIN product_variants v ON v.id = pr.productVariantId
             JOIN products p ON p.id = v.productId
-            JOIN store_branches sb ON sb.id = ph.storeBranchId
+            JOIN store_branches sb ON sb.id = pr.storeBranchId
             JOIN stores s ON s.id = sb.storeId
             WHERE v.productId IN (${Prisma.join(productIds)})
               AND ph.changedAt > ${new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000)}

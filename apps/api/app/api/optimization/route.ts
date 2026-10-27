@@ -42,7 +42,7 @@ async function persistOptimizationRun(
           additionalDistanceMeters: plan.additionalDistanceMeters,
           additionalTimeSeconds: plan.additionalTimeSeconds,
           numberOfStops: plan.numberOfStops,
-          missingProductIds: plan.missingProductIds,
+          missingProducts: { create: [...new Set(plan.missingProductIds)].map((productId) => ({ productId })) },
           priceConfidence: plan.priceConfidence,
           estimatedSavings: plan.estimatedSavings,
           explanation: plan.explanation,
@@ -58,7 +58,6 @@ async function persistOptimizationRun(
           await prisma.optimizationPlanItem.createMany({
             data: itemsWithVariant.map((item: (typeof itemsWithVariant)[number]) => ({
               optimizationPlanStopId: createdStop.id,
-              productId: item.productId,
               productVariantId: item.productVariantId!,
               quantity: item.quantity,
               unitPrice: item.unitPrice,

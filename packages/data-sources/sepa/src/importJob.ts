@@ -221,15 +221,12 @@ export async function runSepaImport(options: SepaImportOptions): Promise<SepaImp
           address,
           latitude: resolvedLatitude,
           longitude: resolvedLongitude,
-          city: options.region.name,
           externalSepaCommerceId: sucursal.idComercio,
           externalSepaBrandId: sucursal.idBandera,
           externalSepaBranchId: sucursal.idSucursal,
           street: sucursal.calle || null,
           streetNumber: sucursal.numero || null,
           postalCode: sucursal.codigoPostal,
-          province: sucursal.provincia || null,
-          openingHours: sucursal.openingHours,
           source: options.source,
           sourceUpdatedAt: new Date(),
           status: "ACTIVE",
@@ -243,14 +240,17 @@ export async function runSepaImport(options: SepaImportOptions): Promise<SepaImp
           street: sucursal.calle || null,
           streetNumber: sucursal.numero || null,
           postalCode: sucursal.codigoPostal,
-          province: sucursal.provincia || null,
-          openingHours: sucursal.openingHours,
           sourceUpdatedAt: new Date(),
           status: "ACTIVE",
           marketRegionId: options.region.id,
         },
       });
       branchIdBySucursal.set(sucursal.idSucursal, branch.id);
+
+      // horarios por día en su propia tabla: se reemplazan por los del feed
+      await prisma.storeBranchHours.deleteMany({ where: { branchId: branch.id } });
+      const hours = Object.entries(sucursal.openingHours).map(([day, text]) => ({ branchId: branch.id, day, hours: text }));
+      if (hours.length > 0) await prisma.storeBranchHours.createMany({ data: hours });
 
       // Sección 43 — coordenadas y localidad se contradicen: registrar, no decidir en
       // silencio cuál "gana".
@@ -327,8 +327,6 @@ export async function runSepaImport(options: SepaImportOptions): Promise<SepaImp
             prisma.priceHistory.create({
               data: {
                 priceId: existingPrice.id,
-                productVariantId: existingPrice.productVariantId,
-                storeBranchId: existingPrice.storeBranchId,
                 amount: existingPrice.price,
                 status: existingPrice.status,
                 changeReason: "Actualización automática — import SEPA",

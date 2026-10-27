@@ -1,7 +1,7 @@
 import { prisma } from "@depaso/database";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
-import { toStoreBranchResponse } from "@/lib/catalogAdmin";
+import { branchInclude, toStoreBranchResponse } from "@/lib/catalogAdmin";
 import { postAsQuery } from "@/lib/http/postAdapter";
 
 /**
@@ -15,7 +15,7 @@ async function handle(request: NextRequest) {
   if (!current) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
 
   const branches = await prisma.storeBranch.findMany({
-    include: { store: true },
+    include: branchInclude,
     orderBy: [{ store: { name: "asc" } }, { name: "asc" }],
     take: 500,
   });

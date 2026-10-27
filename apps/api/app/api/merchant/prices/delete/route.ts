@@ -22,8 +22,6 @@ async function handle(request: NextRequest, { params }: RouteParams) {
     await tx.priceHistory.create({
       data: {
         priceId: id,
-        productVariantId: existing.productVariantId,
-        storeBranchId: existing.storeBranchId,
         amount: existing.price,
         status: existing.status,
         changeReason: "Dado de baja por el comercio",

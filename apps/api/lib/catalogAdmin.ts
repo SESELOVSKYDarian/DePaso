@@ -1,11 +1,24 @@
-import type { Price, ProductVariant, Store, StoreBranch } from "@depaso/database";
+import { prisma } from "@depaso/database";
+import type { MarketRegion, Price, ProductVariant, Store, StoreBranch } from "@depaso/database";
 import type { PriceResponse, StoreBranchResponse, StoreResponse } from "@depaso/validation";
 
 export function toStoreResponse(store: Store & { _count: { branches: number } }): StoreResponse {
   return { id: store.id, name: store.name, branchCount: store._count.branches };
 }
 
-export function toStoreBranchResponse(branch: StoreBranch & { store: Store }): StoreBranchResponse {
+/** Para leer una sucursal con su comercio y su región (de ahí sale la ciudad). */
+export const branchInclude = { store: true, marketRegion: true } as const;
+
+/** Región que corresponde a una ciudad (o la primera habilitada si no se indica). */
+export async function resolveRegionId(city?: string): Promise<string | null> {
+  const named = city ? await prisma.marketRegion.findFirst({ where: { name: city } }) : null;
+  const region = named ?? (await prisma.marketRegion.findFirst({ where: { enabled: true }, orderBy: { name: "asc" } }));
+  return region?.id ?? null;
+}
+
+export function toStoreBranchResponse(
+  branch: StoreBranch & { store: Store; marketRegion: MarketRegion | null }
+): StoreBranchResponse {
   return {
     id: branch.id,
     storeId: branch.storeId,
@@ -14,7 +27,7 @@ export function toStoreBranchResponse(branch: StoreBranch & { store: Store }): S
     address: branch.address,
     latitude: branch.latitude,
     longitude: branch.longitude,
-    city: branch.city,
+    city: branch.marketRegion?.name ?? "",
   };
 }
 

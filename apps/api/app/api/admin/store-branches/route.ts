@@ -2,7 +2,7 @@ import { prisma } from "@depaso/database";
 import { storeBranchInputSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
-import { toStoreBranchResponse } from "@/lib/catalogAdmin";
+import { branchInclude, resolveRegionId, toStoreBranchResponse } from "@/lib/catalogAdmin";
 
 export async function POST(request: NextRequest) {
   const admin = await requireAdmin(request);
@@ -17,6 +17,10 @@ export async function POST(request: NextRequest) {
   const store = await prisma.store.findUnique({ where: { id: parsed.data.storeId } });
   if (!store) return NextResponse.json({ error: "STORE_NOT_FOUND" }, { status: 400 });
 
-  const branch = await prisma.storeBranch.create({ data: parsed.data, include: { store: true } });
+  const { city, ...fields } = parsed.data;
+  const branch = await prisma.storeBranch.create({
+    data: { ...fields, marketRegionId: await resolveRegionId(city) },
+    include: branchInclude,
+  });
   return NextResponse.json(toStoreBranchResponse(branch), { status: 201 });
 }
