@@ -11,13 +11,16 @@
     "validate": "prisma validate",
     "migrate:dev": "prisma migrate dev",
     "seed": "tsx prisma/seed.ts",
-    "migrate:deploy": "prisma migrate deploy"
+    "migrate:deploy": "prisma migrate deploy",
+    "migrate:from-postgres": "tsx scripts/postgres-to-mysql.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.1.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
+    "@types/pg": "^8.23.1",
+    "pg": "^8.23.1",
     "prisma": "^6.1.0",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
