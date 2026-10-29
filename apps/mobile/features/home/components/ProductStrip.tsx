@@ -1,3 +1,4 @@
+import { StoreBadge } from "@/components/stores/StoreBadge";
 import { Ionicons } from "@expo/vector-icons";
 import type { HomeProduct } from "@depaso/validation";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
@@ -44,9 +45,12 @@ export function ProductStrip({ title, subtitle, products, showSaving = false, on
                 <Text style={styles.name} numberOfLines={2}>
                   {product.name}
                 </Text>
-                <Text style={styles.store} numberOfLines={1}>
-                  {product.storeName}
-                </Text>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                  <StoreBadge storeName={product.storeName} size={18} />
+                  <Text style={[styles.store, { flex: 1 }]} numberOfLines={1}>
+                    {product.storeName}
+                  </Text>
+                </View>
                 <View style={styles.priceRow}>
                   <View>
                     <Text style={styles.price}>{money(product.price)}</Text>

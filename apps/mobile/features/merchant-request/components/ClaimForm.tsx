@@ -1,3 +1,4 @@
+import { StoreBadge } from "@/components/stores/StoreBadge";
 import { Ionicons } from "@expo/vector-icons";
 import type { ClaimableBranch } from "@depaso/validation";
 import { useEffect, useState } from "react";
@@ -76,7 +77,7 @@ export function ClaimForm({ contact, isSubmitting, onSubmit }: ClaimFormProps) {
             onPress={() => setClaimed(branch)}
             style={[styles.branchRow, selected ? styles.branchRowSelected : null]}
           >
-            <Ionicons name="storefront-outline" size={20} color={colors.text.primary} />
+            <StoreBadge storeName={branch.storeName} size={34} />
             <View style={styles.flex}>
               <Text style={styles.branchName}>{branch.storeName}</Text>
               <Text style={styles.branchMeta} numberOfLines={1}>

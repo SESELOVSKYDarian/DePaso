@@ -1,3 +1,4 @@
+import { StoreBadge } from "@/components/stores/StoreBadge";
 import { Ionicons } from "@expo/vector-icons";
 import type { NearbyStore } from "@depaso/validation";
 import { router } from "expo-router";
@@ -68,9 +69,7 @@ export function NearbyStoresList({ stores, selectedId, isLoading, hasMap, onSele
           onPress={() => onSelect(store.branchId)}
           style={[s.storeRow, store.branchId === selectedId ? s.storeRowSelected : null]}
         >
-          <View style={s.storeIconSmall}>
-            <Ionicons name="storefront-outline" size={17} color={colors.text.primary} />
-          </View>
+          <StoreBadge storeName={store.storeName} size={34} />
           <View style={s.storeText}>
             <Text style={s.storeName} numberOfLines={1}>
               {store.storeName}

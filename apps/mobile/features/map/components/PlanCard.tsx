@@ -1,10 +1,9 @@
-import { Ionicons } from "@expo/vector-icons";
+import { StoreBadge } from "@/components/stores/StoreBadge";
 import type { OptimizationPlanResponse } from "@depaso/validation";
 import { router } from "expo-router";
 import { Text, View } from "react-native";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
 import { usePurchase } from "@/lib/purchase/PurchaseContext";
-import { useColors } from "@/lib/theme";
 import { formatBlocks, money } from "../helpers";
 import { useStyles } from "../styles";
 
@@ -23,7 +22,6 @@ interface PlanCardProps {
 /** "Tu compra de paso": total, ahorro, desvío y las paradas de compra con lo que se lleva en cada una. */
 export function PlanCard({ plan, stops, selectedId, hasPlanLine, onSelectStop }: PlanCardProps) {
   const s = useStyles();
-  const colors = useColors();
   const { start } = usePurchase();
 
   return (
@@ -50,9 +48,7 @@ export function PlanCard({ plan, stops, selectedId, hasPlanLine, onSelectStop }:
             style={[s.buyStop, stop.storeBranchId === selectedId ? s.storeRowSelected : null]}
           >
             <View style={s.buyHead}>
-              <View style={s.storeIcon}>
-                <Ionicons name="cart-outline" size={20} color={colors.text.onNavy} />
-              </View>
+              <StoreBadge storeName={stop.storeName} size={40} />
               <View style={s.storeText}>
                 <Text style={s.storeName}>{stop.storeName}</Text>
                 <Text style={s.address} numberOfLines={1}>

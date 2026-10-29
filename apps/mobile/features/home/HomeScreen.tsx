@@ -16,7 +16,7 @@ import { useColors, useTheme } from "@/lib/theme";
 import { SavePresetForm } from "../route-context/components/SavePresetForm";
 import { SavedRoutesRow } from "../route-context/components/SavedRoutesRow";
 import { useSavedRoutes } from "../route-context/useSavedRoutes";
-import { GuidePanel } from "./components/GuidePanel";
+import { StartRouteCard } from "./components/StartRouteCard";
 import { ListSummaryCard } from "./components/ListSummaryCard";
 import { PriceChanges } from "./components/PriceChanges";
 import { ProductStrip } from "./components/ProductStrip";
@@ -67,7 +67,12 @@ export default function HomeScreen() {
   // Lo que le falta al usuario para poder iniciar, en el orden en que se resuelve.
   const action = routePlan
     ? { label: "Ver mi compra de paso", hint: "Ya está armada: miralo en el mapa.", onPress: () => router.push("/map") }
-    : { label: "Iniciar mi recorrido", hint: "Te mostramos lo más barato según cuánto te desviás.", onPress: () => router.push("/optimization") };
+    : {
+        label: "Iniciar mi recorrido",
+        hint: hasRoute ? "Te mostramos lo más barato según cuánto te desviás." : "Contanos por dónde andás hoy y te armamos la compra de paso.",
+        // sin recorrido, el botón lleva a elegirlo; con recorrido, a calcular dónde comprar
+        onPress: () => router.push(hasRoute ? "/optimization" : "/route-context"),
+      };
 
   // Mientras llega el resumen del servidor se usa lo que ya se sabe de la lista.
   const listSummary: HomeListSummary | null = listWithItems
@@ -118,7 +123,12 @@ export default function HomeScreen() {
             onAction={action.onPress}
           />
         ) : (
-          <GuidePanel hasList={Boolean(listSummary)} hasRoute={hasRoute} hasPlan={Boolean(routePlan)} />
+          <StartRouteCard
+            routeNames={waypoints.map((waypoint) => waypoint.name)}
+            label={action.label}
+            hint={action.hint}
+            onPress={action.onPress}
+          />
         )}
 
         <SavedRoutesRow presets={saved.presets} onApply={saved.apply} onDelete={(preset) => void saved.remove(preset)} />

@@ -1,13 +1,11 @@
-import { Ionicons } from "@expo/vector-icons";
+import { StoreBadge } from "@/components/stores/StoreBadge";
 import type { HomePromo } from "@depaso/validation";
 import { Text, View } from "react-native";
-import { useColors } from "@/lib/theme";
 import { useStyles } from "../styles";
 
 /** "Ofertas de hoy": promos de bancos y billeteras que rigen hoy, primero las de tus medios de pago. */
 export function PromosToday({ promos }: { promos: HomePromo[] }) {
   const styles = useStyles();
-  const colors = useColors();
   if (promos.length === 0) return null;
 
   return (
@@ -18,7 +16,7 @@ export function PromosToday({ promos }: { promos: HomePromo[] }) {
       <View style={styles.card}>
         {promos.map((promo, index) => (
           <View key={promo.id} style={[styles.row, index > 0 ? styles.rowDivider : null]}>
-            <Ionicons name={promo.big ? "flame" : "pricetag-outline"} size={22} color={colors.text.primary} />
+            <StoreBadge storeName={promo.retailer} size={36} />
             <View style={styles.rowText}>
               <Text style={styles.rowTitle} numberOfLines={1}>
                 {promo.retailer}
