@@ -12,6 +12,7 @@ import { ListItemRow } from "./components/ListItemRow";
 import { SharePanel } from "./components/SharePanel";
 import { useStyles } from "./styles";
 import { useShoppingList } from "./useShoppingList";
+import { LIST_PERFORMANCE } from "@/lib/listPerformance";
 
 /** Detalle de una lista de compra: agregar y quitar productos, ajustar cantidad y compartirla. */
 export default function ListDetailScreen() {
@@ -104,6 +105,7 @@ export default function ListDetailScreen() {
         />
       ) : (
         <FlatList
+          {...LIST_PERFORMANCE}
           data={list.items}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}

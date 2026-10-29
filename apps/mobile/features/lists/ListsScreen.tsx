@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/common/Skeleton";
 import { useLists } from "@/lib/lists/ListsContext";
 import { makeStyles, useColors } from "@/lib/theme";
 import { ListCard } from "./components/ListCard";
+import { LIST_PERFORMANCE } from "@/lib/listPerformance";
 
 type Filter = "all" | "mine" | "shared";
 
@@ -74,6 +75,7 @@ export default function ListsScreen() {
         <EmptyState emoji="🔎" title="No encontramos listas" description="Probá con otro nombre o cambiá el filtro." />
       ) : (
         <FlatList
+          {...LIST_PERFORMANCE}
           data={visible}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}

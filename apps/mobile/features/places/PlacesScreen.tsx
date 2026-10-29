@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/common/Skeleton";
 import { PLACE_TYPE_META } from "@/lib/placeTypes";
 import { usePlaces } from "@/lib/places/PlacesContext";
 import type { UserPlaceResponse } from "@depaso/validation";
+import { LIST_PERFORMANCE } from "@/lib/listPerformance";
 
 function PlaceRow({ place }: { place: UserPlaceResponse }) {
   const styles = useStyles();
@@ -59,6 +60,7 @@ export default function PlacesListScreen() {
         />
       ) : (
         <FlatList
+          {...LIST_PERFORMANCE}
           data={places}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <PlaceRow place={item} />}

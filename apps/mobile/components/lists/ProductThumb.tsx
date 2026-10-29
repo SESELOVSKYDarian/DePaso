@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { Image, StyleSheet, View } from "react-native";
+import { Image } from "expo-image";
+import { StyleSheet, View } from "react-native";
 import { radii } from "@depaso/design-tokens";
 import { productIcon } from "@/lib/products/productIcon";
 import { useColors } from "@/lib/theme";
@@ -40,7 +41,10 @@ export function ProductThumb({ imageUrl, name, size = 52 }: ProductThumbProps) {
         <Image
           source={{ uri: imageUrl as string }}
           style={{ width: size - 8, height: size - 8 }}
-          resizeMode="contain"
+          contentFit="contain"
+          cachePolicy="memory-disk"
+          transition={120}
+          recyclingKey={imageUrl as string}
           onError={() => setFailed(true)}
         />
       ) : (

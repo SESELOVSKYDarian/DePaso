@@ -513,6 +513,8 @@ model StoreBranch {
   @@index([storeId])
   @@index([marketRegionId])
   @@index([ownerUserId])
+  /// "Comercios de paso" y "barato cerca": busca en un cuadro del mapa.
+  @@index([status, latitude, longitude])
   @@map("store_branches")
 }
 
@@ -609,6 +611,8 @@ model Price {
   history PriceHistory[]
 
   @@index([productVariantId, storeBranchId])
+  /// Panel del comercio: todos los precios de una sucursal (el índice de arriba empieza por producto).
+  @@index([storeBranchId, status])
   @@index([sourceExternalId])
   @@map("prices")
 }
@@ -624,6 +628,8 @@ model PriceHistory {
   changeReason     String @db.VarChar(255)
 
   @@index([priceId])
+  /// "Qué subió o bajó": busca los cambios de los últimos días sin recorrer todo el historial.
+  @@index([changedAt])
   @@map("price_history")
 }
 

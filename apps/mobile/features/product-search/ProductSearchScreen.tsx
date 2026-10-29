@@ -14,6 +14,7 @@ import { ResultRow } from "./components/ResultRow";
 import { SearchFilters } from "./components/SearchFilters";
 import { useStyles } from "./styles";
 import { useProductSearch } from "./useProductSearch";
+import { LIST_PERFORMANCE } from "@/lib/listPerformance";
 
 /**
  * Buscar un producto para sumarlo a una lista. Sin escribir nada se explora por cajas, de lo
@@ -111,6 +112,7 @@ export default function ProductSearchScreen() {
             />
           ) : (
             <FlatList
+          {...LIST_PERFORMANCE}
               data={results}
               keyExtractor={(item) => item.id}
               contentContainerStyle={styles.list}

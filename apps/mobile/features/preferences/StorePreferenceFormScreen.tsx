@@ -9,6 +9,7 @@ import { Button } from "@/components/common/Button";
 import { FormField } from "@/components/common/FormField";
 import { useToast } from "@/components/common/Toast";
 import { preferencesClient, storesClient } from "@/lib/apiClient";
+import { LIST_PERFORMANCE } from "@/lib/listPerformance";
 
 const TYPE_OPTIONS: { value: StorePreferenceInput["type"]; label: string; hint: string }[] = [
   { value: "REQUIRED", label: "Obligatorio", hint: "Se fija este comercio antes de rankear (restricción obligatoria)." },
@@ -86,6 +87,7 @@ export default function StorePreferenceFormScreen() {
         <Text style={styles.rowMeta}>Cargando comercios...</Text>
       ) : (
         <FlatList
+          {...LIST_PERFORMANCE}
           data={branches}
           keyExtractor={(item) => item.id}
           style={styles.branchList}

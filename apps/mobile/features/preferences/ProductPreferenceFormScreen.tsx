@@ -9,6 +9,7 @@ import { Button } from "@/components/common/Button";
 import { EmptyState } from "@/components/common/EmptyState";
 import { useToast } from "@/components/common/Toast";
 import { preferencesClient, productsClient } from "@/lib/apiClient";
+import { LIST_PERFORMANCE } from "@/lib/listPerformance";
 
 const TYPE_OPTIONS: { value: ProductPreferenceInput["type"]; label: string; hint: string }[] = [
   { value: "EXACT", label: "Marca exacta", hint: "Nunca la reemplaces por otra." },
@@ -74,6 +75,7 @@ export default function ProductPreferenceFormScreen() {
           <EmptyState emoji="🔎" title="Buscá un producto" description="Escribí el nombre o la marca que querés configurar." />
         ) : (
           <FlatList
+          {...LIST_PERFORMANCE}
             data={results}
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.list}

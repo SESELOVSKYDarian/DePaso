@@ -9,6 +9,7 @@ import { MerchantFilters } from "./components/MerchantFilters";
 import { MerchantPriceRow } from "./components/MerchantPriceRow";
 import { useStyles } from "./styles";
 import { useMerchantPrices } from "./useMerchantPrices";
+import { LIST_PERFORMANCE } from "@/lib/listPerformance";
 
 /**
  * Panel del comercio: su sucursal y todos sus precios, con el mismo buscador y filtros que ve
@@ -62,6 +63,7 @@ export default function MerchantHomeScreen() {
   return (
     <View style={styles.container}>
       <FlatList
+          {...LIST_PERFORMANCE}
         data={data.prices}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.list}

@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import { Image, StyleSheet, View } from "react-native";
+import { Image } from "expo-image";
+import { StyleSheet, View } from "react-native";
 import { findBrandLogo } from "@/lib/stores/matchBrandLogo";
 import { useBrandLogos } from "@/lib/stores/useBrandLogos";
 import { useColors } from "@/lib/theme";
@@ -28,7 +29,7 @@ export function StoreBadge({ storeName, size = 40 }: StoreBadgeProps) {
       ]}
     >
       {logo ? (
-        <Image source={{ uri: logo.imageDataUri }} style={{ width: size - 4, height: size - 4 }} resizeMode="contain" />
+        <Image source={{ uri: logo.imageDataUri }} style={{ width: size - 4, height: size - 4 }} contentFit="contain" cachePolicy="memory-disk" />
       ) : (
         <Ionicons name="storefront-outline" size={Math.round(size * 0.5)} color={colors.text.tertiary} />
       )}

@@ -7,6 +7,7 @@ import { ActivityTabs } from "./components/ActivityTabs";
 import { AnnouncementRow } from "./components/AnnouncementRow";
 import { PersonalRow } from "./components/PersonalRow";
 import { useActivityFeed } from "./useActivityFeed";
+import { LIST_PERFORMANCE } from "@/lib/listPerformance";
 
 /**
  * Actividad. "Novedades" son los avisos que publica el equipo (actualizaciones, promos, mantenimiento);
@@ -45,6 +46,7 @@ export default function ActivityScreen() {
         )
       ) : tab === "news" ? (
         <FlatList
+          {...LIST_PERFORMANCE}
           data={news.items}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <AnnouncementRow item={item} />}
@@ -54,6 +56,7 @@ export default function ActivityScreen() {
         />
       ) : (
         <FlatList
+          {...LIST_PERFORMANCE}
           data={mine.items}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <PersonalRow item={item} />}

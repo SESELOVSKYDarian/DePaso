@@ -10,6 +10,7 @@ import { EmptyState } from "@/components/common/EmptyState";
 import { FormField } from "@/components/common/FormField";
 import { useToast } from "@/components/common/Toast";
 import { adminMerchantClient } from "@/lib/apiClient";
+import { LIST_PERFORMANCE } from "@/lib/listPerformance";
 
 /** Bandeja del admin: solicitudes de usuarios que quieren pasar a rol comercio. */
 export default function AdminMerchantRequestsScreen() {
@@ -73,6 +74,7 @@ export default function AdminMerchantRequestsScreen() {
 
   return (
     <FlatList
+          {...LIST_PERFORMANCE}
       data={requests}
       keyExtractor={(item) => item.id}
       style={styles.container}
