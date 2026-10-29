@@ -2,22 +2,26 @@ import { Prisma, prisma } from "@depaso/database";
 import { PRODUCT_TYPE_LABELS } from "@depaso/domain";
 import type { ProductFacets, ProductSearchResult } from "@depaso/validation";
 import { loadProductImages } from "./productImages";
+import { cached } from "./memoryCache";
 import { prettifyBrandName, prettifyProductName } from "./productNames";
+import {
+  escapeLike,
+  filterConditions,
+  nameExpr,
+  normalizeQuery,
+  searchTokens,
+  textConditions,
+  whereClause,
+  type ProductSearchFilters,
+} from "./productSearchSql";
+
+export type { ProductSearchFilters };
 
 const MAX_RESULTS = 30;
 const MAX_FACET_TYPES = 12;
 const MAX_FACET_BRANDS = 25;
 /** Candidatos que se rankean por popularidad; el resto queda afuera por tier y largo del nombre. */
 const POPULARITY_POOL = 400;
-/** Palabras que no ayudan a encontrar nada y harían candidatos a casi todo el catálogo. */
-const STOPWORDS = new Set(["de", "del", "la", "el", "los", "las", "con", "sin", "y", "en", "x", "para"]);
-
-export interface ProductSearchFilters {
-  /** Id de tipo (`"gaseosa"`, `"vino"`…), ver `@depaso/domain`. */
-  type?: string | undefined;
-  brandId?: string | undefined;
-}
-
 interface RankedRow {
   id: string;
   name: string;
@@ -26,55 +30,6 @@ interface RankedRow {
   tier: bigint | number;
   popularity: bigint | number;
 }
-
-/** Minúsculas, sin acentos, espacios colapsados — igual que `Product.normalizedName`. */
-function normalizeQuery(text: string): string {
-  return text
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toLowerCase()
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-/** Escapa `%`, `_` y `\` para que el texto buscado no se tome como comodín de SQL. */
-function escapeLike(token: string): string {
-  return token.replace(/[\\%_]/g, (char) => `\\${char}`);
-}
-
-const nameExpr = Prisma.sql`COALESCE(p.normalizedName, lower(p.name))`;
-const brandExpr = Prisma.sql`lower(COALESCE(b.name, ''))`;
-
-/** Palabras de la búsqueda que realmente filtran (sin conectores). */
-function searchTokens(normalized: string): string[] {
-  if (!normalized) return [];
-  const all = normalized.split(" ");
-  const meaningful = all.filter((token) => !STOPWORDS.has(token));
-  return meaningful.length > 0 ? meaningful : all;
-}
-
-/** Condiciones que dependen de las palabras buscadas (nombre o marca). */
-function textConditions(tokens: string[]): Prisma.Sql[] {
-  const singleLetter = tokens.length === 1 && (tokens[0]?.length ?? 0) < 2;
-  return tokens.map((token) => {
-    const pattern = singleLetter ? `${escapeLike(token)}%` : `%${escapeLike(token)}%`;
-    return Prisma.sql`(${nameExpr} LIKE ${pattern} OR ${brandExpr} LIKE ${pattern})`;
-  });
-}
-
-/** Condiciones SQL de los filtros elegidos (tipo y marca). */
-function filterConditions(filters: ProductSearchFilters): Prisma.Sql[] {
-  const conditions: Prisma.Sql[] = [];
-  if (filters.type) conditions.push(Prisma.sql`p.productType = ${filters.type}`);
-  if (filters.brandId) conditions.push(Prisma.sql`p.brandId = ${filters.brandId}`);
-  return conditions;
-}
-
-/** Une las condiciones con AND en un WHERE (o nada si no hay ninguna). */
-function whereClause(conditions: Prisma.Sql[]): Prisma.Sql {
-  return conditions.length > 0 ? Prisma.sql`WHERE ${Prisma.join(conditions, " AND ")}` : Prisma.empty;
-}
-
 /**
  * Búsqueda de catálogo para armar la lista de compras. Lo que busca la gente es el producto
  * genérico ("arroz"), no la última marca que lo trae en el nombre, así que el orden es:
@@ -223,27 +178,6 @@ async function getProductFacetsUncached(query: string, filters: ProductSearchFil
       count: Number(row.count),
     })),
   };
-}
-
-/**
- * Caché en memoria de búsquedas y facetas: el catálogo cambia una vez por día (import de SEPA)
- * y la misma caja ("Gaseosas") la abren muchas personas. Diez minutos alcanzan y evitan que
- * cada toque vuelva a recorrer la base. Vive por instancia de la función, no se comparte.
- */
-const CACHE_TTL_MS = 10 * 60 * 1000;
-const CACHE_MAX = 400;
-const cache = new Map<string, { at: number; value: Promise<unknown> }>();
-
-/** Guarda el resultado 10 minutos en memoria (hasta 400 consultas) para no repetir la búsqueda. */
-function cached<T>(key: string, load: () => Promise<T>): Promise<T> {
-  const hit = cache.get(key);
-  if (hit && Date.now() - hit.at < CACHE_TTL_MS) return hit.value as Promise<T>;
-  const value = load();
-  cache.set(key, { at: Date.now(), value });
-  // Si falla no se guarda: el próximo intento vuelve a consultar.
-  value.catch(() => cache.delete(key));
-  if (cache.size > CACHE_MAX) cache.delete(cache.keys().next().value as string);
-  return value;
 }
 
 /** Busca productos (con caché). */

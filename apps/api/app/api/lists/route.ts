@@ -2,7 +2,7 @@ import { prisma } from "@depaso/database";
 import { shoppingListInputSchema, shoppingListUpdateSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
-import { listAccessWhere, listInclude, toListResponse, toListSummary } from "@/lib/lists/lists";
+import { listInclude, toListResponse } from "@/lib/lists/lists";
 import { postWithParams } from "@/lib/http/postAdapter";
 
 interface RouteParams {

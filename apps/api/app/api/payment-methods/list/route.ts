@@ -1,4 +1,4 @@
-import { Prisma, prisma } from "@depaso/database";
+import { prisma } from "@depaso/database";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
 import { postAsQuery } from "@/lib/http/postAdapter";
