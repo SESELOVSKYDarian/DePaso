@@ -1,7 +1,7 @@
 import { prisma } from "@depaso/database";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
-import { routeContextInclude, toRouteContextResponse } from "@/lib/routeContexts";
+import { routeContextInclude, toRouteContextResponse } from "@/lib/user/routeContexts";
 import { postAsQuery } from "@/lib/http/postAdapter";
 
 /**

@@ -2,7 +2,7 @@ import { prisma } from "@depaso/database";
 import { shoppingListInputSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
-import { listAccessWhere, listInclude, toListResponse, toListSummary } from "@/lib/lists";
+import { listAccessWhere, listInclude, toListResponse, toListSummary } from "@/lib/lists/lists";
 
 export async function POST(request: NextRequest) {
   const current = await getCurrentUser(request);

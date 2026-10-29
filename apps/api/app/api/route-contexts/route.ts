@@ -2,7 +2,7 @@ import { prisma } from "@depaso/database";
 import { routeContextInputSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
-import { routeContextInclude, toRouteContextResponse } from "@/lib/routeContexts";
+import { routeContextInclude, toRouteContextResponse } from "@/lib/user/routeContexts";
 
 export async function POST(request: NextRequest) {
   const current = await getCurrentUser(request);

@@ -2,7 +2,7 @@ import { prisma } from "@depaso/database";
 import { userPlaceUpdateSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
-import { toPlaceResponse } from "@/lib/places";
+import { toPlaceResponse } from "@/lib/user/places";
 import { postWithParams } from "@/lib/http/postAdapter";
 
 interface RouteParams {

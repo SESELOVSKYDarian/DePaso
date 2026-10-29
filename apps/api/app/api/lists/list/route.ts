@@ -1,7 +1,7 @@
 import { prisma } from "@depaso/database";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
-import { listAccessWhere, listInclude, toListResponse, toListSummary } from "@/lib/lists";
+import { listAccessWhere, listInclude, toListResponse, toListSummary } from "@/lib/lists/lists";
 import { postAsQuery } from "@/lib/http/postAdapter";
 
 /** Listas de compra (Fase 9): las propias y las que otros usuarios compartieron. `userId` sale siempre de la sesión (sección 81). */

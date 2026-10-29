@@ -1,11 +1,11 @@
-import { loadActivePromos } from "./promoRows";
+import { loadActivePromos } from "../promos/promoRows";
 import { paymentMethodLabel } from "@depaso/domain";
 import { Prisma, prisma } from "@depaso/database";
 import type { HomeFeedResponse } from "@depaso/validation";
-import { listAccessWhere } from "./lists";
-import { argentinaWeekday } from "./applyPromos";
-import { promoAppliesOnDay, promoAppliesToUser } from "./paymentPromos";
-import { prettifyProductName } from "./productNames";
+import { listAccessWhere } from "../lists/lists";
+import { argentinaWeekday } from "../promos/applyPromos";
+import { promoAppliesOnDay, promoAppliesToUser } from "../promos/paymentPromos";
+import { prettifyProductName } from "../catalog/productNames";
 
 const WATCHED_PRODUCTS_MAX = 200;
 const MAX_PRICE_CHANGES = 8;

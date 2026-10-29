@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createResetCode, createResetToken } from "@/lib/auth/passwordReset";
 import { checkRateLimit } from "@/lib/auth/rateLimit";
 import { getClientIp } from "@/lib/auth/request";
-import { isEmailConfigured, sendEmail } from "@/lib/email";
+import { isEmailConfigured, sendEmail } from "@/lib/integrations/email";
 
 const FORGOT_RATE_LIMIT = { max: 5, windowMs: 60 * 60 * 1000 };
 

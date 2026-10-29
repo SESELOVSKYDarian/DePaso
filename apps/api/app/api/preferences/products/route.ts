@@ -2,7 +2,7 @@ import { prisma } from "@depaso/database";
 import { productPreferenceInputSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
-import { toProductPreferenceResponse } from "@/lib/preferences";
+import { toProductPreferenceResponse } from "@/lib/user/preferences";
 
 /** Una preferencia por producto (`@@unique([userId, productId])`) — crea o reemplaza. */
 export async function POST(request: NextRequest) {

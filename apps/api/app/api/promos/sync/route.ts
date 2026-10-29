@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
-import { syncPaymentPromos } from "@/lib/syncPromos";
+import { syncPaymentPromos } from "@/lib/promos/syncPromos";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;

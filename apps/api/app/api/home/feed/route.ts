@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
-import { buildHomeFeed } from "@/lib/homeFeed";
+import { buildHomeFeed } from "@/lib/home/homeFeed";
 import { postAsQuery } from "@/lib/http/postAdapter";
 
 export const dynamic = "force-dynamic";

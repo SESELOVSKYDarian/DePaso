@@ -1,7 +1,7 @@
 import { prisma } from "@depaso/database";
 import type { ShoppingList, ShoppingListItem, ShoppingListMember, User } from "@depaso/database";
 import type { ShoppingListItemResponse, ShoppingListResponse, ShoppingListSummary } from "@depaso/validation";
-import { prettifyBrandName, prettifyProductName } from "./productNames";
+import { prettifyBrandName, prettifyProductName } from "../catalog/productNames";
 
 /** Relaciones que necesita `toListResponse` (dueño y miembros con su usuario). */
 export const listInclude = { items: true, user: true, members: { include: { user: true } } } as const;

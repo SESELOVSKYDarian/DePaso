@@ -2,7 +2,7 @@ import { Prisma, prisma } from "@depaso/database";
 import { merchantPriceInputSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { requireMerchant } from "@/lib/auth/requireMerchant";
-import { merchantPriceInclude, normalizeName, toMerchantPriceResponse } from "@/lib/merchant";
+import { merchantPriceInclude, normalizeName, toMerchantPriceResponse } from "@/lib/merchant/merchant";
 
 /** Publica (o actualiza) el precio de una variante del catálogo en la sucursal propia. */
 export async function POST(request: NextRequest) {

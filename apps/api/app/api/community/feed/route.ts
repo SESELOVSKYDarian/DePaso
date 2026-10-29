@@ -2,7 +2,7 @@ import { prisma } from "@depaso/database";
 import { communityFeedQuerySchema, type CommunityFeedItem } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
-import { prettifyBrandName, prettifyProductName } from "@/lib/productNames";
+import { prettifyBrandName, prettifyProductName } from "@/lib/catalog/productNames";
 import { postAsQuery } from "@/lib/http/postAdapter";
 
 const COMMUNITY_WINDOW_MS = 14 * 24 * 60 * 60 * 1000;

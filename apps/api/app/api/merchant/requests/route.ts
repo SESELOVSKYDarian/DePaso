@@ -3,7 +3,7 @@ import { merchantRequestInputSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
 import { checkRateLimit } from "@/lib/auth/rateLimit";
-import { toMerchantRequestResponse } from "@/lib/merchant";
+import { toMerchantRequestResponse } from "@/lib/merchant/merchant";
 
 /** Un usuario común pide pasar a rol comercio; queda PENDING hasta que un admin resuelva. */
 export async function POST(request: NextRequest) {

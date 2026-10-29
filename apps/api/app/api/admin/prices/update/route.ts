@@ -2,7 +2,7 @@ import { Prisma, prisma } from "@depaso/database";
 import { priceUpdateSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
-import { toPriceResponse } from "@/lib/catalogAdmin";
+import { toPriceResponse } from "@/lib/catalog/catalogAdmin";
 import { postWithParams } from "@/lib/http/postAdapter";
 
 interface RouteParams {

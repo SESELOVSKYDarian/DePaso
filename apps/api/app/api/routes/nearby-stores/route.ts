@@ -2,7 +2,7 @@ import { prisma } from "@depaso/database";
 import { nearbyStoresRequestSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
-import { boundingBox, decodePolyline, findStoresAlongRoute, type LatLng } from "@/lib/nearbyStores";
+import { boundingBox, decodePolyline, findStoresAlongRoute, type LatLng } from "@/lib/routes/nearbyStores";
 
 /**
  * `POST /api/routes/nearby-stores` - los comercios que te quedan "de paso" sobre el recorrido

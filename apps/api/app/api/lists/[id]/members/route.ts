@@ -3,7 +3,7 @@ import { shoppingListShareInputSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
 import { checkRateLimit } from "@/lib/auth/rateLimit";
-import { listInclude, toListResponse } from "@/lib/lists";
+import { listInclude, toListResponse } from "@/lib/lists/lists";
 
 interface RouteParams {
   params: Promise<{ id: string }>;

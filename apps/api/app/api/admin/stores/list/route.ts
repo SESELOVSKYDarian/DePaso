@@ -1,7 +1,7 @@
 import { prisma } from "@depaso/database";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
-import { toStoreResponse } from "@/lib/catalogAdmin";
+import { toStoreResponse } from "@/lib/catalog/catalogAdmin";
 import { postAsQuery } from "@/lib/http/postAdapter";
 
 /** CRUD de comercios (Fase 11) — sólo ADMIN, ver `lib/auth/requireAdmin.ts`. */

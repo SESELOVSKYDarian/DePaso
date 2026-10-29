@@ -1,7 +1,7 @@
 import { prisma } from "@depaso/database";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
-import { toAdminMerchantRequestResponse } from "@/lib/merchant";
+import { toAdminMerchantRequestResponse } from "@/lib/merchant/merchant";
 import { postAsQuery } from "@/lib/http/postAdapter";
 
 /** Bandeja del admin. `?status=` filtra (por defecto PENDING); `pendingCount` alimenta el badge. */

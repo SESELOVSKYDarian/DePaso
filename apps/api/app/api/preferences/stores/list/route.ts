@@ -1,7 +1,7 @@
 import { prisma } from "@depaso/database";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
-import { toStorePreferenceResponse } from "@/lib/preferences";
+import { toStorePreferenceResponse } from "@/lib/user/preferences";
 import { postAsQuery } from "@/lib/http/postAdapter";
 
 const include = { storeBranch: { include: { store: true } } } as const;

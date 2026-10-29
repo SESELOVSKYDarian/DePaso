@@ -2,7 +2,7 @@ import { Prisma, prisma } from "@depaso/database";
 import { merchantPriceInputSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { requireMerchant } from "@/lib/auth/requireMerchant";
-import { merchantPriceInclude, toMerchantPriceResponse } from "@/lib/merchant";
+import { merchantPriceInclude, toMerchantPriceResponse } from "@/lib/merchant/merchant";
 import { postWithParams } from "@/lib/http/postAdapter";
 
 interface RouteParams {

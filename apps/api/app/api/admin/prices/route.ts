@@ -2,7 +2,7 @@ import { prisma } from "@depaso/database";
 import { priceInputSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
-import { toPriceResponse } from "@/lib/catalogAdmin";
+import { toPriceResponse } from "@/lib/catalog/catalogAdmin";
 
 const include = { productVariant: true, storeBranch: true } as const;
 

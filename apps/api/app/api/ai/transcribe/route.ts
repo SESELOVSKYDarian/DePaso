@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
 import { checkRateLimit } from "@/lib/auth/rateLimit";
-import { topBrandNames } from "@/lib/brandVocabulary";
-import { buildVocabularyHint, isSttConfigured, transcribeAudio } from "@/lib/stt";
+import { topBrandNames } from "@/lib/catalog/brandVocabulary";
+import { buildVocabularyHint, isSttConfigured, transcribeAudio } from "@/lib/assistant/stt";
 
 export const maxDuration = 60;
 

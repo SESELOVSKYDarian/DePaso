@@ -2,11 +2,11 @@ import { assistantRequestSchema, type AssistantItem } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
 import { checkRateLimit } from "@/lib/auth/rateLimit";
-import { loadBrands, topBrandNames } from "@/lib/brandVocabulary";
-import { correctBrandInTerm, stripAccents, type BrandEntry } from "@/lib/phonetic";
-import { prettifyBrandName } from "@/lib/productNames";
-import { getProductFacets, searchProducts } from "@/lib/products";
-import { parseShoppingText, type ParsedItem } from "@/lib/shoppingParse";
+import { loadBrands, topBrandNames } from "@/lib/catalog/brandVocabulary";
+import { correctBrandInTerm, stripAccents, type BrandEntry } from "@/lib/catalog/phonetic";
+import { prettifyBrandName } from "@/lib/catalog/productNames";
+import { getProductFacets, searchProducts } from "@/lib/catalog/products";
+import { parseShoppingText, type ParsedItem } from "@/lib/assistant/shoppingParse";
 
 // El modelo grande puede tardar: con el límite por defecto (10 s) la función se cortaba.
 export const maxDuration = 60;

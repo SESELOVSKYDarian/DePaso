@@ -2,7 +2,7 @@ import { Prisma, prisma } from "@depaso/database";
 import { merchantDecisionInputSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
-import { toAdminMerchantRequestResponse } from "@/lib/merchant";
+import { toAdminMerchantRequestResponse } from "@/lib/merchant/merchant";
 
 interface RouteParams {
   params: Promise<{ id: string }>;

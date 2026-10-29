@@ -1,7 +1,7 @@
 import { Prisma, prisma } from "@depaso/database";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
-import { normalizeName } from "@/lib/merchant";
+import { normalizeName } from "@/lib/merchant/merchant";
 import { postAsQuery } from "@/lib/http/postAdapter";
 
 const MAX_RESULTS = 30;

@@ -1,7 +1,7 @@
 import { prisma } from "@depaso/database";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
-import { toMerchantRequestResponse } from "@/lib/merchant";
+import { toMerchantRequestResponse } from "@/lib/merchant/merchant";
 import { postAsQuery } from "@/lib/http/postAdapter";
 
 /** Última solicitud del usuario actual (o `null` si nunca pidió ser comercio). */

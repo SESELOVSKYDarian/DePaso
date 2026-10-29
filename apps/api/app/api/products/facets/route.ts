@@ -1,7 +1,7 @@
 import { productFacetsQuerySchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
-import { getProductFacets } from "@/lib/products";
+import { getProductFacets } from "@/lib/catalog/products";
 import { postAsQuery } from "@/lib/http/postAdapter";
 
 /**

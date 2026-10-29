@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
-import { refreshProductPopularity } from "@/lib/catalogMaintenance";
+import { refreshProductPopularity } from "@/lib/catalog/catalogMaintenance";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;

@@ -1,7 +1,7 @@
 import { routeComputeRequestSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
-import { getRouteProvider } from "@/lib/routing";
+import { getRouteProvider } from "@/lib/routes/routing";
 
 /**
  * Ruteo real para dibujar el mapa del recorrido de hoy (Fase 17) — nunca calcula del lado

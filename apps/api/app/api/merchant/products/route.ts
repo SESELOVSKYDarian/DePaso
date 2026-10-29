@@ -2,7 +2,7 @@ import { Prisma, prisma } from "@depaso/database";
 import { merchantProductInputSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { requireMerchant } from "@/lib/auth/requireMerchant";
-import { merchantPriceInclude, normalizeName, toMerchantPriceResponse } from "@/lib/merchant";
+import { merchantPriceInclude, normalizeName, toMerchantPriceResponse } from "@/lib/merchant/merchant";
 
 /**
  * Alta de un producto que todavía no está en el catálogo, junto con su primer precio en la

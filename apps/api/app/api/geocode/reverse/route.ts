@@ -1,7 +1,7 @@
 import { reverseGeocodeRequestSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
-import { getGeocodingProvider } from "@/lib/geocoding";
+import { getGeocodingProvider } from "@/lib/integrations/geocoding";
 
 /** Geocodificación inversa real (Fase 28) — `POST /api/geocode/reverse`. */
 export async function POST(request: NextRequest) {

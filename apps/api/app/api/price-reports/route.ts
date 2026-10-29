@@ -3,7 +3,7 @@ import { priceReportInputSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
 import { checkRateLimit } from "@/lib/auth/rateLimit";
-import { recomputeConsensus } from "@/lib/priceConsensus";
+import { recomputeConsensus } from "@/lib/catalog/priceConsensus";
 
 /** Reporte comunitario: se recibe como aporte, no sobrescribe precios ni salta moderación. */
 export async function POST(request: NextRequest) {

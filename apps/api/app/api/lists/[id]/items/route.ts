@@ -2,7 +2,7 @@ import { prisma } from "@depaso/database";
 import { shoppingListItemInputSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
-import { listAccessWhere, listInclude, toListResponse } from "@/lib/lists";
+import { listAccessWhere, listInclude, toListResponse } from "@/lib/lists/lists";
 
 interface RouteParams {
   params: Promise<{ id: string }>;

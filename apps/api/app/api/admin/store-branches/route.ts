@@ -2,7 +2,7 @@ import { prisma } from "@depaso/database";
 import { storeBranchInputSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
-import { branchInclude, resolveRegionId, toStoreBranchResponse } from "@/lib/catalogAdmin";
+import { branchInclude, resolveRegionId, toStoreBranchResponse } from "@/lib/catalog/catalogAdmin";
 
 export async function POST(request: NextRequest) {
   const admin = await requireAdmin(request);

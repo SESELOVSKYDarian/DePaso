@@ -1,7 +1,7 @@
 import { prisma } from "@depaso/database";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
-import { branchInclude, toStoreBranchResponse } from "@/lib/catalogAdmin";
+import { branchInclude, toStoreBranchResponse } from "@/lib/catalog/catalogAdmin";
 import { postAsQuery } from "@/lib/http/postAdapter";
 
 /**

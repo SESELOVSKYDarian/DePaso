@@ -1,7 +1,7 @@
 import { productSearchQuerySchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
-import { searchProducts } from "@/lib/products";
+import { searchProducts } from "@/lib/catalog/products";
 import { postAsQuery } from "@/lib/http/postAdapter";
 
 /**

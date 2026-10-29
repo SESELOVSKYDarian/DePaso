@@ -2,7 +2,7 @@ import { prisma } from "@depaso/database";
 import { storeInputSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
-import { toStoreResponse } from "@/lib/catalogAdmin";
+import { toStoreResponse } from "@/lib/catalog/catalogAdmin";
 import { postWithParams } from "@/lib/http/postAdapter";
 
 interface RouteParams {

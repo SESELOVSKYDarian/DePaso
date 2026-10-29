@@ -2,8 +2,8 @@ import { Prisma, prisma } from "@depaso/database";
 import { NextRequest, NextResponse } from "next/server";
 import { requireMerchant } from "@/lib/auth/requireMerchant";
 import { PRODUCT_TYPE_LABELS } from "@depaso/domain";
-import { merchantPriceInclude, normalizeName, toMerchantPriceResponse } from "@/lib/merchant";
-import { prettifyBrandName } from "@/lib/productNames";
+import { merchantPriceInclude, normalizeName, toMerchantPriceResponse } from "@/lib/merchant/merchant";
+import { prettifyBrandName } from "@/lib/catalog/productNames";
 import { postAsQuery } from "@/lib/http/postAdapter";
 
 const PAGE_SIZE = 50;

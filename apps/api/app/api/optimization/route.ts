@@ -3,11 +3,11 @@ import { distanceToPathMeters, optimizeWithRanking, type OptimizationPlanResult,
 import type { TransportMode } from "@depaso/types";
 import { optimizationRunRequestSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
-import { runInBackground } from "@/lib/background";
+import { runInBackground } from "@/lib/http/background";
 import { getCurrentUser } from "@/lib/auth/currentUser";
-import { applyPaymentPromos, loadPromoContext, promoDiscountForStops } from "@/lib/applyPromos";
-import { buildPlanRoute, type BranchInfo } from "@/lib/planRoute";
-import { getRouteProvider } from "@/lib/routing";
+import { applyPaymentPromos, loadPromoContext, promoDiscountForStops } from "@/lib/promos/applyPromos";
+import { buildPlanRoute, type BranchInfo } from "@/lib/routes/planRoute";
+import { getRouteProvider } from "@/lib/routes/routing";
 
 // Varias rutas de Mapbox por plan: con el límite por defecto la función se cortaba.
 export const maxDuration = 60;

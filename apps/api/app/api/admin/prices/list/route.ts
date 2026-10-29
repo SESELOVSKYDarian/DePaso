@@ -1,7 +1,7 @@
 import { prisma } from "@depaso/database";
 import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
-import { toPriceResponse } from "@/lib/catalogAdmin";
+import { toPriceResponse } from "@/lib/catalog/catalogAdmin";
 import { postAsQuery } from "@/lib/http/postAdapter";
 
 const include = { productVariant: true, storeBranch: true } as const;

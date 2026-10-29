@@ -1,5 +1,5 @@
 import { Prisma, prisma } from "@depaso/database";
-import { runInBackground } from "./background";
+import { runInBackground } from "../http/background";
 
 /**
  * Fotos de producto desde Open Food Facts, resueltas por EAN a demanda.

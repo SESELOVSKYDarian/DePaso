@@ -1,7 +1,7 @@
 import { prisma } from "@depaso/database";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
-import { toProductPreferenceResponse } from "@/lib/preferences";
+import { toProductPreferenceResponse } from "@/lib/user/preferences";
 import { postAsQuery } from "@/lib/http/postAdapter";
 
 /** Preferencias de producto (Fase 10, sección 87 — consumidas por `@depaso/optimization`). */

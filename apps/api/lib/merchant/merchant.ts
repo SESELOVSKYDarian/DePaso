@@ -1,5 +1,5 @@
 import type { Brand, MerchantRequest, Price, Product, ProductVariant, User } from "@depaso/database";
-import { prettifyBrandName, prettifyProductName } from "./productNames";
+import { prettifyBrandName, prettifyProductName } from "../catalog/productNames";
 import type {
   AdminMerchantRequestResponse,
   MerchantPriceResponse,
