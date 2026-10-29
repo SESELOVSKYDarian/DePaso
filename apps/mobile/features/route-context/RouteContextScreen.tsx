@@ -1,27 +1,34 @@
 import { Ionicons } from "@expo/vector-icons";
 import { ApiError } from "@depaso/api-client";
+import type { UserPlaceResponse } from "@depaso/validation";
 import * as Location from "expo-location";
 import { router } from "expo-router";
-import { useEffect, useRef, useState } from "react";
-import { ActivityIndicator, Modal, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useState } from "react";
+import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { makeStyles, useColors, withAlpha } from "@/lib/theme";
-import type { RouteContextResponse } from "@depaso/validation";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
-import { BottomSheet } from "@/components/common/BottomSheet";
-import { Button } from "@/components/common/Button";
 import { Dialog } from "@/components/common/Dialog";
-import { FormField } from "@/components/common/FormField";
-import { SelectCheckbox } from "@/components/common/SelectCheckbox";
 import { useToast } from "@/components/common/Toast";
-import { geocodeClient, mapConfigClient, routeContextClient } from "@/lib/apiClient";
-import { MapPicker } from "@/components/map/MapPicker";
+import { geocodeClient } from "@/lib/apiClient";
 import { PLACE_TYPE_META } from "@/lib/placeTypes";
 import { usePlaces } from "@/lib/places/PlacesContext";
 import { useTodayRoute, type TodayWaypoint } from "@/lib/routeContext/TodayRouteContext";
+import { useColors } from "@/lib/theme";
+import { AddTodaySheet } from "./components/AddTodaySheet";
+import { MapPickerModal } from "./components/MapPickerModal";
+import { PlacesList } from "./components/PlacesList";
+import { RouteFooter } from "./components/RouteFooter";
+import { SavedRoutesRow } from "./components/SavedRoutesRow";
+import { SavePresetForm } from "./components/SavePresetForm";
+import { TodayRouteList } from "./components/TodayRouteList";
+import { GEOCODING_NOT_CONFIGURED_MESSAGE, geocodeAddress } from "./helpers";
 import { useStyles } from "./styles";
-import { GEOCODING_NOT_CONFIGURED_MESSAGE, geocodeAddress, MAR_DEL_PLATA } from "./helpers";
+import { useMapPicking } from "./useMapPicking";
+import { useSavedRoutes } from "./useSavedRoutes";
 
+type Point = { latitude: number; longitude: number };
+
+/** "¿Por dónde vas a andar hoy?": se arma la lista de paradas del recorrido de hoy. */
 export default function RouteContextScreen() {
   const colors = useColors();
   const styles = useStyles();
@@ -30,40 +37,38 @@ export default function RouteContextScreen() {
   const { show: showToast } = useToast();
 
   const [waypoints, setWaypoints] = useState<TodayWaypoint[]>(savedToday);
-  const [presets, setPresets] = useState<RouteContextResponse[]>([]);
   const [addSheetVisible, setAddSheetVisible] = useState(false);
   const [tempName, setTempName] = useState("");
   const [tempAddress, setTempAddress] = useState("");
   const [tempError, setTempError] = useState<string | undefined>();
   const [isGeocoding, setIsGeocoding] = useState(false);
   const [askSaveDialog, setAskSaveDialog] = useState<TodayWaypoint | null>(null);
-  const [savingPresetName, setSavingPresetName] = useState<string | null>(null);
   const [isLocating, setIsLocating] = useState(false);
-  const [isSavingRoute, setIsSavingRoute] = useState(false);
   const [isSavingPlace, setIsSavingPlace] = useState(false);
-  // Elegir el lugar tocando el mapa.
-  const [mapOpen, setMapOpen] = useState(false);
-  const [mapToken, setMapToken] = useState<string | null>(null);
-  const [picked, setPicked] = useState<{ latitude: number; longitude: number } | null>(null);
-  const [pickedAddress, setPickedAddress] = useState<string | null>(null);
-  const [isResolvingPick, setIsResolvingPick] = useState(false);
-  const pickRequest = useRef(0);
 
-  useEffect(() => {
-    routeContextClient
-      .list()
-      .then((res) => setPresets(res.routeContexts))
-      .catch(() => {
-        // Sin presets todavía (o sin conexión) — no bloquea el resto de la pantalla.
-      });
-  }, []);
+  /** Dirección legible de un punto; si falla, se describe sin dirección. */
+  const describePoint = async (point: Point) => {
+    try {
+      const { address } = await geocodeClient.reverse(point);
+      return address;
+    } catch {
+      return null;
+    }
+  };
+
+  const map = useMapPicking(describePoint);
+  const saved = useSavedRoutes(waypoints, setWaypoints, places, showToast);
 
   const selectedPlaceIds = new Set(waypoints.map((w) => w.placeId).filter(Boolean));
-
   const addWaypoint = (waypoint: TodayWaypoint) => setWaypoints((prev) => [...prev, waypoint]);
   const removeWaypoint = (key: string) => setWaypoints((prev) => prev.filter((w) => w.key !== key));
 
-  const addSavedPlace = (place: (typeof places)[number]) => {
+  // tildar o destildar un lugar guardado
+  const togglePlace = (place: UserPlaceResponse) => {
+    if (selectedPlaceIds.has(place.id)) {
+      removeWaypoint(place.id);
+      return;
+    }
     addWaypoint({
       key: place.id,
       placeId: place.id,
@@ -75,24 +80,7 @@ export default function RouteContextScreen() {
     });
   };
 
-  const togglePlace = (place: (typeof places)[number]) => {
-    if (selectedPlaceIds.has(place.id)) {
-      removeWaypoint(place.id);
-    } else {
-      addSavedPlace(place);
-    }
-  };
-
-  /** Dirección legible de un punto; si falla, se describe sin dirección. */
-  const describePoint = async (point: { latitude: number; longitude: number }) => {
-    try {
-      const { address } = await geocodeClient.reverse(point);
-      return address;
-    } catch {
-      return null;
-    }
-  };
-
+  // sumo la ubicación GPS actual como parada
   const addCurrentLocation = async () => {
     // Un solo pedido a la vez: el GPS puede tardar y antes cada toque sumaba otra parada.
     if (isLocating) return;
@@ -120,45 +108,24 @@ export default function RouteContextScreen() {
     }
   };
 
-  const openMapPicker = async () => {
+  const openMapPicker = () => {
     setAddSheetVisible(false);
-    setPicked(null);
-    setPickedAddress(null);
-    setMapOpen(true);
-    if (!mapToken) {
-      try {
-        const config = await mapConfigClient.getMapboxToken();
-        setMapToken(config.token);
-      } catch {
-        setMapOpen(false);
-        showToast("No pudimos abrir el mapa. Escribí la dirección.", "error");
-      }
-    }
+    void map.open(() => showToast("No pudimos abrir el mapa. Escribí la dirección.", "error"));
   };
 
-  const handlePick = async (point: { latitude: number; longitude: number }) => {
-    const id = ++pickRequest.current;
-    setPicked(point);
-    setPickedAddress(null);
-    setIsResolvingPick(true);
-    const address = await describePoint(point);
-    if (id !== pickRequest.current) return;
-    setPickedAddress(address);
-    setIsResolvingPick(false);
-  };
-
+  // confirmo el punto tocado en el mapa
   const addPickedPoint = () => {
-    if (!picked) return;
-    const address = pickedAddress ?? `${picked.latitude.toFixed(5)}, ${picked.longitude.toFixed(5)}`;
+    if (!map.picked) return;
+    const address = map.pickedAddress ?? `${map.picked.latitude.toFixed(5)}, ${map.picked.longitude.toFixed(5)}`;
     const waypoint: TodayWaypoint = {
       key: `map-${Date.now()}`,
       name: tempName.trim() || address.split(",")[0] || "Punto del mapa",
       address,
-      ...picked,
+      ...map.picked,
       emoji: "📍",
     };
     addWaypoint(waypoint);
-    setMapOpen(false);
+    map.close();
     setTempName("");
     setAskSaveDialog(waypoint);
   };
@@ -186,6 +153,7 @@ export default function RouteContextScreen() {
     }
   };
 
+  // sumo una dirección escrita a mano (la convierto a coordenadas)
   const handleAddTemporary = async () => {
     if (!tempAddress.trim()) {
       setTempError("Ingresá una dirección.");
@@ -217,82 +185,11 @@ export default function RouteContextScreen() {
       } else if (err instanceof ApiError) {
         setTempError("No pudimos ubicar esa dirección. Probá de nuevo.");
       } else {
-        // No es un error de la API (404/503) sino de red/conexión — el servidor puede estar
-        // caído o inalcanzable. Bug real encontrado probando el flujo completo: antes esto
-        // mostraba el mismo mensaje que "dirección no encontrada", lo que hacía parecer que
-        // el geocoding fallaba cuando en realidad no había servidor al otro lado.
+        // No es un error de la API sino de red: el servidor puede estar caído o inalcanzable.
         setTempError("No pudimos conectar con el servidor. Revisá tu conexión e intentá de nuevo.");
       }
     } finally {
       setIsGeocoding(false);
-    }
-  };
-
-  const applyPreset = (preset: RouteContextResponse) => {
-    if (preset.stops && preset.stops.length > 0) {
-      setWaypoints(
-        preset.stops.map((stop, index) => ({
-          key: stop.placeId ?? `saved-${preset.id}-${index}`,
-          ...(stop.placeId ? { placeId: stop.placeId } : {}),
-          name: stop.name,
-          address: stop.address,
-          latitude: stop.latitude,
-          longitude: stop.longitude,
-          emoji: stop.emoji,
-        })),
-      );
-      showToast(`Cargaste "${preset.name}"`, "success");
-      return;
-    }
-    const resolved = preset.waypointPlaceIds
-      .map((id) => places.find((p) => p.id === id))
-      .filter((p): p is NonNullable<typeof p> => p !== undefined)
-      .map((place) => ({
-        key: place.id,
-        placeId: place.id,
-        name: place.name,
-        address: place.address,
-        latitude: place.latitude,
-        longitude: place.longitude,
-        emoji: PLACE_TYPE_META[place.type].emoji,
-      }));
-    setWaypoints(resolved);
-    showToast(`Cargaste "${preset.name}"`, "success");
-  };
-
-  const handleSavePreset = async () => {
-    const name = savingPresetName?.trim();
-    if (!name || waypoints.length < 2 || isSavingRoute) return;
-    setIsSavingRoute(true);
-    try {
-      const created = await routeContextClient.create({
-        name,
-        stops: waypoints.map((w) => ({
-          name: w.name,
-          address: w.address,
-          latitude: w.latitude,
-          longitude: w.longitude,
-          emoji: w.emoji,
-          ...(w.placeId ? { placeId: w.placeId } : {}),
-        })),
-      });
-      setPresets((prev) => [created, ...prev]);
-      setSavingPresetName(null);
-      showToast(`Guardamos "${created.name}". La tenés arriba para usarla cuando quieras.`, "success");
-    } catch {
-      showToast("No pudimos guardar el recorrido. Probá de nuevo.", "error");
-    } finally {
-      setIsSavingRoute(false);
-    }
-  };
-
-  const deletePreset = async (preset: RouteContextResponse) => {
-    try {
-      await routeContextClient.remove(preset.id);
-      setPresets((prev) => prev.filter((p) => p.id !== preset.id));
-      showToast(`Borramos "${preset.name}".`, "info");
-    } catch {
-      showToast("No pudimos borrar la ruta.", "error");
     }
   };
 
@@ -319,211 +216,42 @@ export default function RouteContextScreen() {
           <Text style={styles.mapBannerText}>Seleccioná los lugares que vas a visitar y armamos la mejor ruta.</Text>
         </View>
 
-        {presets.length > 0 ? (
-          <>
-            <Text style={styles.sectionTitle}>Tus rutas guardadas</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.presetsRow}>
-              {presets.map((preset) => (
-                <View key={preset.id} style={{ flexDirection: "row", alignItems: "center" }}>
-                <AnimatedPressable
-                  accessibilityLabel={`Usar recorrido ${preset.name}`}
-                  haptic={false}
-                  onPress={() => applyPreset(preset)}
-                  style={styles.presetChip}
-                >
-                  <Text style={styles.presetLabel}>{preset.name}</Text>
-                </AnimatedPressable>
-                <AnimatedPressable
-                  accessibilityLabel={`Borrar la ruta guardada ${preset.name}`}
-                  haptic={false}
-                  onPress={() => void deletePreset(preset)}
-                  style={styles.presetDelete}
-                >
-                  <Ionicons name="close" size={14} color={colors.text.secondary} />
-                </AnimatedPressable>
-                </View>
-              ))}
-            </ScrollView>
-          </>
-        ) : null}
-
-        <View style={styles.listHeaderRow}>
-          <Text style={styles.sectionTitle}>Mis lugares</Text>
-          <Text style={styles.editLink} onPress={() => router.push("/places")}>
-            Editar
-          </Text>
-        </View>
-        <View style={styles.placesList}>
-          {places.length === 0 ? (
-            <Text style={styles.emptyHint}>
-              Todavía no guardaste ningún lugar. Agregá el de hoy más abajo o guardá uno en Mis lugares.
-            </Text>
-          ) : (
-            places.map((place) => {
-              const meta = PLACE_TYPE_META[place.type];
-              const checked = selectedPlaceIds.has(place.id);
-              return (
-                <AnimatedPressable
-                  key={place.id}
-                  accessibilityLabel={`${checked ? "Quitar" : "Agregar"} ${place.name} del recorrido de hoy`}
-                  haptic={false}
-                  onPress={() => togglePlace(place)}
-                  style={styles.placeRow}
-                >
-                  <Text style={styles.placeEmoji}>{meta.emoji}</Text>
-                  <View style={styles.placeText}>
-                    <Text style={styles.placeName}>{place.name}</Text>
-                    <Text style={styles.placeAddress} numberOfLines={1}>
-                      {place.address}
-                    </Text>
-                  </View>
-                  <SelectCheckbox checked={checked} />
-                </AnimatedPressable>
-              );
-            })
-          )}
-
-          <AnimatedPressable
-            accessibilityLabel="Agregar ubicación actual"
-            haptic={false}
-            onPress={() => void addCurrentLocation()}
-            style={[styles.placeRow, isLocating ? styles.rowBusy : null]}
-          >
-            {isLocating ? (
-              <ActivityIndicator size="small" color={colors.text.primary} />
-            ) : (
-              <Ionicons name="navigate-outline" size={18} color={colors.text.secondary} />
-            )}
-            <Text style={styles.placeName}>{isLocating ? "Buscando dónde estás…" : "Ubicación actual"}</Text>
-          </AnimatedPressable>
-
-          <AnimatedPressable
-            accessibilityLabel="Elegir un lugar en el mapa"
-            haptic={false}
-            onPress={() => void openMapPicker()}
-            style={styles.placeRow}
-          >
-            <Ionicons name="map-outline" size={18} color={colors.text.secondary} />
-            <Text style={styles.placeName}>Elegir en el mapa</Text>
-          </AnimatedPressable>
-
-          <AnimatedPressable
-            accessibilityLabel="Agregar lugar de hoy"
-            onPress={() => setAddSheetVisible(true)}
-            style={styles.addStopRow}
-          >
-            <Ionicons name="add" size={16} color={colors.brand.route} />
-            <Text style={styles.addStopLabel}>Agregar lugar de hoy</Text>
-          </AnimatedPressable>
-        </View>
-
-        {waypoints.length > 0 ? (
-          <>
-            <Text style={styles.sectionTitle}>Tu ruta de hoy</Text>
-            <View style={styles.placesList}>
-              {waypoints.map((w, i) => (
-                <View key={w.key} style={styles.waypointRow}>
-                  <Text style={styles.waypointNumber}>{i + 1}</Text>
-                  <Text style={styles.placeEmoji}>{w.emoji}</Text>
-                  <View style={styles.placeText}>
-                    <Text style={styles.placeName}>{w.name}</Text>
-                    <Text style={styles.placeAddress} numberOfLines={1}>
-                      {w.address}
-                    </Text>
-                  </View>
-                  <AnimatedPressable
-                    accessibilityLabel={`Quitar ${w.name} de la ruta de hoy`}
-                    haptic={false}
-                    onPress={() => removeWaypoint(w.key)}
-                    style={styles.removeWaypointButton}
-                  >
-                    <Ionicons name="close" size={16} color={colors.text.secondary} />
-                  </AnimatedPressable>
-                </View>
-              ))}
-            </View>
-          </>
-        ) : null}
-
-        {waypoints.length >= 2 ? (
-          savingPresetName === null ? (
-            <Button
-              label="Guardar esta ruta con un nombre"
-              variant="ghost"
-              onPress={() => setSavingPresetName("")}
-              style={styles.savePresetTrigger}
-            />
-          ) : (
-            <View style={styles.savePresetForm}>
-              <FormField
-                label="Nombre del recorrido"
-                value={savingPresetName}
-                onChangeText={setSavingPresetName}
-                placeholder="Ej.: Trabajo → Casa, Ruta del sábado"
-                autoFocus
-              />
-              <View style={styles.savePresetActions}>
-                <Button label="Cancelar" variant="ghost" onPress={() => setSavingPresetName(null)} style={{ flex: 1 }} />
-                <Button
-                  label={isSavingRoute ? "Guardando…" : "Guardar"}
-                  variant="secondary"
-                  onPress={() => void handleSavePreset()}
-                  loading={isSavingRoute}
-                  disabled={!savingPresetName.trim()}
-                  style={{ flex: 1 }}
-                />
-              </View>
-            </View>
-          )
-        ) : null}
+        <SavedRoutesRow presets={saved.presets} onApply={saved.apply} onDelete={(preset) => void saved.remove(preset)} />
+        <PlacesList
+          places={places}
+          selectedPlaceIds={selectedPlaceIds}
+          isLocating={isLocating}
+          onToggle={togglePlace}
+          onCurrentLocation={() => void addCurrentLocation()}
+          onPickOnMap={openMapPicker}
+          onAddToday={() => setAddSheetVisible(true)}
+        />
+        <TodayRouteList waypoints={waypoints} onRemove={removeWaypoint} />
+        <SavePresetForm
+          stopCount={waypoints.length}
+          name={saved.savingName}
+          isSaving={saved.isSaving}
+          onOpen={() => saved.setSavingName("")}
+          onChangeName={saved.setSavingName}
+          onCancel={() => saved.setSavingName(null)}
+          onSave={() => void saved.save()}
+        />
       </ScrollView>
 
-      <View style={styles.footer}>
-        {waypoints.length > 0 ? (
-          <AnimatedPressable accessibilityLabel="Confirmar recorrido de hoy" onPress={handleDone} style={styles.summaryCard}>
-            <Text style={styles.summaryLabel}>TU RUTA DE HOY</Text>
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryRoute} numberOfLines={1}>
-                {waypoints.map((w) => w.name).join("  →  ")}
-              </Text>
-              <Ionicons name="chevron-forward" size={18} color={colors.text.onNavy} />
-            </View>
-            <Text style={styles.summaryMeta}>
-              {waypoints.length} {waypoints.length === 1 ? "parada" : "paradas"}
-            </Text>
-          </AnimatedPressable>
-        ) : (
-          <Button label="Listo" onPress={handleDone} disabled />
-        )}
-      </View>
+      <RouteFooter waypoints={waypoints} onDone={handleDone} />
 
-      <BottomSheet visible={addSheetVisible} onClose={() => setAddSheetVisible(false)}>
-        <Text style={styles.sheetTitle}>Agregar lugar de hoy</Text>
-        <AnimatedPressable
-          accessibilityLabel="Elegir el lugar en el mapa"
-          haptic={false}
-          onPress={() => void openMapPicker()}
-          style={styles.mapOption}
-        >
-          <Ionicons name="map-outline" size={20} color={colors.text.primary} />
-          <Text style={styles.placeName}>Elegir en el mapa</Text>
-          <Ionicons name="chevron-forward" size={18} color={colors.text.secondary} />
-        </AnimatedPressable>
-        <Text style={styles.orLabel}>o escribí la dirección</Text>
-        <FormField label="Nombre (opcional)" value={tempName} onChangeText={setTempName} placeholder="Médico, Shopping..." />
-        <FormField
-          label="Dirección"
-          value={tempAddress}
-          onChangeText={setTempAddress}
-          placeholder="Calle y altura, barrio"
-          error={tempError}
-        />
-        <Button
-          label={isGeocoding ? "Buscando dirección..." : "Agregar"}
-          onPress={() => void handleAddTemporary()}
-          disabled={isGeocoding}
-        />
-      </BottomSheet>
+      <AddTodaySheet
+        visible={addSheetVisible}
+        name={tempName}
+        address={tempAddress}
+        error={tempError}
+        isGeocoding={isGeocoding}
+        onChangeName={setTempName}
+        onChangeAddress={setTempAddress}
+        onPickOnMap={openMapPicker}
+        onSubmit={() => void handleAddTemporary()}
+        onClose={() => setAddSheetVisible(false)}
+      />
 
       <Dialog
         visible={askSaveDialog !== null}
@@ -538,37 +266,19 @@ export default function RouteContextScreen() {
         }}
       />
 
-      <Modal visible={mapOpen} animationType="slide" onRequestClose={() => setMapOpen(false)}>
-        <SafeAreaView style={styles.mapModal} edges={["top", "bottom"]}>
-          <View style={styles.navHeader}>
-            <AnimatedPressable accessibilityLabel="Cerrar el mapa" haptic={false} onPress={() => setMapOpen(false)} style={styles.backButton}>
-              <Ionicons name="close" size={22} color={colors.text.primary} />
-            </AnimatedPressable>
-            <Text style={styles.navTitle}>Elegí el lugar</Text>
-          </View>
-          <View style={styles.mapArea}>
-            {mapToken ? (
-              <MapPicker mapboxToken={mapToken} center={waypoints[waypoints.length - 1] ?? MAR_DEL_PLATA} onPick={(point) => void handlePick(point)} />
-            ) : (
-              <ActivityIndicator style={styles.mapLoader} color={colors.text.primary} />
-            )}
-          </View>
-          <View style={styles.mapFooter}>
-            <View style={styles.pickedRow}>
-              <Ionicons name="location-outline" size={20} color={colors.text.primary} />
-              <Text style={styles.pickedText} numberOfLines={2}>
-                {!picked
-                  ? "Tocá el mapa donde vas a estar. Podés arrastrar el pin."
-                  : isResolvingPick
-                    ? "Buscando la dirección…"
-                    : (pickedAddress ?? "Punto elegido en el mapa")}
-              </Text>
-            </View>
-            <FormField label="Nombre (opcional)" value={tempName} onChangeText={setTempName} placeholder="Médico, Shopping..." />
-            <Button label="Agregar este lugar" onPress={addPickedPoint} disabled={!picked || isResolvingPick} />
-          </View>
-        </SafeAreaView>
-      </Modal>
+      <MapPickerModal
+        visible={map.isOpen}
+        token={map.token}
+        center={waypoints[waypoints.length - 1]}
+        picked={map.picked}
+        pickedAddress={map.pickedAddress}
+        isResolving={map.isResolving}
+        name={tempName}
+        onChangeName={setTempName}
+        onPick={(point) => void map.pick(point)}
+        onConfirm={addPickedPoint}
+        onClose={map.close}
+      />
     </SafeAreaView>
   );
 }
