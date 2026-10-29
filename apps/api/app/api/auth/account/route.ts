@@ -11,7 +11,7 @@ import { clearSessionCookie } from "@/lib/auth/cookies";
  * desidentificados/seudonimizados (LEGAL.md, tabla de retención — "Precio comunitario:
  * conservar histórico desidentificado"), no se borran junto con la cuenta.
  */
-async function handle(request: NextRequest) {
+async function handleDelete(request: NextRequest) {
   const current = await getCurrentUser(request);
   if (!current) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
 
@@ -30,5 +30,5 @@ async function handle(request: NextRequest) {
   return response;
 }
 
-// Todos los endpoints son POST: los datos llegan en el body.
-export const POST = handle;
+// DELETE: los datos (incluido el id) llegan en el body JSON.
+export const DELETE = handleDelete;

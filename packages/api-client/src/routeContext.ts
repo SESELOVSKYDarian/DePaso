@@ -11,6 +11,6 @@ export function createRouteContextClient(client: DepasoApiClient) {
     list: () => client.post("/api/route-contexts/list", {}, listSchema),
     create: (body: RouteContextInput) =>
       client.post("/api/route-contexts", body, routeContextResponseSchema),
-    remove: (id: string) => client.post("/api/route-contexts/delete", { id }, okSchema),
+    remove: (id: string) => client.delete("/api/route-contexts", { id }, okSchema),
   };
 }

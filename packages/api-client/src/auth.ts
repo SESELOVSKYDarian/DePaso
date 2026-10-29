@@ -31,7 +31,7 @@ export function createAuthClient(client: DepasoApiClient) {
     resetPassword: (body: ResetPasswordRequest) => client.post("/api/auth/reset-password", body, okSchema),
     me: () => client.post("/api/auth/me", {}, authUserResponseSchema),
     updateProfile: (body: UpdateProfileRequest) =>
-      client.post("/api/auth/me/update", body, authUserResponseSchema),
-    deleteAccount: () => client.post("/api/auth/account/delete", {}, okSchema),
+      client.put("/api/auth/me", body, authUserResponseSchema),
+    deleteAccount: () => client.delete("/api/auth/account", {}, okSchema),
   };
 }

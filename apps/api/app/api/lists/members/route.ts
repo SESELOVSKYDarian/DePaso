@@ -8,7 +8,7 @@ interface RouteParams {
 }
 
 /** Dejar de compartir: el dueño quita a cualquiera; un miembro puede quitarse a sí mismo (salir de la lista). */
-async function handle(request: NextRequest, { params }: RouteParams) {
+async function handleDelete(request: NextRequest, { params }: RouteParams) {
   const current = await getCurrentUser(request);
   if (!current) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
 
@@ -26,5 +26,5 @@ async function handle(request: NextRequest, { params }: RouteParams) {
   return NextResponse.json({ ok: true });
 }
 
-// Todos los endpoints son POST: los datos llegan en el body.
-export const POST = postWithParams(["id", "memberUserId"], handle);
+// DELETE: los datos (incluido el id) llegan en el body JSON.
+export const DELETE = postWithParams(["id", "memberUserId"], handleDelete);

@@ -23,8 +23,8 @@ export function createAdminCatalogClient(client: DepasoApiClient) {
       list: () => client.post("/api/admin/stores/list", {}, storesSchema),
       create: (body: StoreInput) => client.post("/api/admin/stores", body, storeResponseSchema),
       update: (id: string, body: Partial<StoreInput>) =>
-        client.post("/api/admin/stores/update", { id, ...body }, storeResponseSchema),
-      remove: (id: string) => client.post("/api/admin/stores/delete", { id }, okSchema),
+        client.put("/api/admin/stores", { id, ...body }, storeResponseSchema),
+      remove: (id: string) => client.delete("/api/admin/stores", { id }, okSchema),
     },
     branches: {
       list: (storeId?: string) =>
@@ -32,8 +32,8 @@ export function createAdminCatalogClient(client: DepasoApiClient) {
       create: (body: StoreBranchInput) =>
         client.post("/api/admin/store-branches", body, storeBranchResponseSchema),
       update: (id: string, body: StoreBranchUpdate) =>
-        client.post("/api/admin/store-branches/update", { id, ...body }, storeBranchResponseSchema),
-      remove: (id: string) => client.post("/api/admin/store-branches/delete", { id }, okSchema),
+        client.put("/api/admin/store-branches", { id, ...body }, storeBranchResponseSchema),
+      remove: (id: string) => client.delete("/api/admin/store-branches", { id }, okSchema),
     },
     prices: {
       list: (filter?: { productVariantId?: string; storeBranchId?: string }) => {
@@ -44,7 +44,7 @@ export function createAdminCatalogClient(client: DepasoApiClient) {
       },
       create: (body: PriceInput) => client.post("/api/admin/prices", body, priceResponseSchema),
       update: (id: string, body: PriceUpdate) =>
-        client.post("/api/admin/prices/update", { id, ...body }, priceResponseSchema),
+        client.put("/api/admin/prices", { id, ...body }, priceResponseSchema),
     },
   };
 }

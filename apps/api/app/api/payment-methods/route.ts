@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
 
 /** Reemplaza el conjunto completo de medios de pago del usuario. */
-async function handle(request: NextRequest) {
+async function handleUpdate(request: NextRequest) {
   const current = await getCurrentUser(request);
   if (!current) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
 
@@ -26,5 +26,5 @@ async function handle(request: NextRequest) {
   return NextResponse.json({ methods });
 }
 
-// Todos los endpoints son POST: los datos llegan en el body.
-export const POST = handle;
+// PUT: los datos (incluido el id) llegan en el body JSON.
+export const PUT = handleUpdate;

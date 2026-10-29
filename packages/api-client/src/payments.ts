@@ -5,7 +5,7 @@ import type { DepasoApiClient } from "./client";
 export function createPaymentsClient(client: DepasoApiClient) {
   return {
     getMethods: () => client.post("/api/payment-methods/list", {}, paymentMethodsResponseSchema),
-    setMethods: (methods: string[]) => client.post("/api/payment-methods/update", { methods }, paymentMethodsResponseSchema),
+    setMethods: (methods: string[]) => client.put("/api/payment-methods", { methods }, paymentMethodsResponseSchema),
     syncPromos: () => client.post("/api/promos/sync", {}, promoSyncResponseSchema),
   };
 }

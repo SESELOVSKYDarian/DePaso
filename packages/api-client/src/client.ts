@@ -9,6 +9,9 @@ export class ApiError extends Error {
   }
 }
 
+/** Nunca GET: leer y crear es POST, actualizar es PUT y borrar es DELETE. */
+type HttpMethod = "POST" | "PUT" | "DELETE";
+
 export interface DepasoApiClientOptions {
   baseUrl: string;
   /** Access token Bearer (mobile: leído de SecureStore, por eso puede ser async). En web, la
@@ -23,13 +26,14 @@ export interface DepasoApiClientOptions {
 }
 
 /**
- * Cliente HTTP tipado y validado con Zod. Todos los endpoints del backend son POST: los
- * datos viajan en el body JSON (ver docs/development/API.md).
+ * Cliente HTTP tipado y validado con Zod. No se usa GET: leer y crear es POST, actualizar es
+ * PUT y borrar es DELETE, y los datos (ids incluidos) viajan en el body JSON
+ * (ver docs/development/API.md).
  */
 export function createApiClient(options: DepasoApiClientOptions) {
-  async function send(path: string, body: unknown, token: string | null | undefined) {
+  async function send(method: HttpMethod, path: string, body: unknown, token: string | null | undefined) {
     return fetch(`${options.baseUrl}${path}`, {
-      method: "POST",
+      method,
       credentials: "include", // permite que la cookie de sesión (web) viaje aunque baseUrl sea otro origin en dev
       headers: {
         "Content-Type": "application/json",
@@ -39,18 +43,19 @@ export function createApiClient(options: DepasoApiClientOptions) {
     });
   }
 
-  async function post<TResponseSchema extends z.ZodTypeAny>(
+  async function request<TResponseSchema extends z.ZodTypeAny>(
+    method: HttpMethod,
     path: string,
     body: unknown,
     responseSchema: TResponseSchema
   ): Promise<z.infer<TResponseSchema>> {
     const token = await options.getAuthToken?.();
-    let response = await send(path, body, token);
+    let response = await send(method, path, body, token);
 
     // access token vencido: renuevo con el refresh token y reintento una vez
     if (response.status === 401 && token && options.onUnauthorized) {
       const fresh = await options.onUnauthorized();
-      if (fresh) response = await send(path, body, fresh);
+      if (fresh) response = await send(method, path, body, fresh);
     }
 
     const json = await response.json().catch(() => null);
@@ -60,7 +65,14 @@ export function createApiClient(options: DepasoApiClientOptions) {
     return responseSchema.parse(json);
   }
 
-  return { post };
+  return {
+    /** Leer, listar y crear. */
+    post: <T extends z.ZodTypeAny>(path: string, body: unknown, schema: T) => request("POST", path, body, schema),
+    /** Actualizar. */
+    put: <T extends z.ZodTypeAny>(path: string, body: unknown, schema: T) => request("PUT", path, body, schema),
+    /** Borrar. */
+    delete: <T extends z.ZodTypeAny>(path: string, body: unknown, schema: T) => request("DELETE", path, body, schema),
+  };
 }
 
 export type DepasoApiClient = ReturnType<typeof createApiClient>;

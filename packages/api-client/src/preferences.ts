@@ -18,13 +18,13 @@ export function createPreferencesClient(client: DepasoApiClient) {
       list: () => client.post("/api/preferences/products/list", {}, productPrefsSchema),
       set: (body: ProductPreferenceInput) =>
         client.post("/api/preferences/products", body, productPreferenceResponseSchema),
-      remove: (productId: string) => client.post("/api/preferences/products/delete", { productId }, okSchema),
+      remove: (productId: string) => client.delete("/api/preferences/products", { productId }, okSchema),
     },
     stores: {
       list: () => client.post("/api/preferences/stores/list", {}, storePrefsSchema),
       set: (body: StorePreferenceInput) =>
         client.post("/api/preferences/stores", body, storePreferenceResponseSchema),
-      remove: (id: string) => client.post("/api/preferences/stores/delete", { id }, okSchema),
+      remove: (id: string) => client.delete("/api/preferences/stores", { id }, okSchema),
     },
   };
 }

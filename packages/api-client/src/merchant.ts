@@ -41,12 +41,12 @@ export function createMerchantClient(client: DepasoApiClient) {
       set: (body: MerchantPriceInput) =>
         client.post("/api/merchant/prices", body, merchantPriceResponseSchema),
       update: (id: string, price: number, displayName?: string) =>
-        client.post(
-          "/api/merchant/prices/update",
+        client.put(
+          "/api/merchant/prices",
           displayName === undefined ? { id, price } : { id, price, displayName },
           merchantPriceResponseSchema,
         ),
-      remove: (id: string) => client.post("/api/merchant/prices/delete", { id }, okSchema),
+      remove: (id: string) => client.delete("/api/merchant/prices", { id }, okSchema),
     },
     createProduct: (body: MerchantProductInput) =>
       client.post("/api/merchant/products", body, merchantPriceResponseSchema),

@@ -15,7 +15,7 @@ export function createPlacesClient(client: DepasoApiClient) {
     list: () => client.post("/api/places/list", {}, placesListSchema),
     create: (body: UserPlaceInput) => client.post("/api/places", body, userPlaceResponseSchema),
     update: (id: string, body: UserPlaceUpdate) =>
-      client.post("/api/places/update", { id, ...body }, userPlaceResponseSchema),
-    remove: (id: string) => client.post("/api/places/delete", { id }, okSchema),
+      client.put("/api/places", { id, ...body }, userPlaceResponseSchema),
+    remove: (id: string) => client.delete("/api/places", { id }, okSchema),
   };
 }
