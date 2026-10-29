@@ -52,6 +52,7 @@ Nunca subas valores reales a Git (`.env*` está ignorado).
 | `DISCORD_CLIENT_ID` + `DISCORD_CLIENT_SECRET` | Login con Discord | Ídem |
 | `LLM_API_KEY`, `LLM_BASE_URL`, `LLM_MODEL` | Asistente de compras con IA | "Modo básico": corta el texto por comas |
 | `STT_API_KEY`, `STT_BASE_URL`, `STT_MODEL` | Micrófono del asistente (voz a texto) | El micrófono avisa y se puede escribir |
+| `PHOTON_URL` | Servidor del buscador de lugares (por defecto el público de OpenStreetMap, gratuito y con uso moderado) | Usa el servidor público |
 | `CRON_SECRET` | Autoriza a los cron jobs de EasyPanel a sincronizar promos | Solo un admin puede sincronizar |
 
 Para **Gmail** como SMTP: activá la verificación en dos pasos y generá una "contraseña de

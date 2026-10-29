@@ -1,33 +1,39 @@
-import type { HomeFeedResponse } from "@depaso/validation";
+import type { HomeFeedResponse, HomeListSummary, HomeProduct } from "@depaso/validation";
 import { Ionicons } from "@expo/vector-icons";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { makeStyles, useColors, useTheme } from "@/lib/theme";
-import { usePurchase } from "@/lib/purchase/PurchaseContext";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
-import { Button } from "@/components/common/Button";
+import { useToast } from "@/components/common/Toast";
+import { homeClient } from "@/lib/apiClient";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useLists } from "@/lib/lists/ListsContext";
+import { usePurchase } from "@/lib/purchase/PurchaseContext";
 import { useTodayRoute } from "@/lib/routeContext/TodayRouteContext";
-import { homeClient } from "@/lib/apiClient";
+import { useColors, useTheme } from "@/lib/theme";
+import { GuidePanel } from "./components/GuidePanel";
+import { ListSummaryCard } from "./components/ListSummaryCard";
+import { PriceChanges } from "./components/PriceChanges";
+import { ProductStrip } from "./components/ProductStrip";
+import { PromosToday } from "./components/PromosToday";
 import { useStyles } from "./styles";
-import { money } from "./helpers";
 
 /**
- * Inicio. Una sola tarjeta con la acción de siempre ("Iniciar mi recorrido") y, abajo, las
- * novedades de lo que hay en tus listas: qué subió o bajó y qué promos rigen hoy. Las listas
- * se arman en su pestaña; acá sólo se las usa.
+ * Inicio. Al principio muestra una guía de 3 pasos (armar la lista, elegir el recorrido, ver
+ * dónde comprar). Cuando ya hay lista y recorrido pasa a ser un tablero: la lista, cuánto
+ * saldría, y las novedades. En los dos casos hay productos baratos y recomendados, para que
+ * nunca quede vacío.
  */
 export default function HomeScreen() {
   const colors = useColors();
   const styles = useStyles();
   const { user } = useAuth();
   const { waypoints } = useTodayRoute();
-  const { lists } = useLists();
+  const { lists, addItem } = useLists();
   const { isDark, setMode } = useTheme();
   const { routePlan } = usePurchase();
+  const { show: showToast } = useToast();
   const [feed, setFeed] = useState<HomeFeedResponse | null>(null);
 
   useFocusEffect(
@@ -47,24 +53,35 @@ export default function HomeScreen() {
   );
 
   const firstName = user?.displayName?.split(" ")[0] ?? "";
-  const listWithItems = lists.find((list) => !list.archivedAt && list.itemCount > 0);
+  const activeLists = lists.filter((list) => !list.archivedAt);
+  const listWithItems = activeLists.find((list) => list.itemCount > 0);
   const hasRoute = waypoints.length >= 2;
-  const routeText = hasRoute ? waypoints.map((waypoint) => waypoint.name).join(" → ") : null;
 
   // Lo que le falta al usuario para poder iniciar, en el orden en que se resuelve.
-  const action = !listWithItems
-    ? {
-        label: "Armar mi lista",
-        hint: "Primero sumá lo que necesitás comprar.",
-        onPress: () => router.push("/lists/form"),
-      }
-    : !hasRoute
-      ? { label: "Elegir mi recorrido", hint: "Contanos por dónde pasás hoy.", onPress: () => router.push("/route-context") }
-      : routePlan
-        ? { label: "Ver mi compra de paso", hint: "Ya está armada: miralo en el mapa.", onPress: () => router.push("/map") }
-        : { label: "Iniciar mi recorrido", hint: "Te mostramos lo más barato según cuánto te desviás.", onPress: () => router.push("/optimization") };
+  const action = routePlan
+    ? { label: "Ver mi compra de paso", hint: "Ya está armada: miralo en el mapa.", onPress: () => router.push("/map") }
+    : { label: "Iniciar mi recorrido", hint: "Te mostramos lo más barato según cuánto te desviás.", onPress: () => router.push("/optimization") };
 
-  const hasNews = feed !== null && (feed.priceChanges.length > 0 || feed.promos.length > 0);
+  // Mientras llega el resumen del servidor se usa lo que ya se sabe de la lista.
+  const listSummary: HomeListSummary | null = listWithItems
+    ? (feed?.listSummary ?? { id: listWithItems.id, name: listWithItems.name, itemCount: listWithItems.itemCount, previewItems: [], cheapestTotal: null, pricedItems: 0 })
+    : null;
+
+  // Suma un producto sugerido a la lista activa; si todavía no hay ninguna, lleva a crearla.
+  const addSuggested = async (product: HomeProduct) => {
+    const target = listWithItems ?? activeLists[0];
+    if (!target) {
+      showToast("Primero armá una lista y después sumamos los productos.", "info");
+      router.push("/lists/form");
+      return;
+    }
+    try {
+      await addItem(target.id, { productId: product.productId, quantity: 1 });
+      showToast(`Sumamos "${product.name}" a ${target.name}.`, "success");
+    } catch {
+      showToast("No pudimos sumarlo. Probá de nuevo.", "error");
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -85,87 +102,33 @@ export default function HomeScreen() {
           </AnimatedPressable>
         </View>
 
-        <View style={styles.mainCard}>
-          <View style={styles.summaryRow}>
-            <Ionicons name="list-outline" size={18} color={colors.text.secondary} />
-            <Text style={styles.summaryText} numberOfLines={1}>
-              {listWithItems ? `${listWithItems.name} · ${listWithItems.itemCount} productos` : "Todavía no tenés una lista"}
-            </Text>
-          </View>
-          <View style={styles.summaryRow}>
-            <Ionicons name="navigate-outline" size={18} color={colors.text.secondary} />
-            <Text style={styles.summaryText} numberOfLines={1}>
-              {routeText ?? "Todavía no elegiste por dónde pasás"}
-            </Text>
-          </View>
-          <Button label={action.label} onPress={action.onPress} style={styles.primaryButton} />
-          <Text style={styles.hint}>{action.hint}</Text>
-        </View>
+        {listSummary && hasRoute ? (
+          <ListSummaryCard
+            list={listSummary}
+            routeNames={waypoints.map((waypoint) => waypoint.name)}
+            actionLabel={action.label}
+            actionHint={action.hint}
+            onAction={action.onPress}
+          />
+        ) : (
+          <GuidePanel hasList={Boolean(listSummary)} hasRoute={hasRoute} hasPlan={Boolean(routePlan)} />
+        )}
 
-        {hasNews && feed ? (
-          <>
-            {feed.priceChanges.length > 0 ? (
-              <View style={styles.section}>
-                <Text accessibilityRole="header" style={styles.sectionTitle}>
-                  Cambios en tu lista
-                </Text>
-                <View style={styles.card}>
-                  {feed.priceChanges.map((change, index) => {
-                    const down = change.changePercent < 0;
-                    return (
-                      <View key={change.productId} style={[styles.row, index > 0 ? styles.rowDivider : null]}>
-                        <Ionicons
-                          name={down ? "trending-down" : "trending-up"}
-                          size={22}
-                          color={down ? colors.state.successStrong : colors.state.errorStrong}
-                        />
-                        <View style={styles.rowText}>
-                          <Text style={styles.rowTitle} numberOfLines={1}>
-                            {change.productName}
-                          </Text>
-                          <Text style={styles.rowMeta} numberOfLines={1}>
-                            {down ? "Bajó" : "Subió"} en {change.storeName}: {money(change.previousPrice)} → {money(change.currentPrice)}
-                          </Text>
-                        </View>
-                        <Text style={[styles.badge, { color: down ? colors.state.successStrong : colors.state.errorStrong }]}>
-                          {down ? "" : "+"}
-                          {change.changePercent.toLocaleString("es-AR")}%
-                        </Text>
-                      </View>
-                    );
-                  })}
-                </View>
-              </View>
-            ) : null}
-
-            {feed.promos.length > 0 ? (
-              <View style={styles.section}>
-                <Text accessibilityRole="header" style={styles.sectionTitle}>
-                  Ofertas de hoy
-                </Text>
-                <View style={styles.card}>
-                  {feed.promos.map((promo, index) => (
-                    <View key={promo.id} style={[styles.row, index > 0 ? styles.rowDivider : null]}>
-                      <Ionicons name={promo.big ? "flame" : "pricetag-outline"} size={22} color={colors.text.primary} />
-                      <View style={styles.rowText}>
-                        <Text style={styles.rowTitle} numberOfLines={1}>
-                          {promo.retailer}
-                        </Text>
-                        <Text style={styles.rowMeta} numberOfLines={1}>
-                          {promo.label}
-                        </Text>
-                      </View>
-                      {promo.mine ? <Text style={styles.mineTag}>Tuya</Text> : null}
-                    </View>
-                  ))}
-                </View>
-                <Text style={styles.footnote}>Promos informadas por la fuente: confirmá condiciones y tope en el comercio.</Text>
-              </View>
-            ) : null}
-          </>
-        ) : feed && feed.watchedProducts > 0 ? (
-          <Text style={styles.footnote}>Cuando cambien los precios de lo que hay en tu lista, te lo mostramos acá.</Text>
-        ) : null}
+        <ProductStrip
+          title="Barato hoy"
+          subtitle="Productos con el precio más bajo comparado con el resto."
+          products={feed ? feed.cheapToday : null}
+          showSaving
+          onAdd={(product) => void addSuggested(product)}
+        />
+        <PriceChanges changes={feed?.priceChanges ?? []} />
+        <PromosToday promos={feed?.promos ?? []} />
+        <ProductStrip
+          title="Recomendados"
+          subtitle="Lo que más se busca, con su mejor precio."
+          products={feed ? feed.popular : null}
+          onAdd={(product) => void addSuggested(product)}
+        />
       </ScrollView>
     </SafeAreaView>
   );

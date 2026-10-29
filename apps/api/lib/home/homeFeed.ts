@@ -6,6 +6,8 @@ import { listAccessWhere } from "../lists/lists";
 import { argentinaWeekday } from "../promos/applyPromos";
 import { promoAppliesOnDay, promoAppliesToUser } from "../promos/paymentPromos";
 import { prettifyProductName } from "../catalog/productNames";
+import { loadCheapProducts, loadPopularProducts } from "./homeProducts";
+import { buildListSummary } from "./listSummary";
 
 const WATCHED_PRODUCTS_MAX = 200;
 const MAX_PRICE_CHANGES = 8;
@@ -26,10 +28,12 @@ interface ChangeRow {
  * Novedades para Inicio: qué subió o bajó de lo que hay en tus listas (según el historial de
  * precios de los últimos 14 días) y qué promos de bancos/billeteras rigen hoy, primero las de
  * tus medios de pago. Sin historial todavía (el import de precios aún no corrió dos veces) la
- * lista de cambios sale vacía y no se inventa nada.
+ * lista de cambios sale vacía y no se inventa nada. Además trae el resumen de tu lista activa y
+ * dos tiras de productos (los que hoy están baratos y los más buscados) para que Inicio no
+ * quede vacío.
  */
 export async function buildHomeFeed(userId: string, now: Date = new Date()): Promise<HomeFeedResponse> {
-  const [items, methods, promos] = await Promise.all([
+  const [items, methods, promos, listSummary, cheapToday, popular] = await Promise.all([
     prisma.shoppingListItem.findMany({
       where: { shoppingList: { archivedAt: null, ...listAccessWhere(userId) } },
       select: { productId: true },
@@ -38,6 +42,9 @@ export async function buildHomeFeed(userId: string, now: Date = new Date()): Pro
     }),
     prisma.userPaymentMethod.findMany({ where: { userId }, select: { methodSlug: true } }),
     loadActivePromos(),
+    buildListSummary(userId),
+    loadCheapProducts(),
+    loadPopularProducts(),
   ]);
 
   const productIds = items.map((item: (typeof items)[number]) => item.productId);
@@ -103,5 +110,5 @@ export async function buildHomeFeed(userId: string, now: Date = new Date()): Pro
     .sort((a, b) => Number(b.mine) - Number(a.mine) || b.discountPercent - a.discountPercent)
     .slice(0, MAX_PROMOS);
 
-  return { priceChanges, promos: homePromos, watchedProducts: productIds.length };
+  return { priceChanges, promos: homePromos, listSummary, cheapToday, popular, watchedProducts: productIds.length };
 }

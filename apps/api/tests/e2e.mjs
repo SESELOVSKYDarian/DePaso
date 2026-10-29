@@ -99,6 +99,15 @@ if (product) {
 check("DELETE borra la lista", (await call("DELETE", "/api/lists", { id: listId }, access)).status === 200);
 check("la lista borrada => 404", (await call("POST", "/api/lists/detail", { id: listId }, access)).status === 404);
 
+console.log("Inicio y buscador de lugares");
+const feed = await call("POST", "/api/home/feed", {}, access);
+check("Inicio trae productos baratos y recomendados", feed.status === 200 && Array.isArray(feed.body?.cheapToday) && Array.isArray(feed.body?.popular));
+const found = await call("POST", "/api/geocode/search", { q: "shell" }, access);
+// el buscador usa un servicio externo: si no responde, no se cuenta como error de la app
+if (found.status === 200) check("buscar \"shell\" devuelve lugares", found.body?.results?.length > 0);
+else console.log(`  - buscador de lugares omitido (el servicio externo respondió ${found.status})`);
+check("buscar con 1 letra => 400", (await call("POST", "/api/geocode/search", { q: "a" }, access)).status === 400);
+
 console.log("Lugares guardados");
 const place = await call("POST", "/api/places", { name: "Casa", type: "HOME", address: "Av. Colón 1234", latitude: -38.0, longitude: -57.55 }, access);
 check("crear lugar => 201", place.status === 201 && place.body?.id);

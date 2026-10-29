@@ -38,8 +38,8 @@ Monorepo pnpm + Turborepo. Todo lo de un tema vive en una sola carpeta.
 | `lib/routes/` | Rutas, comercios cerca del camino y armado del plan de compra. |
 | `lib/assistant/` | Asistente de listas: IA (`llm.ts`), voz a texto (`stt.ts`) y separación del texto en productos. |
 | `lib/merchant/` | Solicitudes y precios del comercio. |
-| `lib/integrations/` | Servicios externos: mail y geocodificación. |
-| `lib/home/` | Novedades de la pantalla de inicio. |
+| `lib/integrations/` | Servicios externos: mail, geocodificación y buscador de lugares (`placeSearch.ts`). |
+| `lib/home/` | Inicio: novedades, resumen de la lista activa y productos baratos / recomendados. |
 
 ### App móvil (`apps/mobile/`)
 
@@ -49,12 +49,14 @@ Monorepo pnpm + Turborepo. Todo lo de un tema vive en una sola carpeta.
 | `features/<pantalla>/` | Una carpeta por pantalla grande: `<Nombre>Screen.tsx` (arma la pantalla), `components/` (partes), `use<Nombre>.ts` (estado y lógica), `styles.ts`, `helpers.ts`, `types.ts`. |
 | `components/common/` | Piezas reutilizables: botones, tarjetas, diálogos, toast, formularios. |
 | `components/auth/` | Piezas del registro e inicio de sesión (incluye los botones de redes sociales). |
-| `components/map/` | Mapas, selector de punto y selector de desvío. |
+| `components/map/` | Mapas, buscador de lugares (`PlaceSearchBox`), botón de ubicación (`LocateButton`), selector de punto y de desvío. |
 | `components/lists/` | Piezas de listas y productos. |
 | `lib/auth/` | `AuthContext` (estado global del login) y `secureStore` (tokens guardados en el celular). |
 | `lib/apiClient.ts` | Clientes de la API y renovación automática del access token. |
 | `lib/theme/` | Tema claro / oscuro. |
 | `lib/responsive/` | Tamaño de pantalla (celular, tablet, escritorio) y giro del dispositivo. |
+| `lib/location/`, `lib/places/usePlaceSearch.ts` | Ubicación actual del usuario (con permisos) y búsqueda de lugares mientras se escribe. |
+| `lib/map/mapCommands.ts` | Órdenes que la app le manda al mapa: mover la cámara, punto azul, pin de búsqueda. |
 | `lib/{lists,places,routeContext,purchase,voice}/` | Estado y lógica por tema. |
 
 Pantallas que ya están divididas en `features/`: `assistant`, `route-context`, `map`, `list-detail`,

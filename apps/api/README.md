@@ -178,13 +178,14 @@ Todos con acceso 🔒. Además: `POST /api/consents` (`consentRequestSchema`) y 
 | `POST /api/products/search` | 🔒 | `{ q?, type?, brandId? }` |
 | `POST /api/products/facets` | 🔒 | `{ q?, type?, brandId? }` |
 | `POST /api/stores/branches` | 🔒 | — |
-| `POST /api/home/feed` | 🔒 | — (cambios de precio y ofertas de tus listas) |
+| `POST /api/home/feed` | 🔒 | — (resumen de tu lista, productos baratos y recomendados, cambios de precio y ofertas) |
 | `POST /api/community/feed` | 🔒 | `{ scope }` |
 | `POST /api/price-reports` | 🔒 | `priceReportInputSchema` (reportar un precio) |
 | `POST /api/optimization` | 🔒 | `optimizationRunRequestSchema` (arma el recorrido de una lista) |
 | `POST /api/optimize` | 🌐 | `optimizeRequestSchema` |
 | `POST /api/routes/compute`, `/api/routes/nearby-stores` | 🔒 | `routeComputeRequestSchema`, `nearbyStoresRequestSchema` |
 | `POST /api/geocode`, `/api/geocode/reverse` | 🔒 | dirección → coordenadas y al revés |
+| `POST /api/geocode/search` | 🔒 | `placeSearchRequestSchema` — `{ q, latitude?, longitude? }`: sugerencias de lugares mientras se escribe (comercios como "Shell", escuelas como "Técnica 5", calles con número). Usa Photon (OpenStreetMap), limitado a Mar del Plata |
 | `POST /api/config/mapbox-token` | 🔒 | — |
 | `POST /api/ai/shopping-parse` | 🔒 | `assistantRequestSchema` — texto libre → lista |
 | `POST /api/ai/transcribe` | 🔒 | multipart: audio |

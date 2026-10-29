@@ -61,6 +61,7 @@ export function PlaceSearchBox({ near, onSelect, placeholder = "Buscar un lugar 
           placeholder={placeholder}
           placeholderTextColor={colors.text.muted}
           autoFocus={autoFocus}
+          selectTextOnFocus
           autoCapitalize="none"
           returnKeyType="search"
           accessibilityLabel="Buscar un lugar"
