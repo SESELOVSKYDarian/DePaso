@@ -60,3 +60,6 @@ skills/
 .claude/
 .cursor/
 .windsurf/
+
+# archivo de contexto para herramientas de IA (se queda local)
+Claude.md

@@ -8,7 +8,6 @@ Monorepo pnpm + Turborepo. Todo lo de un tema vive en una sola carpeta.
 |---|---|
 | `apps/api/` | Backend: API REST en Next.js. **Sin GET: POST (leer y crear), PUT (actualizar) y DELETE (borrar).** Corre en EasyPanel. |
 | `apps/mobile/` | App Expo / React Native (el producto). |
-| `apps/web/` | Sitio web (landing, legales, descarga). |
 | `apps/admin/` | Panel de administración web. |
 
 ### Backend (`apps/api/`)

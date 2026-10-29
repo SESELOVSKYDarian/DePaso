@@ -89,9 +89,7 @@ el resto del motor.
 
 | App | Estado |
 |---|---|
-| `apps/mobile` | Shell de navegación (5 tabs), onboarding, login/registro reales (Fase 4-5), modal de consentimiento de ubicación, pantallas legales nativas, CRUD real de lugares guardados con geocoding nativo (Fase 6), contexto de ruta de hoy + presets guardados (Fase 7). Corre de verdad en **Expo Web** (`npx expo start --web`) — ver `PROGRESS.md`. Sin listas/precios/optimización conectados todavía — eso es Fase 8+. |
-| `apps/web` | Landing + `/privacy`, `/terms`, `/community-guidelines` (contenido real donde ya está definido, marcado como pendiente donde depende de datos de negocio no definidos). |
+| `apps/mobile` | Shell de navegación (5 tabs), onboarding, login/registro reales (Fase 4-5), modal de consentimiento de ubicación, pantallas legales nativas, CRUD real de lugares guardados con geocoding nativo (Fase 6), contexto de ruta de hoy + presets guardados (Fase 7). Corre de verdad en **Expo Web** (`npx expo start --web`) — ver . Sin listas/precios/optimización conectados todavía — eso es Fase 8+. |
 | `apps/admin` | Scaffold bootable con el mapa de secciones previstas (sección 7), sin pantallas funcionales. |
-| `apps/api` | `POST /api/optimize` y toda la auth (`register`/`login`/`logout`/`me`/`account`), `UserPlace` CRUD, `route-contexts` CRUD y `consents` — **probados de punta a punta contra Postgres real** (ver `docs/development/PROGRESS.md`, Sesión 7). `account` (eliminar cuenta) y recuperación de contraseña siguen sin probar en vivo. |
+| `apps/api` | `POST /api/optimize` y toda la auth (`register`/`login`/`logout`/`me`/`account`), `UserPlace` CRUD, `route-contexts` CRUD y `consents` — **probados de punta a punta contra Postgres real** (ver . `account` (eliminar cuenta) y recuperación de contraseña siguen sin probar en vivo. |
 
-Ver `PROGRESS.md` para el detalle de qué falta por fase.

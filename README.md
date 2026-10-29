@@ -31,7 +31,6 @@ del Plata, Buenos Aires, Argentina.
 | [docs/development/ARCHITECTURE.md](docs/development/ARCHITECTURE.md) | Arquitectura técnica |
 | [docs/development/DATABASE.md](docs/development/DATABASE.md) | Modelo de datos |
 | [docs/development/DECISIONS.md](docs/development/DECISIONS.md) | Decisiones técnicas y por qué |
-| [docs/development/PROGRESS.md](docs/development/PROGRESS.md) | Estado actual y qué falta |
 | [docs/README.md](docs/README.md) | Índice de la documentación de producto, marca y legal |
 
 `docs/brand-product/` y `docs/legal-functional/` son la interpretación estructurada de

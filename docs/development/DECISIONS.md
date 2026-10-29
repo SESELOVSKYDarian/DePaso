@@ -65,7 +65,7 @@ tendría que revertirse; instalar Docker no es una acción que se pueda tomar po
 sin su intervención. Entregar el schema sin migrar es reversible y no bloquea el resto del
 trabajo (el motor de optimización no depende de una DB viva).
 
-**Consecuencias:** ver `docs/development/PROGRESS.md` — correr Postgres local (o apuntar
+**Consecuencias:** correr Postgres local (o apuntar
 `DATABASE_URL` a un Postgres gestionado) y `prisma migrate dev` es un paso manual
 pendiente antes de la Fase 4 (Auth) y siguientes.
 
@@ -332,11 +332,11 @@ etc.), (b) reflejar el `Origin` de cada request (cualquier origen, con
 **Decisión:** (b) — `apps/api/middleware.ts`, matcher `/api/:path*`.
 
 **Motivo:** no hay dominios de producción definidos todavía (Fase 27 "No empezado" en
-`docs/development/IMPLEMENTATION-PLAN.md`) — fijar un allowlist hoy sería inventar
+el plan de implementación) — fijar un allowlist hoy sería inventar
 dominios que no existen. Reflejar el origen es el equivalente permisivo estándar para
 desarrollo/herramientas internas mientras no haya despliegue real.
 
-**Consecuencias:** cuando se decida el hosting/dominio real de `apps/admin`/`apps/web`
+**Consecuencias:** cuando se decida el hosting/dominio real de `apps/admin`
 (Fase 27), este middleware debería acotarse a un allowlist explícito — dejar el reflejo de
 origen en producción sería una superficie de CSRF más amplia de la necesaria para una API
 que ya protege cada endpoint con sesión (`Authorization: Bearer`), pero no es defensa en
@@ -381,7 +381,7 @@ de la primera corrida real con una segunda migración (`import_run_hash_unique`)
 (2026-09-13): 6 comercios nacionales, 3 sucursales reales dentro de Mar del Plata (Makro,
 Maxiconsumo, Mayorista Yaguar — las tres coinciden con las semillas del pedido original),
 13.021 precios reales aceptados, 0 rechazados, confirmado consultando la base directamente
-(no sólo el log del import). `docs/data/SEPA.md` y `PROGRESS.md` tienen el detalle
+(no sólo el log del import). `docs/data/SEPA.md` tiene el detalle
 completo, incluyendo hallazgos que corrigen supuestos del pedido original (ej.
 `productos_ean` no es un booleano — repite `id_producto`).
 

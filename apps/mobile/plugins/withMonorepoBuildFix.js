@@ -4,7 +4,7 @@ const { withAppBuildGradle } = require("@expo/config-plugins");
  * Config plugin que reaplica, en cada `expo prebuild`, los 2 fixes reales de
  * `app/build.gradle` necesarios en este monorepo (pnpm + node-linker=hoisted) — sin esto
  * el bundle de release falla resolviendo `expo-router/entry.js` y despues "No routes
- * found" (ver docs/development/PROGRESS.md Sesión 21/22 para el detalle completo).
+ * found" (bug real del build nativo en un monorepo con pnpm).
  *
  * `root = workspaceRoot`: Expo CLI resuelve `--entry-file` (ruta relativa a `root`) contra
  * la raíz real del monorepo que detecta por workspace, no contra apps/mobile.
@@ -36,7 +36,7 @@ module.exports = function withMonorepoBuildFix(config) {
     contents = contents.replace(
       REACT_BLOCK_MARKER,
       `${REACT_BLOCK_MARKER}\n` +
-        `    ${FIX_MARKER} — ver docs/development/PROGRESS.md Sesion 21/22, no sacar sin leer eso\n` +
+        `    ${FIX_MARKER} — no sacar sin probar un build nativo\n` +
         `    root = file(workspaceRoot)\n` +
         `    extraPackagerArgs = ["--config", "$projectRoot/metro.config.js"]\n`
     );

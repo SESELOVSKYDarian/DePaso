@@ -6,9 +6,7 @@ dataset y `docs/development/DECISIONS.md` para las decisiones de diseño.
 
 ## Alcance de esta fase
 
-**SEPA Mayorista y Minorista conectados end-to-end contra Postgres real.** Ver
-`docs/development/PROGRESS.md` para las corridas reales de ambos.
-
+**SEPA Mayorista y Minorista conectados end-to-end contra Postgres real.** 
 **Streaming real (sección 26), no sólo "en memoria":** un primer intento de conectar
 Minorista con el mismo enfoque de Mayorista ("leer cada comercio entero, parsear todo a un
 array") produjo un `JavaScript heap out of memory` real (un solo comercio de Minorista

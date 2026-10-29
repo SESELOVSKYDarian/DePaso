@@ -86,7 +86,7 @@ placeholder `"Sin categorizar (SEPA)"` hasta que un admin reclasifique a mano.
 
 ## Comercios confirmados en Mar del Plata (2026-09-13, dato real, no seed)
 
-Validado contra el feed vivo, Mayorista y Minorista — ver `docs/development/PROGRESS.md`
+Validado contra el feed vivo, Mayorista y Minorista 
 para las corridas completas:
 
 **Minorista (53 sucursales en 9 banderas):**
