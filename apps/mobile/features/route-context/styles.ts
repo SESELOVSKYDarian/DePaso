@@ -54,7 +54,7 @@ export const useStyles = makeStyles((colors) => StyleSheet.create({
   },
   navTitle: {
     fontFamily: typography.screenTitle.fontFamily,
-    fontSize: 20,
+    fontSize: 22,
     color: colors.text.primary,
   },
   navSubtitle: {
@@ -130,16 +130,27 @@ export const useStyles = makeStyles((colors) => StyleSheet.create({
   placeRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: spacing.sm,
+    gap: spacing.md,
     backgroundColor: colors.surface.primary,
-    borderRadius: radii.lg,
-    borderWidth: 1,
+    borderRadius: radii.xl,
+    borderWidth: 1.5,
     borderColor: colors.border.subtle,
-    padding: spacing.md - 2,
-    minHeight: 44,
+    padding: spacing.md,
+    minHeight: 64,
+  },
+  // lugar elegido para el recorrido: borde verde
+  placeRowSelected: { borderColor: colors.brand.accent },
+  // recuadro verde donde va el ícono del lugar
+  placeTile: {
+    width: 40,
+    height: 40,
+    borderRadius: radii.md,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: colors.tint.green.bg,
   },
   placeEmoji: {
-    fontSize: 18,
+    fontSize: 20,
   },
   placeText: {
     flex: 1,
@@ -161,11 +172,11 @@ export const useStyles = makeStyles((colors) => StyleSheet.create({
     alignItems: "center",
     gap: spacing.sm,
     backgroundColor: colors.surface.primary,
-    borderRadius: radii.lg,
-    borderWidth: 1,
+    borderRadius: radii.xl,
+    borderWidth: 1.5,
     borderColor: colors.border.subtle,
-    padding: spacing.md - 2,
-    minHeight: 44,
+    padding: spacing.md,
+    minHeight: 60,
   },
   waypointNumber: {
     width: 20,

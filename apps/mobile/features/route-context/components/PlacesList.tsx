@@ -46,9 +46,11 @@ export function PlacesList(props: PlacesListProps) {
                 accessibilityLabel={`${checked ? "Quitar" : "Agregar"} ${place.name} del recorrido de hoy`}
                 haptic={false}
                 onPress={() => props.onToggle(place)}
-                style={styles.placeRow}
+                style={[styles.placeRow, checked ? styles.placeRowSelected : null]}
               >
-                <Text style={styles.placeEmoji}>{PLACE_TYPE_META[place.type].emoji}</Text>
+                <View style={styles.placeTile}>
+                  <Text style={styles.placeEmoji}>{PLACE_TYPE_META[place.type].emoji}</Text>
+                </View>
                 <View style={styles.placeText}>
                   <Text style={styles.placeName}>{place.name}</Text>
                   <Text style={styles.placeAddress} numberOfLines={1}>
