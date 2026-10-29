@@ -10,16 +10,19 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 
 const RESET_TTL_MS = 30 * 60 * 1000;
 
+/** Secreto con el que se firman los tokens y códigos de recuperación. */
 function secret(): string {
   const value = process.env.AUTH_SESSION_SECRET;
   if (!value) throw new Error("AUTH_SESSION_SECRET no está configurada");
   return value;
 }
 
+/** Firma el payload junto con el hash de la contraseña: al cambiarla, el token viejo deja de servir. */
 function sign(payload: string, passwordHash: string): string {
   return createHmac("sha256", secret()).update(`${payload}.${passwordHash}`).digest("base64url");
 }
 
+/** Token del link del mail: usuario + vencimiento (30 min), firmado. */
 export function createResetToken(userId: string, passwordHash: string, now = Date.now()): string {
   const payload = Buffer.from(JSON.stringify({ uid: userId, exp: now + RESET_TTL_MS })).toString("base64url");
   return `${payload}.${sign(payload, passwordHash)}`;
@@ -34,15 +37,18 @@ export function createResetToken(userId: string, passwordHash: string, now = Dat
 const CODE_WINDOW_MS = 10 * 60 * 1000;
 const CODE_WINDOWS_ACCEPTED = 3;
 
+/** Código de 8 dígitos de una ventana de 10 minutos, sacado de un HMAC. */
 function codeForWindow(userId: string, passwordHash: string, windowIndex: number): string {
   const digest = createHmac("sha256", secret()).update(`reset-code|${userId}|${passwordHash}|${windowIndex}`).digest();
   return String(digest.readUInt32BE(0) % 100_000_000).padStart(8, "0");
 }
 
+/** Código de recuperación vigente ahora, para mandar por mail. */
 export function createResetCode(userId: string, passwordHash: string, now = Date.now()): string {
   return codeForWindow(userId, passwordHash, Math.floor(now / CODE_WINDOW_MS));
 }
 
+/** Revisa si el código de 8 dígitos es válido (ventana actual o las dos anteriores). */
 export function verifyResetCode(code: string, userId: string, passwordHash: string, now = Date.now()): boolean {
   if (!/^\d{8}$/.test(code)) return false;
   const current = Math.floor(now / CODE_WINDOW_MS);
@@ -68,6 +74,7 @@ export function peekResetUserId(token: string): string | null {
   }
 }
 
+/** Revisa la firma y el vencimiento del token del link. */
 export function verifyResetToken(token: string, userId: string, passwordHash: string, now = Date.now()): boolean {
   const [payload, signature] = token.split(".");
   if (!payload || !signature) return false;

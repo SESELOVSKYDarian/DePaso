@@ -1,0 +1,56 @@
+import { ActivityIndicator, ScrollView, Share, StyleSheet, Text, View } from "react-native";
+import { radii, spacing, typography } from "@depaso/design-tokens";
+import { makeStyles, useColors } from "@/lib/theme";
+
+export const useStyles = makeStyles((colors) => StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.surface.base },
+  content: { padding: spacing.lg, paddingBottom: spacing.xxl, gap: spacing.md },
+  title: { fontFamily: typography.heroTitle.fontFamily, fontSize: 24, color: colors.text.primary },
+  intro: { fontFamily: typography.body.fontFamily, fontSize: 14, lineHeight: 20, color: colors.text.secondary },
+  row: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: spacing.sm,
+    backgroundColor: colors.surface.primary,
+    borderWidth: 1,
+    borderColor: colors.border.subtle,
+    borderRadius: radii.lg,
+    padding: spacing.md,
+  },
+  rowIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: radii.md,
+    backgroundColor: colors.tint.blue.bg,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  rowIconDanger: { backgroundColor: colors.surface.secondary },
+  rowText: { flex: 1, gap: 2 },
+  rowLabel: { fontFamily: typography.itemTitle.fontFamily, fontSize: 15, color: colors.text.primary },
+  rowDescription: { fontFamily: typography.caption.fontFamily, fontSize: 12, lineHeight: 17, color: colors.text.secondary },
+  actionButton: {
+    minHeight: 36,
+    paddingHorizontal: spacing.sm,
+    borderRadius: radii.full,
+    borderWidth: 1,
+    borderColor: colors.border.subtle,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  actionButtonDanger: { borderColor: colors.state.error },
+  actionButtonDisabled: { opacity: 0.5 },
+  actionLabel: { fontFamily: typography.caption.fontFamily, fontSize: 12, fontWeight: "600", color: colors.text.primary },
+  actionLabelDanger: { color: colors.state.error },
+  editBox: { gap: spacing.sm, marginTop: -spacing.sm },
+  saveButton: {
+    alignSelf: "flex-start",
+    backgroundColor: colors.brand.navy,
+    borderRadius: radii.full,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs + 2,
+    minHeight: 40,
+    justifyContent: "center",
+  },
+  saveButtonLabel: { fontFamily: typography.buttonLabel.fontFamily, fontSize: 13, color: colors.text.onNavy },
+}));

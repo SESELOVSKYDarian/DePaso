@@ -39,16 +39,19 @@ interface ExchangeInput {
 class OAuthError extends Error {}
 export { OAuthError };
 
+/** Lee la respuesta JSON del proveedor; si vino un error HTTP, falla con `OAuthError`. */
 async function readJson(response: Response): Promise<Record<string, unknown>> {
   const body = (await response.json().catch(() => null)) as Record<string, unknown> | null;
   if (!response.ok || !body) throw new OAuthError(`Respuesta ${response.status} del proveedor`);
   return body;
 }
 
+/** Devuelve el valor solo si es un texto no vacío; si no, null. */
 function asString(value: unknown): string | null {
   return typeof value === "string" && value.length > 0 ? value : null;
 }
 
+/** POST de formulario al proveedor (con 8 segundos de límite). */
 async function formPost(url: string, params: Record<string, string>): Promise<Record<string, unknown>> {
   const response = await fetch(url, {
     method: "POST",
@@ -59,6 +62,7 @@ async function formPost(url: string, params: Record<string, string>): Promise<Re
   return readJson(response);
 }
 
+/** Parámetros para canjear el `code` por un token (con PKCE; el secret solo si existe). */
 function codeParams(input: ExchangeInput): Record<string, string> {
   const params: Record<string, string> = {
     grant_type: "authorization_code",
@@ -155,6 +159,7 @@ const discord: ProviderDefinition = {
 
 const PROVIDERS: Record<OAuthProviderId, ProviderDefinition> = { google, facebook, discord };
 
+/** Redes sociales disponibles y si tienen sus claves cargadas en el servidor. */
 export function listProviders() {
   return Object.values(PROVIDERS).map((provider) => {
     const credentials = readCredentials(provider);
@@ -169,6 +174,7 @@ export function listProviders() {
   });
 }
 
+/** Lee del entorno el client id y secret de un proveedor; null si no está configurado. */
 function readCredentials(provider: ProviderDefinition): { clientId: string; clientSecret: string | null } | null {
   const firstSet = (names: string[]) => names.map((name) => process.env[name]?.trim()).find(Boolean);
   const clientId = firstSet(provider.clientIdEnv);

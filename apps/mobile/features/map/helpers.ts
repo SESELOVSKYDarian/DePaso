@@ -3,6 +3,7 @@ import type { NearbyStore, OptimizationPlanResponse } from "@depaso/validation";
 /** Debajo de esto se considera que el comercio está sobre el camino. */
 export const RIGHT_ON_ROUTE_METERS = 120;
 
+/** Texto del desvío: «Justo de paso» si está sobre el camino; si no, minutos y distancia. */
 export function formatDetour(store: NearbyStore): string {
   if (store.detourMeters < RIGHT_ON_ROUTE_METERS) return "Justo de paso";
   const minutes = Math.max(1, Math.round(store.detourSeconds / 60));
@@ -11,6 +12,7 @@ export function formatDetour(store: NearbyStore): string {
   return `+${minutes} min · ${meters}`;
 }
 
+/** Precio en pesos con formato argentino. */
 export const money = (value: number) =>
   new Intl.NumberFormat("es-AR", { style: "currency", currency: "ARS", maximumFractionDigits: 0 }).format(value);
 
@@ -22,6 +24,7 @@ export function formatBlocks(meters: number | undefined): string {
   return `A ${blocks} ${blocks === 1 ? "cuadra" : "cuadras"} de tu camino`;
 }
 
+/** `true` si las paradas del plan (sin las de compra) son las mismas de hoy; si no, hay que recalcular. */
 export function sameBase(plan: OptimizationPlanResponse, waypoints: { latitude: number; longitude: number }[]): boolean {
   const route = plan.routeWaypoints;
   if (!route) return false;

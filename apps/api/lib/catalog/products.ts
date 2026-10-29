@@ -37,6 +37,7 @@ function normalizeQuery(text: string): string {
     .trim();
 }
 
+/** Escapa `%`, `_` y `\` para que el texto buscado no se tome como comodín de SQL. */
 function escapeLike(token: string): string {
   return token.replace(/[\\%_]/g, (char) => `\\${char}`);
 }
@@ -61,6 +62,7 @@ function textConditions(tokens: string[]): Prisma.Sql[] {
   });
 }
 
+/** Condiciones SQL de los filtros elegidos (tipo y marca). */
 function filterConditions(filters: ProductSearchFilters): Prisma.Sql[] {
   const conditions: Prisma.Sql[] = [];
   if (filters.type) conditions.push(Prisma.sql`p.productType = ${filters.type}`);
@@ -68,6 +70,7 @@ function filterConditions(filters: ProductSearchFilters): Prisma.Sql[] {
   return conditions;
 }
 
+/** Une las condiciones con AND en un WHERE (o nada si no hay ninguna). */
 function whereClause(conditions: Prisma.Sql[]): Prisma.Sql {
   return conditions.length > 0 ? Prisma.sql`WHERE ${Prisma.join(conditions, " AND ")}` : Prisma.empty;
 }
@@ -231,6 +234,7 @@ const CACHE_TTL_MS = 10 * 60 * 1000;
 const CACHE_MAX = 400;
 const cache = new Map<string, { at: number; value: Promise<unknown> }>();
 
+/** Guarda el resultado 10 minutos en memoria (hasta 400 consultas) para no repetir la búsqueda. */
 function cached<T>(key: string, load: () => Promise<T>): Promise<T> {
   const hit = cache.get(key);
   if (hit && Date.now() - hit.at < CACHE_TTL_MS) return hit.value as Promise<T>;
@@ -242,6 +246,7 @@ function cached<T>(key: string, load: () => Promise<T>): Promise<T> {
   return value;
 }
 
+/** Busca productos (con caché). */
 export function searchProducts(
   query: string,
   filters: ProductSearchFilters = {},
@@ -251,6 +256,7 @@ export function searchProducts(
   return cached(key, () => searchProductsUncached(query, filters, options));
 }
 
+/** Tipos y marcas disponibles para afinar una búsqueda (con caché). */
 export function getProductFacets(query: string, filters: ProductSearchFilters = {}): Promise<ProductFacets> {
   const key = ["f", normalizeQuery(query), filters.type ?? "", filters.brandId ?? ""].join("|");
   return cached(key, () => getProductFacetsUncached(query, filters));

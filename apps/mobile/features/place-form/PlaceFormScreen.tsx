@@ -29,6 +29,7 @@ export default function PlaceFormScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
 
+  // pide permiso de ubicación y usa el GPS para completar la dirección
   const handleUseCurrentLocation = async () => {
     setIsLocating(true);
     try {
@@ -58,6 +59,7 @@ export default function PlaceFormScreen() {
     }
   };
 
+  // valida los campos y guarda el lugar
   const handleSubmit = async () => {
     if (isSubmitting) return;
     let hasError = false;
@@ -103,6 +105,7 @@ export default function PlaceFormScreen() {
     }
   };
 
+  // elimina el lugar que se está editando
   const handleDelete = async () => {
     if (!existing) return;
     setIsSubmitting(true);

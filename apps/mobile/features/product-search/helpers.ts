@@ -23,8 +23,10 @@ export const resultsCache = new Map<string, Promise<ProductSearchResult[]>>();
 
 export const facetsCache = new Map<string, Promise<ProductFacets>>();
 
+/** Clave de la caché: texto + tipo + marca. */
 export const keyOf = ({ q, type, brandId }: SearchKey) => [q, type ?? "", brandId ?? ""].join("|");
 
+/** Búsqueda con caché en memoria: repetir una consulta no vuelve a llamar al servidor. */
 export function cachedSearch(key: SearchKey): Promise<ProductSearchResult[]> {
   const id = keyOf(key);
   let hit = resultsCache.get(id);
@@ -36,6 +38,7 @@ export function cachedSearch(key: SearchKey): Promise<ProductSearchResult[]> {
   return hit;
 }
 
+/** Tipos y marcas de una búsqueda, con caché en memoria. */
 export function cachedFacets(key: SearchKey): Promise<ProductFacets> {
   const id = keyOf({ q: key.q, type: key.type });
   let hit = facetsCache.get(id);
@@ -47,6 +50,7 @@ export function cachedFacets(key: SearchKey): Promise<ProductFacets> {
   return hit;
 }
 
+/** Categoría a la que pertenece un tipo de producto. */
 export const groupOfType = (typeId: string) => PRODUCT_TYPE_GROUPS.find((group) => group.typeIds.includes(typeId)) ?? null;
 
 /** "Gallo · 1 kg": marca y tamaño; la categoría sólo si es una de verdad (SEPA no categoriza). */

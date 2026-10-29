@@ -39,6 +39,7 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
+/** Estado global del login: usuario, tokens guardados y las acciones de entrar y salir. */
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [isBootstrapping, setIsBootstrapping] = useState(true);
   const [onboardingSeen, setOnboardingSeenState] = useState(false);
@@ -48,6 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let cancelled = false;
 
+    // al abrir la app: leo la sesión guardada y pido el usuario; si el token ya no sirve, la limpio
     async function bootstrap() {
       const [seen, token] = await Promise.all([getOnboardingSeen(), getStoredToken()]);
       if (cancelled) return;
@@ -165,6 +167,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
+/** Acceso al login desde cualquier pantalla. Falla si falta el `AuthProvider`. */
 export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error("useAuth debe usarse dentro de <AuthProvider>");

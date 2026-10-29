@@ -35,14 +35,17 @@ const store =
         deleteItem: SecureStore.deleteItemAsync,
       };
 
+/** Access token guardado en el celular (o null si no hay sesión). */
 export async function getStoredToken(): Promise<string | null> {
   return store.getItem(TOKEN_KEY);
 }
 
+/** Guarda solo el access token (el refresh se guarda con `setStoredSession`). */
 export async function setStoredToken(token: string): Promise<void> {
   await store.setItem(TOKEN_KEY, token);
 }
 
+/** Refresh token guardado, el que sirve para pedir un access token nuevo. */
 export async function getStoredRefreshToken(): Promise<string | null> {
   return store.getItem(REFRESH_TOKEN_KEY);
 }
@@ -53,6 +56,7 @@ export async function setStoredSession(accessToken: string, refreshToken: string
   await store.setItem(REFRESH_TOKEN_KEY, refreshToken);
 }
 
+/** Borra los dos tokens: así se cierra la sesión en este celular. */
 export async function clearStoredToken(): Promise<void> {
   await store.deleteItem(TOKEN_KEY);
   await store.deleteItem(REFRESH_TOKEN_KEY);
@@ -68,14 +72,17 @@ export async function getStoredThemeMode(): Promise<StoredThemeMode> {
   return value === "light" || value === "dark" ? value : "system";
 }
 
+/** Guarda si el usuario quiere tema claro, oscuro o el del sistema. */
 export async function setStoredThemeMode(mode: StoredThemeMode): Promise<void> {
   await store.setItem(THEME_MODE_KEY, mode);
 }
 
+/** `true` si el usuario ya vio la bienvenida. */
 export async function getOnboardingSeen(): Promise<boolean> {
   return (await store.getItem(ONBOARDING_SEEN_KEY)) === "true";
 }
 
+/** Marca la bienvenida como vista para no mostrarla de nuevo. */
 export async function setOnboardingSeen(): Promise<void> {
   await store.setItem(ONBOARDING_SEEN_KEY, "true");
 }
@@ -87,10 +94,12 @@ export async function getStoredNotifications(): Promise<string | null> {
   return store.getItem(NOTIFICATIONS_KEY);
 }
 
+/** Guarda el historial de avisos (texto JSON ya recortado). */
 export async function setStoredNotifications(json: string): Promise<void> {
   await store.setItem(NOTIFICATIONS_KEY, json);
 }
 
+/** Borra el historial de avisos guardado. */
 export async function clearStoredNotifications(): Promise<void> {
   await store.deleteItem(NOTIFICATIONS_KEY);
 }
@@ -117,6 +126,7 @@ export async function getStoredDetourBlocks(): Promise<StoredDetourBlocks | null
   return null;
 }
 
+/** Guarda cuántas cuadras de desvío acepta el usuario en cada nivel. */
 export async function setStoredDetourBlocks(blocks: StoredDetourBlocks): Promise<void> {
   await store.setItem(DETOUR_KEY, JSON.stringify(blocks));
 }

@@ -12,16 +12,19 @@ import { signAccessToken, verifyAccessToken } from "./jwt";
 const ACCESS_TTL_MS = ACCESS_TOKEN_TTL_MINUTES * 60 * 1000;
 const REFRESH_TTL_MS = SESSION_TTL_DAYS * 24 * 60 * 60 * 1000;
 
+/** SHA-256 del refresh token: es lo único que se guarda en la base. */
 function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
 }
 
+/** JWT de acceso para un usuario y una sesión, con su vencimiento. */
 function buildAccessToken(userId: string, sessionId: string) {
   const expiresAt = new Date(Date.now() + ACCESS_TTL_MS);
   const token = signAccessToken({ sub: userId, sid: sessionId, exp: Math.floor(expiresAt.getTime() / 1000) });
   return { token, expiresAt };
 }
 
+/** Abre una sesión nueva: guarda el refresh (hasheado) y devuelve los dos tokens. */
 export async function createSession(userId: string): Promise<AuthSession> {
   const refreshToken = randomBytes(32).toString("base64url");
   const refreshExpiresAt = new Date(Date.now() + REFRESH_TTL_MS);

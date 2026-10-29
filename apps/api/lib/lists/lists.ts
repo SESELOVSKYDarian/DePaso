@@ -29,6 +29,7 @@ interface ListProductInfo {
   imageUrl: string | null;
 }
 
+/** Nombre, marca e imagen de los productos de una lista, en una sola consulta. */
 async function loadProductNames(productIds: string[]): Promise<Map<string, ListProductInfo>> {
   if (productIds.length === 0) return new Map();
   const products = await prisma.product.findMany({
@@ -48,6 +49,7 @@ async function loadProductNames(productIds: string[]): Promise<Map<string, ListP
   );
 }
 
+/** Lista completa (ítems y miembros) vista por `viewerId`: dueño o invitado. */
 export async function toListResponse(list: ListWithItems, viewerId: string): Promise<ShoppingListResponse> {
   const productNames = await loadProductNames(list.items.map((item) => item.productId));
 
@@ -68,6 +70,7 @@ export async function toListResponse(list: ListWithItems, viewerId: string): Pro
   };
 }
 
+/** Un ítem de la lista con los datos de su producto. */
 function toItemResponse(
   item: ShoppingListItem,
   productNames: Map<string, ListProductInfo>
@@ -85,6 +88,7 @@ function toItemResponse(
   };
 }
 
+/** Resumen de una lista para la pantalla de listas (nombre y cantidad de productos). */
 export function toListSummary(
   list: ShoppingList & { user: User; _count: { items: number; members: number } },
   viewerId: string

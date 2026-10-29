@@ -13,20 +13,24 @@ export interface AccessPayload {
   exp: number;
 }
 
+/** Secreto de firma; si falta, el servidor no puede emitir tokens. */
 function getSecret(): string {
   const secret = process.env.AUTH_SESSION_SECRET;
   if (!secret) throw new Error("AUTH_SESSION_SECRET no está configurada");
   return secret;
 }
 
+/** Firma HMAC-SHA256 en base64url. */
 function sign(data: string): string {
   return createHmac("sha256", getSecret()).update(data).digest("base64url");
 }
 
+/** Objeto a JSON en base64url (formato de cada parte del JWT). */
 function encode(value: object): string {
   return Buffer.from(JSON.stringify(value)).toString("base64url");
 }
 
+/** Arma el JWT: cabecera, datos y firma. */
 export function signAccessToken(payload: AccessPayload): string {
   const head = encode({ alg: "HS256", typ: "JWT" });
   const body = encode(payload);

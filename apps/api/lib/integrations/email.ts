@@ -18,6 +18,7 @@ interface SmtpConfig {
   from: string;
 }
 
+/** Lee la configuración SMTP del entorno; null si falta algo. */
 function readConfig(): SmtpConfig | null {
   const host = process.env.SMTP_HOST?.trim();
   const user = process.env.SMTP_USER?.trim();
@@ -31,10 +32,12 @@ function readConfig(): SmtpConfig | null {
   return { host, port, secure, user, pass, from };
 }
 
+/** `true` si el servidor puede mandar mails. */
 export function isEmailConfigured(): boolean {
   return readConfig() !== null;
 }
 
+/** Manda un mail (texto y HTML). */
 export async function sendEmail(input: { to: string; subject: string; html: string; text: string }): Promise<SendEmailResult> {
   const config = readConfig();
   if (!config) return "not_configured";

@@ -2,6 +2,7 @@ import { prisma } from "@depaso/database";
 import type { MarketRegion, Price, ProductVariant, Store, StoreBranch } from "@depaso/database";
 import type { PriceResponse, StoreBranchResponse, StoreResponse } from "@depaso/validation";
 
+/** Comercio con la cantidad de sucursales que tiene. */
 export function toStoreResponse(store: Store & { _count: { branches: number } }): StoreResponse {
   return { id: store.id, name: store.name, branchCount: store._count.branches };
 }
@@ -16,6 +17,7 @@ export async function resolveRegionId(city?: string): Promise<string | null> {
   return region?.id ?? null;
 }
 
+/** Sucursal con su comercio; la ciudad sale de su región. */
 export function toStoreBranchResponse(
   branch: StoreBranch & { store: Store; marketRegion: MarketRegion | null }
 ): StoreBranchResponse {
@@ -31,6 +33,7 @@ export function toStoreBranchResponse(
   };
 }
 
+/** Precio con el nombre del producto y de la sucursal. */
 export function toPriceResponse(
   price: Price & { productVariant: ProductVariant; storeBranch: StoreBranch }
 ): PriceResponse {
