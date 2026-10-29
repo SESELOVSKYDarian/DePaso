@@ -4,7 +4,7 @@ import { radii, spacing, typography, type ColorTokens } from "@depaso/design-tok
 import { makeStyles, useColors } from "@/lib/theme";
 import { AnimatedPressable } from "./AnimatedPressable";
 
-type ButtonVariant = "primary" | "secondary" | "ghost" | "lime" | "danger";
+type ButtonVariant = "primary" | "light" | "secondary" | "ghost" | "lime" | "danger";
 
 interface ButtonProps {
   label: string;
@@ -63,6 +63,8 @@ export function Button({
 
 const variantStyles = (colors: ColorTokens): Record<ButtonVariant, StyleProp<ViewStyle>> => ({
   primary: { backgroundColor: colors.brand.navy },
+  // Píldora blanca: el botón de Inicio ("Iniciar mi recorrido").
+  light: { backgroundColor: "#F5F5F7" },
   secondary: { backgroundColor: colors.surface.primary, borderWidth: 1, borderColor: colors.border.strong },
   ghost: { backgroundColor: "transparent" },
   lime: { backgroundColor: colors.saving.lime },
@@ -73,6 +75,7 @@ const variantStyles = (colors: ColorTokens): Record<ButtonVariant, StyleProp<Vie
  * rojo para cumplir contraste de texto chico (≥ 4.5:1) en claro y en oscuro. */
 const textColors = (colors: ColorTokens): Record<ButtonVariant, string> => ({
   primary: colors.text.onNavy,
+  light: "#111114",
   secondary: colors.text.primary,
   ghost: colors.text.secondary,
   lime: colors.text.onLime,
@@ -83,6 +86,7 @@ const textColors = (colors: ColorTokens): Record<ButtonVariant, string> => ({
  * Montserrat SemiBold, igual que en Figma ("Ingresar dirección manualmente", etc). */
 const LABEL_FONT: Record<ButtonVariant, string> = {
   primary: typography.buttonLabel.fontFamily,
+  light: typography.buttonLabel.fontFamily,
   secondary: typography.body.fontFamily,
   ghost: typography.body.fontFamily,
   lime: typography.buttonLabel.fontFamily,
@@ -96,7 +100,7 @@ const useStyles = makeStyles(() =>
       alignItems: "center",
       justifyContent: "center",
       gap: spacing.xs,
-      minHeight: 44,
+      minHeight: 48,
       borderRadius: radii.full,
       paddingVertical: spacing.sm,
       paddingHorizontal: spacing.md,

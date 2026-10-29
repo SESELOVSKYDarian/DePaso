@@ -24,7 +24,7 @@ type Widen<T> = { [K in keyof T]: T[K] extends string ? string : Widen<T[K]> };
 const light = {
   brand: {
     /** Acción primaria y marca: botones, avatares, íconos de énfasis. */
-    navy: "#1A1341",
+    navy: "#1B6AC9",
     /** Azul de ruta: rutas, vínculos, elementos secundarios. ≥ 4.5:1 sobre blanco. */
     route: "#2B76BD",
     /** Verde de UI (progreso, checkboxes, chips) — no es el lima de ahorro. */
@@ -83,8 +83,8 @@ export const lightColors: ColorTokens = light;
 
 export const darkColors: ColorTokens = {
   brand: {
-    // Acción primaria en oscuro: blanco suave (texto negro encima, `text.onNavy`).
-    navy: "#F5F5F7",
+    // Acción primaria en oscuro: azul cielo (texto azul muy oscuro encima, `text.onNavy`).
+    navy: "#7DB7FF",
     route: "#4DA3FF",
     accent: "#9EE457",
     accentDark: "#B5F27D",
@@ -111,7 +111,7 @@ export const darkColors: ColorTokens = {
     secondary: "#A1A1A6",
     tertiary: "#8E8E93",
     muted: "#98989D",
-    onNavy: "#000000",
+    onNavy: "#06213F",
     onLime: "#1D1D1F",
   },
   state: {

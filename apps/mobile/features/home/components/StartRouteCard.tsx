@@ -27,7 +27,7 @@ export function StartRouteCard({ routeNames, label, hint, onPress }: StartRouteC
           </Text>
         </View>
       ) : null}
-      <Button label={label} onPress={onPress} />
+      <Button label={label} onPress={onPress} variant="light" />
       <Text style={styles.hint}>{hint}</Text>
     </View>
   );
