@@ -25,8 +25,10 @@ EasyPanel (esa es la URL de la API). Al arrancar, el contenedor aplica las migra
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | mail de recuperar contraseña |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | login con Google (opcional) |
 
-## 3. Cron jobs (pestaña Cron Jobs del servicio App)
-Corren dentro del contenedor de la API:
+## 3. Tareas programadas
+La API ya corre sola las tareas de mantenimiento (fotos cada hora, promos y popularidad cada día) desde
+`apps/api/instrumentation.ts`: no hace falta configurar nada. Se apagan con `INTERNAL_CRON=off`. Si tu hosting
+tiene Cron Jobs (o querés correrlas a mano), estos son los comandos equivalentes dentro del contenedor:
 
 | Cuándo | Comando |
 | --- | --- |
