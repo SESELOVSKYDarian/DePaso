@@ -68,7 +68,7 @@ Pantallas que ya están divididas en `features/`: `assistant`, `route-context`, 
 
 | Carpeta | Qué es |
 |---|---|
-| `database/` | Esquema Prisma (MySQL, 3FN), migraciones, seed y el script `postgres-to-mysql.ts`. |
+| `database/` | Esquema Prisma (MySQL, 3FN), migraciones, seed y el script `postgres-to-mysql.ts`. Los logos de las cadenas están en `seed/store-logos/` y `scripts/seed-brand-logos.ts` los carga en la tabla `brand_logos` (lo corre solo el contenedor al arrancar). |
 | `validation/` | Esquemas zod compartidos entre API y app (validación en las dos puntas). |
 | `api-client/` | Cliente HTTP tipado que usa la app; un archivo por tema. |
 | `domain/`, `types/` | Reglas, constantes y tipos de negocio. |

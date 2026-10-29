@@ -108,6 +108,9 @@ if (found.status === 200) check("buscar \"shell\" devuelve lugares", found.body?
 else console.log(`  - buscador de lugares omitido (el servicio externo respondió ${found.status})`);
 check("buscar con 1 letra => 400", (await call("POST", "/api/geocode/search", { q: "a" }, access)).status === 400);
 
+const logos = await call("POST", "/api/stores/logos", {}, access);
+check("los logos de las cadenas salen de la base", logos.status === 200 && logos.body?.logos?.length > 0 && logos.body.logos[0].imageDataUri.startsWith("data:image/png;base64,"));
+
 console.log("Lugares guardados");
 const place = await call("POST", "/api/places", { name: "Casa", type: "HOME", address: "Av. Colón 1234", latitude: -38.0, longitude: -57.55 }, access);
 check("crear lugar => 201", place.status === 201 && place.body?.id);

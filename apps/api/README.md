@@ -185,6 +185,7 @@ Todos con acceso 🔒. Además: `POST /api/consents` (`consentRequestSchema`) y 
 | `POST /api/optimize` | 🌐 | `optimizeRequestSchema` |
 | `POST /api/routes/compute`, `/api/routes/nearby-stores` | 🔒 | `routeComputeRequestSchema`, `nearbyStoresRequestSchema` |
 | `POST /api/geocode`, `/api/geocode/reverse` | 🔒 | dirección → coordenadas y al revés |
+| `POST /api/stores/logos` | 🔒 | — : logos de las cadenas (Coto, Shell…) guardados en la base (`brand_logos` + `brand_logo_aliases`), como `data:image/png;base64` |
 | `POST /api/geocode/search` | 🔒 | `placeSearchRequestSchema` — `{ q, latitude?, longitude? }`: sugerencias de lugares mientras se escribe (comercios como "Shell", escuelas como "Técnica 5", calles con número). Usa Photon (OpenStreetMap), limitado a Mar del Plata |
 | `POST /api/config/mapbox-token` | 🔒 | — |
 | `POST /api/ai/shopping-parse` | 🔒 | `assistantRequestSchema` — texto libre → lista |

@@ -52,6 +52,7 @@ Tablas que salieron de columnas con listas o con datos repetidos:
 | `saved_route_contexts.waypointPlaceIds` + `stops` (JSON) | tabla `saved_route_stops (contextId, position, …)` |
 | `store_branches.openingHours` (JSON) | tabla `store_branch_hours (branchId, day, hours)` |
 | `optimization_plans.missingProductIds` (lista) | tabla `optimization_plan_missing_products` |
+| `brand_logos.aliases` (lista de nombres de la cadena) | tabla `brand_logo_aliases (brandSlug, alias)` |
 | `store_branches.city` y `province` (dependían de la región) | se leen de `market_regions` vía `marketRegionId` |
 | `price_history.productVariantId` y `storeBranchId` (dependían de `priceId`) | se leen de `prices` |
 | `optimization_plan_items.productId` (dependía de la variante) | se lee de `product_variants` |

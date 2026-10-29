@@ -1,0 +1,21 @@
+[
+  { "slug": "atomo", "name": "Átomo", "aliases": ["atomo"] },
+  { "slug": "carrefour", "name": "Carrefour", "aliases": ["carrefour"] },
+  { "slug": "changomas", "name": "Changomás", "aliases": ["changomas", "chango mas", "walmart"] },
+  { "slug": "comodin", "name": "Comodín", "aliases": ["comodin"] },
+  { "slug": "cooperativa-obrera", "name": "Cooperativa Obrera", "aliases": ["cooperativa obrera", "la coope"] },
+  { "slug": "cordiez", "name": "Cordiez", "aliases": ["cordiez"] },
+  { "slug": "coto", "name": "Coto", "aliases": ["coto"] },
+  { "slug": "dia", "name": "Día", "aliases": ["dia"] },
+  { "slug": "diarco", "name": "Diarco", "aliases": ["diarco"] },
+  { "slug": "disco", "name": "Disco", "aliases": ["disco"] },
+  { "slug": "jumbo", "name": "Jumbo", "aliases": ["jumbo"] },
+  { "slug": "la-anonima", "name": "La Anónima", "aliases": ["la anonima"] },
+  { "slug": "maxiconsumo", "name": "Maxiconsumo", "aliases": ["maxiconsumo"] },
+  { "slug": "puma", "name": "Puma Energy", "aliases": ["puma", "puma energy"] },
+  { "slug": "shell", "name": "Shell", "aliases": ["shell"] },
+  { "slug": "super-mami", "name": "Super Mami", "aliases": ["super mami", "supermami"] },
+  { "slug": "vea", "name": "Vea", "aliases": ["vea"] },
+  { "slug": "yaguar", "name": "Yaguar", "aliases": ["yaguar"] },
+  { "slug": "ypf", "name": "YPF", "aliases": ["ypf"] }
+]

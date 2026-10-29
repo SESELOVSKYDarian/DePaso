@@ -1,30 +1,41 @@
-import { StyleSheet, Text, View } from "react-native";
-import { storeBrand } from "@/lib/stores/storeBrand";
+import { Ionicons } from "@expo/vector-icons";
+import { Image, StyleSheet, View } from "react-native";
+import { findBrandLogo } from "@/lib/stores/matchBrandLogo";
+import { useBrandLogos } from "@/lib/stores/useBrandLogos";
+import { useColors } from "@/lib/theme";
 
 interface StoreBadgeProps {
   storeName: string;
   size?: number;
 }
 
-/** Ícono cuadrado de un comercio: color de la cadena y sus iniciales. */
+/**
+ * Logo de un comercio (guardado en la base de datos). Va sobre un recuadro blanco porque los
+ * logos traen su propio fondo; si no tenemos el logo de esa cadena queda un ícono de local.
+ */
 export function StoreBadge({ storeName, size = 40 }: StoreBadgeProps) {
-  const brand = storeBrand(storeName);
+  const colors = useColors();
+  const logo = findBrandLogo(useBrandLogos(), storeName);
+  const radius = Math.round(size * 0.24);
+
   return (
     <View
       accessibilityElementsHidden
       importantForAccessibility="no-hide-descendants"
-      style={[styles.box, { width: size, height: size, borderRadius: Math.round(size * 0.28), backgroundColor: brand.background }]}
+      style={[
+        styles.box,
+        { width: size, height: size, borderRadius: radius, backgroundColor: logo ? "#FFFFFF" : colors.surface.input },
+      ]}
     >
-      <Text
-        numberOfLines={1}
-        style={{ color: brand.text, fontWeight: "800", fontSize: Math.round(size * (brand.initials.length > 2 ? 0.3 : 0.4)) }}
-      >
-        {brand.initials}
-      </Text>
+      {logo ? (
+        <Image source={{ uri: logo.imageDataUri }} style={{ width: size - 4, height: size - 4 }} resizeMode="contain" />
+      ) : (
+        <Ionicons name="storefront-outline" size={Math.round(size * 0.5)} color={colors.text.tertiary} />
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  box: { alignItems: "center", justifyContent: "center" },
+  box: { alignItems: "center", justifyContent: "center", overflow: "hidden" },
 });

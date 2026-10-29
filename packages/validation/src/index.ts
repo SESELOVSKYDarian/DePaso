@@ -18,4 +18,5 @@ export * from "./routeNearby";
 export * from "./mapConfig";
 export * from "./merchant";
 export * from "./payments";
+export * from "./brandLogos";
 export * from "./home";

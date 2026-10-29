@@ -322,6 +322,30 @@ model SavedRouteStop {
 // Catálogo: marca, producto, variante, alias
 // ---------------------------------------------------------------------------
 
+/// Logo de una cadena o marca de comercios (Coto, Shell…). La imagen vive en la base: la app la
+/// pide una vez y la reparte sin depender de sitios externos. Se carga con `db:brand-logos`.
+model BrandLogo {
+  slug      String   @id @db.VarChar(40)
+  name      String   @db.VarChar(80)
+  mimeType  String   @db.VarChar(40)
+  image     Bytes    @db.MediumBlob
+  updatedAt DateTime @updatedAt
+  aliases   BrandLogoAlias[]
+
+  @@map("brand_logos")
+}
+
+/// Nombres con los que se reconoce la cadena ("la anonima", "chango mas"): ya normalizados
+/// (minúscula, sin tildes). Una fila por alias para no guardar listas en una columna (3FN).
+model BrandLogoAlias {
+  brandSlug String   @db.VarChar(40)
+  alias     String   @db.VarChar(80)
+  brand     BrandLogo @relation(fields: [brandSlug], references: [slug], onDelete: Cascade)
+
+  @@id([brandSlug, alias])
+  @@map("brand_logo_aliases")
+}
+
 model Brand {
   id       String    @id @default(uuid())
   name     String    @unique
