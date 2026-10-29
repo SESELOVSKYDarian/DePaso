@@ -137,7 +137,7 @@ export default function MapScreen() {
             <Text style={s.subtitle}>{subtitle}</Text>
           </View>
           {hasRoute ? (
-            <AnimatedPressable accessibilityLabel="Editar recorrido" haptic={false} onPress={() => router.push("/route-context")} style={s.edit}>
+            <AnimatedPressable accessibilityLabel="Editar recorrido" haptic={false} onPress={() => router.push("/route-builder")} style={s.edit}>
               <Ionicons name="create-outline" size={19} color={colors.text.primary} />
             </AnimatedPressable>
           ) : null}

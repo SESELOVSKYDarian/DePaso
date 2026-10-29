@@ -2,8 +2,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { ApiError } from "@depaso/api-client";
 import type { UserPlaceResponse } from "@depaso/validation";
 import * as Location from "expo-location";
-import { router } from "expo-router";
-import { useState } from "react";
+import { router, useLocalSearchParams } from "expo-router";
+import { useEffect, useRef, useState } from "react";
 import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
@@ -28,8 +28,12 @@ import { useSavedRoutes } from "./useSavedRoutes";
 
 type Point = { latitude: number; longitude: number };
 
-/** "¿Por dónde vas a andar hoy?": se arma la lista de paradas del recorrido de hoy. */
-export default function RouteContextScreen() {
+/**
+ * "Armar ruta": se suman, quitan y ordenan las paradas del recorrido, se pueden buscar lugares
+ * y guardar la ruta con nombre. Puede abrirse con un lugar (`addPlace`) o con la ubicación
+ * actual (`withLocation`) ya sumados. Para usar una ruta guardada está "Elegí tu recorrido".
+ */
+export default function RouteBuilderScreen() {
   const colors = useColors();
   const styles = useStyles();
   const { places, createPlace } = usePlaces();
@@ -107,6 +111,25 @@ export default function RouteContextScreen() {
       setIsLocating(false);
     }
   };
+
+  // si se abrió con un lugar o con la ubicación actual, se suma una sola vez
+  const params = useLocalSearchParams<{ addPlace?: string; withLocation?: string }>();
+  const appliedParams = useRef(false);
+  useEffect(() => {
+    if (appliedParams.current) return;
+    if (params.withLocation === "1") {
+      appliedParams.current = true;
+      void addCurrentLocation();
+      return;
+    }
+    const place = params.addPlace ? places.find((candidate) => candidate.id === params.addPlace) : undefined;
+    if (place) {
+      appliedParams.current = true;
+      togglePlace(place);
+    }
+    // addCurrentLocation y togglePlace se redefinen en cada render: sólo importa el primer pasaje
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [params.addPlace, params.withLocation, places]);
 
   const openMapPicker = () => {
     setAddSheetVisible(false);
@@ -205,8 +228,8 @@ export default function RouteContextScreen() {
           <Ionicons name="arrow-back" size={22} color={colors.text.primary} />
         </AnimatedPressable>
         <View>
-          <Text style={styles.navTitle}>¿Por dónde vas a andar hoy?</Text>
-          <Text style={styles.navSubtitle}>Contanos tu ruta.</Text>
+          <Text style={styles.navTitle}>Armar ruta</Text>
+          <Text style={styles.navSubtitle}>Sumá las paradas de tu recorrido.</Text>
         </View>
       </View>
 

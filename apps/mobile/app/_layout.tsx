@@ -100,6 +100,7 @@ function RootNavigator() {
         />
         {/* Flujo de compra: arma el recorrido subiendo desde abajo y los resultados se funden. */}
         <Stack.Screen name="route-context/index" options={{ headerShown: false, animation: "slide_from_bottom" }} />
+        <Stack.Screen name="route-builder/index" options={{ headerShown: false, animation: "slide_from_right" }} />
         <Stack.Screen name="optimization/index" options={{ headerShown: false, animation: "fade" }} />
         <Stack.Screen name="purchase/index" options={{ headerShown: false, animation: "fade_from_bottom" }} />
         <Stack.Screen
