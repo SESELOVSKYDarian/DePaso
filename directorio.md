@@ -22,7 +22,7 @@ Monorepo pnpm + Turborepo. Todo lo de un tema vive en una sola carpeta.
 | `app/api/{lists,places,preferences,route-contexts,payment-methods}/` | Datos del usuario. |
 | `app/api/{merchant,admin}/` | Funciones por rol (comercio y administrador). |
 | `app/api/{products,stores,home,community,optimization,routes,geocode}/` | Catálogo, precios y recorridos. |
-| `app/api/{promos,catalog}/` | Tareas programadas (cron de EasyPanel). |
+| `app/api/{promos,catalog}/` | Tareas de mantenimiento (fotos, promos, popularidad): corren solas desde `instrumentation.ts`; los endpoints sirven para correrlas a mano. |
 
 **Lógica (`lib/`)** — una subcarpeta por tema.
 
@@ -62,8 +62,17 @@ Monorepo pnpm + Turborepo. Todo lo de un tema vive en una sola carpeta.
 | `lib/map/mapCommands.ts` | Órdenes que la app le manda al mapa: mover la cámara, punto azul, pin de búsqueda. |
 | `lib/{lists,places,routeContext,purchase,voice}/` | Estado y lógica por tema. |
 
-Pantallas que ya están divididas en `features/`: `assistant`, `route-context`, `map`, `list-detail`,
-`product-search`, `merchant-request`, `merchant-panel`, `place-form`, `home`.
+Todas las pantallas viven en `features/`, agrupadas por área:
+
+| Área | Pantallas |
+| --- | --- |
+| `home`, `lists`, `list-detail`, `product-search`, `assistant` | Inicio, mis listas, detalle de una lista, buscar productos y armar con IA. |
+| `route-choice`, `route-context`, `map`, `optimization`, `purchase` | Elegir o armar el recorrido, mapa, Top 3 de compra y Modo compra. |
+| `places`, `place-form`, `preferences`, `payment-methods`, `detour`, `appearance` | Lugares, preferencias de marca y comercio, medios de pago, desvío y tema. |
+| `auth`, `onboarding`, `setup` | Ingreso, registro, recuperar contraseña, bienvenida y primeros pasos. |
+| `profile`, `activity`, `notifications`, `privacy`, `help`, `legal` | Perfil, reportes de la comunidad, avisos, datos personales, ayuda y textos legales. |
+| `merchant-request`, `merchant-panel`, `merchant-price-form`, `admin`, `report-price` | Comercio, administración y reporte de precios. |
+| `navigation` | Las pantallas registradas en la raíz (`RootNavigator`). |
 
 ## Paquetes (`packages/`)
 
