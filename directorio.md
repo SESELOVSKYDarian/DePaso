@@ -55,6 +55,8 @@ Monorepo pnpm + Turborepo. Todo lo de un tema vive en una sola carpeta.
 | `lib/apiClient.ts` | Clientes de la API y renovación automática del access token. |
 | `lib/theme/` | Tema claro / oscuro. |
 | `lib/responsive/` | Tamaño de pantalla (celular, tablet, escritorio) y giro del dispositivo. |
+| `lib/routeContext/` | Recorrido de hoy: se guarda en el celular y se reinicia a las 00:00 (`todayRouteStorage`, `dayStamp`, `useMidnightReset`). |
+| `lib/products/productIcon.ts` | Ícono por tipo de producto cuando no hay foto. |
 | `lib/location/`, `lib/places/usePlaceSearch.ts` | Ubicación actual del usuario (con permisos) y búsqueda de lugares mientras se escribe. |
 | `lib/map/mapCommands.ts` | Órdenes que la app le manda al mapa: mover la cámara, punto azul, pin de búsqueda. |
 | `lib/{lists,places,routeContext,purchase,voice}/` | Estado y lógica por tema. |

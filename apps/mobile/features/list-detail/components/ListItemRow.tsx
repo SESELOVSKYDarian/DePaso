@@ -23,7 +23,7 @@ export function ListItemRow({ item, isBusy, onQuantityChange, onRemove }: ListIt
     // Sin animaciones de entrada/salida por fila: en una lista virtualizada, cuando entran
     // varias filas juntas (p. ej. después de armar la lista con IA) fallan en Android.
     <View style={styles.row}>
-      <ProductThumb imageUrl={item.imageUrl} size={44} />
+      <ProductThumb imageUrl={item.imageUrl} name={item.productName} size={44} />
       <View style={styles.rowText}>
         <Text style={styles.rowName} numberOfLines={2}>
           {item.productName}

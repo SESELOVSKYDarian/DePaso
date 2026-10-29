@@ -9,9 +9,13 @@ import { useToast } from "@/components/common/Toast";
 import { homeClient } from "@/lib/apiClient";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useLists } from "@/lib/lists/ListsContext";
+import { usePlaces } from "@/lib/places/PlacesContext";
 import { usePurchase } from "@/lib/purchase/PurchaseContext";
 import { useTodayRoute } from "@/lib/routeContext/TodayRouteContext";
 import { useColors, useTheme } from "@/lib/theme";
+import { SavePresetForm } from "../route-context/components/SavePresetForm";
+import { SavedRoutesRow } from "../route-context/components/SavedRoutesRow";
+import { useSavedRoutes } from "../route-context/useSavedRoutes";
 import { GuidePanel } from "./components/GuidePanel";
 import { ListSummaryCard } from "./components/ListSummaryCard";
 import { PriceChanges } from "./components/PriceChanges";
@@ -29,12 +33,15 @@ export default function HomeScreen() {
   const colors = useColors();
   const styles = useStyles();
   const { user } = useAuth();
-  const { waypoints } = useTodayRoute();
+  const { waypoints, setWaypoints } = useTodayRoute();
+  const { places } = usePlaces();
   const { lists, addItem } = useLists();
   const { isDark, setMode } = useTheme();
   const { routePlan } = usePurchase();
   const { show: showToast } = useToast();
   const [feed, setFeed] = useState<HomeFeedResponse | null>(null);
+  // rutas guardadas con nombre: se usan de un toque o se guarda la de hoy desde acá
+  const saved = useSavedRoutes(waypoints, setWaypoints, places, showToast);
 
   useFocusEffect(
     useCallback(() => {
@@ -113,6 +120,17 @@ export default function HomeScreen() {
         ) : (
           <GuidePanel hasList={Boolean(listSummary)} hasRoute={hasRoute} hasPlan={Boolean(routePlan)} />
         )}
+
+        <SavedRoutesRow presets={saved.presets} onApply={saved.apply} onDelete={(preset) => void saved.remove(preset)} />
+        <SavePresetForm
+          stopCount={waypoints.length}
+          name={saved.savingName}
+          isSaving={saved.isSaving}
+          onOpen={() => saved.setSavingName("")}
+          onChangeName={saved.setSavingName}
+          onCancel={() => saved.setSavingName(null)}
+          onSave={() => void saved.save()}
+        />
 
         <ProductStrip
           title="Barato hoy"

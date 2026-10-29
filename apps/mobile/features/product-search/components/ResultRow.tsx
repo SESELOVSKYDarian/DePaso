@@ -26,7 +26,7 @@ export function ResultRow({ product, addingId, onAdd }: ResultRowProps) {
       onPress={onAdd}
       style={styles.row}
     >
-      <ProductThumb imageUrl={product.imageUrl} />
+      <ProductThumb imageUrl={product.imageUrl} name={product.name} />
       <View style={styles.rowText}>
         <Text style={styles.rowName} numberOfLines={2}>
           {product.name}

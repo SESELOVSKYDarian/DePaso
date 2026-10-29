@@ -222,4 +222,5 @@ Todos con acceso 🔒. Además: `POST /api/consents` (`consentRequestSchema`) y 
 |---|---|---|
 | `POST /api/promos/sync` | ⏱️ | Actualiza las promociones bancarias |
 | `POST /api/catalog/refresh` | ⏱️ | Recalcula la popularidad de productos |
+| `POST /api/catalog/images` | ⏱️ | Completa fotos del catálogo por EAN (Open Food Facts, Open Beauty Facts, Open Products Facts), 40 productos por corrida |
 | `POST /api/health` | 🌐 | `{ "ok": true }` si la API llega a la base (503 si no) |

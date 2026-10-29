@@ -40,7 +40,7 @@ export function ProductStrip({ title, subtitle, products, showSaving = false, on
           ? SKELETONS.map((index) => <Skeleton key={index} width={156} height={190} borderRadius={radii.lg} />)
           : products.map((product) => (
               <View key={product.productId} style={styles.card}>
-                <ProductThumb imageUrl={product.imageUrl} size={64} />
+                <ProductThumb imageUrl={product.imageUrl} name={product.name} size={64} />
                 <Text style={styles.name} numberOfLines={2}>
                   {product.name}
                 </Text>

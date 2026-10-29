@@ -104,6 +104,23 @@ export async function clearStoredNotifications(): Promise<void> {
   await store.deleteItem(NOTIFICATIONS_KEY);
 }
 
+const TODAY_ROUTE_KEY = "depaso_today_route";
+
+/** Recorrido de hoy guardado (texto JSON con el día y el usuario). */
+export async function getStoredTodayRoute(): Promise<string | null> {
+  return store.getItem(TODAY_ROUTE_KEY);
+}
+
+/** Guarda el recorrido de hoy (texto JSON ya compacto). */
+export async function setStoredTodayRoute(json: string): Promise<void> {
+  await store.setItem(TODAY_ROUTE_KEY, json);
+}
+
+/** Borra el recorrido de hoy guardado. */
+export async function clearStoredTodayRoute(): Promise<void> {
+  await store.deleteItem(TODAY_ROUTE_KEY);
+}
+
 const DETOUR_KEY = "depaso_detour_blocks";
 
 export interface StoredDetourBlocks {

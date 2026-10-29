@@ -1,5 +1,6 @@
 import type { OptimizationPlanResponse } from "@depaso/validation";
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { useMidnightReset } from "@/lib/routeContext/useMidnightReset";
 
 type PurchaseContextValue = {
   plan: OptimizationPlanResponse | null;
@@ -22,6 +23,8 @@ export function PurchaseProvider({ children }: { children: ReactNode }) {
   const [routePlan, setRoutePlan] = useState<OptimizationPlanResponse | null>(null);
   const [routePlans, setRoutePlans] = useState<OptimizationPlanResponse[]>([]);
   const [checked, setChecked] = useState<Record<string, boolean>>({});
+  // a las 00:00 el recorrido de hoy se reinicia, y el plan armado sobre él también
+  useMidnightReset(() => { setPlan(null); setRoutePlan(null); setRoutePlans([]); setChecked({}); });
   const value = useMemo(() => ({
     plan, checked, routePlan, setRoutePlan, routePlans, setRoutePlans,
     start: (next: OptimizationPlanResponse) => { setPlan(next); setRoutePlan(next); setChecked({}); },
