@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { PlaceSearchError, searchPlaces } from "./placeSearch";
+import { clearPlaceSearchCache, PlaceSearchError, searchPlaces } from "./placeSearch";
 
 // Forma real de la respuesta de Photon: una estación de servicio y una dirección.
 const RESPONSE = {
@@ -25,6 +25,7 @@ const RESPONSE = {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  clearPlaceSearchCache();
 });
 
 describe("searchPlaces", () => {
@@ -66,6 +67,15 @@ describe("searchPlaces", () => {
     const url = new URL(fetchMock.mock.calls[0]![0] as string);
     expect(url.searchParams.get("lat")).toBe("-38.01");
     expect(url.searchParams.get("lon")).toBe("-57.56");
+  });
+
+  it("repite la búsqueda desde la caché, sin volver a llamar al servicio", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => RESPONSE });
+    vi.stubGlobal("fetch", fetchMock);
+    await searchPlaces("Shell");
+    await searchPlaces("  shell ");
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it("falla con un error propio si el buscador responde con error", async () => {

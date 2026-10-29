@@ -4,34 +4,49 @@ import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
-import { EmptyState } from "@/components/common/EmptyState";
+import { useToast } from "@/components/common/Toast";
+import { PlaceSearchBox } from "@/components/map/PlaceSearchBox";
 import { RouteMapView } from "@/components/map/RouteMapView";
 import { usePurchase } from "@/lib/purchase/PurchaseContext";
-import { useTodayRoute } from "@/lib/routeContext/TodayRouteContext";
+import { useTodayRoute, type TodayWaypoint } from "@/lib/routeContext/TodayRouteContext";
 import { useColors } from "@/lib/theme";
+import { ExploreMap } from "./components/ExploreMap";
 import { FullMapModal } from "./components/FullMapModal";
+import { MapTools } from "./components/MapTools";
 import { NearbyStoresList, SelectedStoreCard } from "./components/NearbyStores";
+import { NoRouteCard } from "./components/NoRouteCard";
 import { PlanCard } from "./components/PlanCard";
 import { PlanCta } from "./components/PlanCta";
 import { PlanTabs } from "./components/PlanTabs";
 import { RouteStops } from "./components/RouteStops";
+import { SearchResultCard } from "./components/SearchResultCard";
 import { sameBase } from "./helpers";
 import { useStyles } from "./styles";
+import { useMapSearch } from "./useMapSearch";
+import { useMapToken } from "./useMapToken";
 import { useRouteMapData } from "./useRouteMapData";
 
+/** Una ruta tiene como máximo 6 paradas (origen, paradas y destino). */
+const MAX_STOPS = 6;
+
 /**
- * Mapa del recorrido de hoy: la ruta con sus paradas y, sobre ella, los comercios que te
- * quedan "de paso" con cuánto te desviás para pasar por cada uno. Mapbox GL JS real cuando
- * hay token configurado; si no, queda el orden de paradas y las direcciones.
+ * Mapa: buscar un lugar (como en Google Maps), ver dónde estás y planificar el recorrido de hoy.
+ * Con recorrido, muestra la ruta con sus paradas y los comercios que quedan "de paso", con cuánto
+ * te desviás para pasar por cada uno. Sin recorrido, queda un mapa para explorar y armar la ruta.
  */
 export default function MapScreen() {
   const s = useStyles();
   const colors = useColors();
-  const { waypoints } = useTodayRoute();
+  const { show: showToast } = useToast();
+  const { waypoints, setWaypoints } = useTodayRoute();
   const { routePlan, routePlans, setRoutePlan } = usePurchase();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   // Mapa a pantalla completa: en el recuadro chico costaba moverse y tocar los comercios.
   const [fullMap, setFullMap] = useState(false);
+
+  const hasRoute = waypoints.length >= 2;
+  const search = useMapSearch();
+  const exploreToken = useMapToken();
 
   // El plan sólo vale mientras el recorrido sea el mismo con el que se calculó: si lo editaste
   // (cambió el origen, el destino o una parada) hay que recalcular.
@@ -66,30 +81,38 @@ export default function MapScreen() {
   const selected = stores.find((store) => store.branchId === selectedId) ?? null;
   const selectedStop = planStops.find((stop) => stop.storeBranchId === selectedId) ?? null;
 
-  if (waypoints.length < 2) {
-    return (
-      <SafeAreaView style={s.container} edges={["top"]}>
-        <EmptyState
-          emoji="🗺️"
-          title="Todavía no tenés una ruta activa"
-          description="Elegí de dónde salís y a dónde vas, y te mostramos qué tenés de paso."
-          action={
-            <AnimatedPressable accessibilityLabel="Elegir recorrido" onPress={() => router.push("/route-context")} style={s.emptyAction}>
-              <Text style={s.emptyActionText}>Elegir mi recorrido</Text>
-            </AnimatedPressable>
-          }
-        />
-      </SafeAreaView>
-    );
-  }
+  // Suma el lugar buscado al recorrido: con ruta armada entra como parada antes del destino.
+  const addPlaceToRoute = () => {
+    const place = search.place;
+    if (!place) return;
+    if (waypoints.length >= MAX_STOPS) {
+      showToast(`Tu recorrido ya tiene ${MAX_STOPS} paradas, el máximo.`, "error");
+      return;
+    }
+    const stop: TodayWaypoint = {
+      key: `search-${Date.now()}`,
+      name: place.name,
+      address: place.address,
+      latitude: place.latitude,
+      longitude: place.longitude,
+      emoji: "📍",
+    };
+    const last = waypoints[waypoints.length - 1];
+    setWaypoints(hasRoute && last ? [...waypoints.slice(0, -1), stop, last] : [...waypoints, stop]);
+    search.clearPlace();
+    showToast(`Sumamos "${place.name}" a tu recorrido.`, "success");
+  };
 
-  const subtitle = isLoadingRoute
-    ? "Buscando qué tenés de paso…"
-    : stores.length > 0
-      ? `Tenés ${stores.length} ${stores.length === 1 ? "comercio" : "comercios"} de paso`
-      : `${waypoints.length} paradas en orden`;
+  const subtitle = !hasRoute
+    ? "Buscá un lugar o tocá el mapa"
+    : isLoadingRoute
+      ? "Buscando qué tenés de paso…"
+      : stores.length > 0
+        ? `Tenés ${stores.length} ${stores.length === 1 ? "comercio" : "comercios"} de paso`
+        : `${waypoints.length} paradas en orden`;
 
   // props que comparten el mapa chico y el de pantalla completa
+  const searchPin = search.place ? { latitude: search.place.latitude, longitude: search.place.longitude } : null;
   const mapProps = mapboxToken
     ? {
         waypoints: mapWaypoints,
@@ -99,34 +122,45 @@ export default function MapScreen() {
         stores: mapStores,
         selectedStoreId: selectedId,
         onSelectStore: setSelectedId,
+        focus: search.focus,
+        userLocation: search.userLocation,
+        searchPin,
       }
     : null;
 
   return (
     <SafeAreaView style={s.container} edges={["top"]}>
-      <ScrollView contentContainerStyle={s.content}>
+      <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
         <View style={s.header}>
           <View>
-            <Text style={s.title}>Tu recorrido</Text>
+            <Text style={s.title}>Mapa</Text>
             <Text style={s.subtitle}>{subtitle}</Text>
           </View>
-          <AnimatedPressable accessibilityLabel="Editar recorrido" haptic={false} onPress={() => router.push("/route-context")} style={s.edit}>
-            <Ionicons name="create-outline" size={19} color={colors.text.primary} />
-          </AnimatedPressable>
+          {hasRoute ? (
+            <AnimatedPressable accessibilityLabel="Editar recorrido" haptic={false} onPress={() => router.push("/route-context")} style={s.edit}>
+              <Ionicons name="create-outline" size={19} color={colors.text.primary} />
+            </AnimatedPressable>
+          ) : null}
         </View>
 
-        {isLoadingRoute ? (
+        <PlaceSearchBox near={search.userLocation} onSelect={search.chooseResult} placeholder="Buscar un lugar: Shell, Técnica 5, Colón 1234…" />
+
+        {!hasRoute ? (
+          <MapTools onLocated={search.showUser}>
+            <ExploreMap token={exploreToken} onPick={(point) => void search.choosePoint(point)} focus={search.focus} userLocation={search.userLocation} placePin={search.pinFocus} />
+          </MapTools>
+        ) : isLoadingRoute ? (
           <View style={s.mapLoading}>
             <ActivityIndicator color={colors.brand.navy} />
           </View>
         ) : mapProps ? (
-          <View>
+          <MapTools onLocated={search.showUser}>
             <RouteMapView {...mapProps} />
             <AnimatedPressable accessibilityLabel="Ver el mapa en pantalla completa" onPress={() => setFullMap(true)} style={s.expandButton}>
               <Ionicons name="expand-outline" size={18} color={colors.text.primary} />
               <Text style={s.expandLabel}>Ampliar</Text>
             </AnimatedPressable>
-          </View>
+          </MapTools>
         ) : (
           <View style={s.routeCard}>
             <Ionicons name="navigate-outline" size={30} color={colors.brand.route} />
@@ -137,7 +171,18 @@ export default function MapScreen() {
           </View>
         )}
 
-        {routePlans.length > 1 && planIsCurrent ? (
+        {search.place ? (
+          <SearchResultCard
+            place={search.place}
+            actionLabel={hasRoute ? "Sumar como parada" : "Usar en mi recorrido"}
+            onAdd={addPlaceToRoute}
+            onClose={search.clearPlace}
+          />
+        ) : null}
+
+        {!hasRoute ? <NoRouteCard stopCount={waypoints.length} /> : null}
+
+        {hasRoute && routePlans.length > 1 && planIsCurrent ? (
           <PlanTabs
             plans={routePlans}
             selectedLabel={routePlan?.label}
@@ -148,21 +193,25 @@ export default function MapScreen() {
           />
         ) : null}
 
-        {plan ? (
-          <PlanCard plan={plan} stops={planStops} selectedId={selectedId} hasPlanLine={Boolean(planPolyline)} onSelectStop={setSelectedId} />
-        ) : (
-          <PlanCta hasOldPlan={routePlan !== null} />
-        )}
+        {hasRoute ? (
+          plan ? (
+            <PlanCard plan={plan} stops={planStops} selectedId={selectedId} hasPlanLine={Boolean(planPolyline)} onSelectStop={setSelectedId} />
+          ) : (
+            <PlanCta hasOldPlan={routePlan !== null} />
+          )
+        ) : null}
 
-        {selected && !selectedStop ? <SelectedStoreCard store={selected} /> : null}
+        {hasRoute && selected && !selectedStop ? <SelectedStoreCard store={selected} /> : null}
 
-        <NearbyStoresList stores={stores} selectedId={selectedId} isLoading={isLoadingRoute} hasMap={Boolean(mapboxToken)} onSelect={setSelectedId} />
+        {hasRoute ? (
+          <NearbyStoresList stores={stores} selectedId={selectedId} isLoading={isLoadingRoute} hasMap={Boolean(mapboxToken)} onSelect={setSelectedId} />
+        ) : null}
 
-        {mapProps ? (
+        {hasRoute && mapProps ? (
           <FullMapModal visible={fullMap} mapProps={mapProps} selectedStop={selectedStop} selectedStore={selected} onClose={() => setFullMap(false)} />
         ) : null}
 
-        <RouteStops waypoints={waypoints} />
+        {waypoints.length > 0 ? <RouteStops waypoints={waypoints} /> : null}
       </ScrollView>
     </SafeAreaView>
   );

@@ -1,4 +1,5 @@
 import type { ColorTokens } from "@depaso/design-tokens";
+import { buildMapCommandsScript } from "./mapCommands";
 
 export interface RouteMapWaypoint {
   latitude: number;
@@ -125,6 +126,7 @@ export function buildRouteMapHtml({ waypoints, polyline, mapboxToken, colors, is
     zoom: 13,
   });
   map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
+${buildMapCommandsScript(colors.brand.navy)}
 
   map.on("load", () => {
     const bounds = new mapboxgl.LngLatBounds();

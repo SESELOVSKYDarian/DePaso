@@ -76,12 +76,40 @@ function unique(list: PlaceSuggestion[]): PlaceSuggestion[] {
   });
 }
 
+/** Las búsquedas repetidas se guardan 10 minutos: es más rápido y cuida al servicio gratuito. */
+const CACHE_TTL_MS = 10 * 60 * 1000;
+const CACHE_MAX = 300;
+const cache = new Map<string, { at: number; value: PlaceSuggestion[] }>();
+
+/** Vacía la caché (lo usan las pruebas). */
+export function clearPlaceSearchCache(): void {
+  cache.clear();
+}
+
+/** Clave de caché: texto normalizado + posición redondeada (unos 100 m). */
+function cacheKey(query: string, near?: { latitude: number; longitude: number }): string {
+  const where = near ? `${near.latitude.toFixed(3)},${near.longitude.toFixed(3)}` : "";
+  return `${query.trim().toLowerCase()}|${where}`;
+}
+
 /**
  * Busca lugares con autocompletado, como Google Maps: comercios ("Shell", "Coto"), escuelas
  * ("Técnica 5"), hospitales, calles con número y barrios. Usa Photon, el buscador gratuito de
  * OpenStreetMap, limitado a la zona de lanzamiento; `near` hace que salgan primero los más cercanos.
  */
 export async function searchPlaces(query: string, near?: { latitude: number; longitude: number }): Promise<PlaceSuggestion[]> {
+  const key = cacheKey(query, near);
+  const hit = cache.get(key);
+  if (hit && Date.now() - hit.at < CACHE_TTL_MS) return hit.value;
+
+  const value = await searchOnline(query, near);
+  cache.set(key, { at: Date.now(), value });
+  if (cache.size > CACHE_MAX) cache.delete(cache.keys().next().value as string);
+  return value;
+}
+
+/** Hace la consulta al buscador (sin caché). */
+async function searchOnline(query: string, near?: { latitude: number; longitude: number }): Promise<PlaceSuggestion[]> {
   const [centerLon, centerLat] = MAR_DEL_PLATA_SCOPE.proximity.split(",").map(Number) as [number, number];
   const params = new URLSearchParams({
     q: query,

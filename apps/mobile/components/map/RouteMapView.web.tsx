@@ -2,12 +2,19 @@ import { useEffect, useMemo, useRef } from "react";
 import { radii } from "@depaso/design-tokens";
 import { useTheme } from "@/lib/theme";
 import { buildRouteMapHtml, type BuildRouteMapHtmlOptions } from "@/lib/map/buildRouteMapHtml";
+import { run, type MapFocus, type MapPoint, type MapWindow } from "@/lib/map/mapCommands";
 
 export type RouteMapViewProps = Omit<BuildRouteMapHtmlOptions, "colors" | "isDark"> & {
   selectedStoreId?: string | null;
   onSelectStore?: (id: string) => void;
   height?: number;
   fill?: boolean;
+  /** Mover la cámara (botón "dónde estoy", resultado del buscador). */
+  focus?: MapFocus | null;
+  /** Dónde está el usuario: se muestra como un punto azul. */
+  userLocation?: MapPoint | null;
+  /** Lugar encontrado con el buscador: se marca con un pin. */
+  searchPin?: MapPoint | null;
 };
 
 /**
@@ -16,7 +23,7 @@ export type RouteMapViewProps = Omit<BuildRouteMapHtmlOptions, "colors" | "isDar
  * (`buildRouteMapHtml`, compartido con `RouteMapView.tsx` nativo). Expo Router resuelve
  * este archivo automáticamente en vez de `RouteMapView.tsx` cuando corre en el navegador.
  */
-export function RouteMapView({ selectedStoreId, onSelectStore, height = 300, fill = false, ...options }: RouteMapViewProps) {
+export function RouteMapView({ selectedStoreId, onSelectStore, height = 300, fill = false, focus, userLocation, searchPin, ...options }: RouteMapViewProps) {
   const { colors, isDark } = useTheme();
   const frameRef = useRef<HTMLIFrameElement>(null);
   const html = useMemo(
@@ -39,6 +46,21 @@ export function RouteMapView({ selectedStoreId, onSelectStore, height = 300, fil
     return () => window.removeEventListener("message", listener);
   }, [onSelectStore]);
 
+  // el iframe es del mismo origen: las funciones del mapa se llaman directo
+  const mapWindow = () => frameRef.current?.contentWindow as (Window & MapWindow) | null | undefined;
+
+  useEffect(() => {
+    if (focus) run.flyTo(mapWindow(), focus.point, focus.zoom);
+  }, [focus?.nonce]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    run.userLocation(mapWindow(), userLocation ?? null);
+  }, [userLocation?.latitude, userLocation?.longitude]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    run.searchPin(mapWindow(), searchPin ?? null);
+  }, [searchPin?.latitude, searchPin?.longitude]); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     if (!selectedStoreId) return;
     const frameWindow = frameRef.current?.contentWindow as (Window & { selectStore?: (id: string, tap: boolean) => void }) | null | undefined;
@@ -50,6 +72,11 @@ export function RouteMapView({ selectedStoreId, onSelectStore, height = 300, fil
       ref={frameRef}
       title="Mapa del recorrido"
       srcDoc={html}
+      onLoad={() => {
+        // el mapa se recarga al cambiar la ruta: se vuelven a poner el punto azul y el pin
+        if (userLocation) run.userLocation(mapWindow(), userLocation);
+        if (searchPin) run.searchPin(mapWindow(), searchPin);
+      }}
       style={{
         height: fill ? "100%" : height,
         flex: fill ? 1 : undefined,

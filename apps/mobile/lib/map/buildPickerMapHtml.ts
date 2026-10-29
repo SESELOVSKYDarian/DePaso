@@ -1,4 +1,5 @@
 import { MAPBOX_GL_CSS_INTEGRITY, MAPBOX_GL_JS_INTEGRITY, MAPBOX_GL_VERSION } from "./buildRouteMapHtml";
+import { buildMapCommandsScript } from "./mapCommands";
 
 export interface BuildPickerMapHtmlOptions {
   mapboxToken: string;
@@ -44,13 +45,15 @@ export function buildPickerMapHtml({ mapboxToken, center, isDark, pinColor }: Bu
     zoom: 14,
   });
   map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "bottom-right");
+${buildMapCommandsScript(pinColor)}
   let marker = null;
   function notify(lngLat) {
     const text = JSON.stringify({ type: "pick", latitude: lngLat.lat, longitude: lngLat.lng });
     if (window.ReactNativeWebView) window.ReactNativeWebView.postMessage(text);
     else if (window.parent !== window) window.parent.postMessage(text, "*");
   }
-  function place(lngLat) {
+  // Pone (o mueve) el pin. Si avisar es true, la app se entera del nuevo punto.
+  function place(lngLat, avisar) {
     if (!marker) {
       marker = new mapboxgl.Marker({ color: ${JSON.stringify(pinColor)}, draggable: true }).setLngLat(lngLat).addTo(map);
       marker.on("dragend", () => notify(marker.getLngLat()));
@@ -58,9 +61,14 @@ export function buildPickerMapHtml({ mapboxToken, center, isDark, pinColor }: Bu
       marker.setLngLat(lngLat);
     }
     map.easeTo({ center: lngLat, duration: 300 });
-    notify(marker.getLngLat());
+    if (avisar) notify(marker.getLngLat());
   }
-  map.on("click", (event) => place(event.lngLat));
+  // La app puede poner el pin sola (por ejemplo, al elegir un resultado del buscador).
+  window.placePin = function (lat, lng) {
+    place({ lng: lng, lat: lat }, false);
+    map.easeTo({ center: [lng, lat], zoom: Math.max(map.getZoom(), 16), duration: 400 });
+  };
+  map.on("click", (event) => place(event.lngLat, true));
 </script>
 </body>
 </html>`;

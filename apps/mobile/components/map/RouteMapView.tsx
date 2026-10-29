@@ -4,6 +4,7 @@ import WebView, { type WebViewMessageEvent } from "react-native-webview";
 import { radii } from "@depaso/design-tokens";
 import { makeStyles, useTheme } from "@/lib/theme";
 import { buildRouteMapHtml, type BuildRouteMapHtmlOptions } from "@/lib/map/buildRouteMapHtml";
+import { scripts, type MapFocus, type MapPoint } from "@/lib/map/mapCommands";
 
 export type RouteMapViewProps = Omit<BuildRouteMapHtmlOptions, "colors" | "isDark"> & {
   /** Comercio resaltado (el mapa se centra en él). */
@@ -13,6 +14,12 @@ export type RouteMapViewProps = Omit<BuildRouteMapHtmlOptions, "colors" | "isDar
   height?: number;
   /** Ocupa todo el espacio disponible (mapa a pantalla completa). */
   fill?: boolean;
+  /** Mover la cámara (botón "dónde estoy", resultado del buscador). */
+  focus?: MapFocus | null;
+  /** Dónde está el usuario: se muestra como un punto azul. */
+  userLocation?: MapPoint | null;
+  /** Lugar encontrado con el buscador: se marca con un pin. */
+  searchPin?: MapPoint | null;
 };
 
 /**
@@ -24,7 +31,7 @@ export type RouteMapViewProps = Omit<BuildRouteMapHtmlOptions, "colors" | "isDar
  * El HTML sólo se rearma si cambian la ruta, los comercios o el tema: elegir un comercio no
  * recarga el mapa, se le avisa por `injectJavaScript`.
  */
-export function RouteMapView({ selectedStoreId, onSelectStore, height = 300, fill = false, ...options }: RouteMapViewProps) {
+export function RouteMapView({ selectedStoreId, onSelectStore, height = 300, fill = false, focus, userLocation, searchPin, ...options }: RouteMapViewProps) {
   const styles = useStyles();
   const { colors, isDark } = useTheme();
   const webViewRef = useRef<ComponentRef<typeof WebView>>(null);
@@ -44,6 +51,23 @@ export function RouteMapView({ selectedStoreId, onSelectStore, height = 300, fil
   useEffect(() => {
     select(selectedStoreId ?? null);
   }, [selectedStoreId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // manda un comando al mapa (si la página ya cargó)
+  const send = (script: string) => {
+    if (loaded.current) webViewRef.current?.injectJavaScript(script);
+  };
+
+  useEffect(() => {
+    if (focus) send(scripts.flyTo(focus.point, focus.zoom));
+  }, [focus?.nonce]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    send(scripts.userLocation(userLocation ?? null));
+  }, [userLocation?.latitude, userLocation?.longitude]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    send(scripts.searchPin(searchPin ?? null));
+  }, [searchPin?.latitude, searchPin?.longitude]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleMessage = (event: WebViewMessageEvent) => {
     try {
@@ -65,6 +89,9 @@ export function RouteMapView({ selectedStoreId, onSelectStore, height = 300, fil
         onLoadEnd={() => {
           loaded.current = true;
           select(selectedStoreId ?? null);
+          // el mapa se recarga al cambiar la ruta: se vuelven a poner el punto azul y el pin
+          if (userLocation) send(scripts.userLocation(userLocation));
+          if (searchPin) send(scripts.searchPin(searchPin));
         }}
       />
     </View>
