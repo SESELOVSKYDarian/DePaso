@@ -1,26 +1,41 @@
-import type { CommunityFeedItem, CommunityFeedScope } from "@depaso/validation";
+import type { ActivityItem, AnnouncementResponse } from "@depaso/validation";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { communityClient } from "@/lib/apiClient";
+import { activityClient } from "@/lib/apiClient";
 
-type FeedState = { items: CommunityFeedItem[]; loaded: boolean; failed: boolean };
-const EMPTY: FeedState = { items: [], loaded: false, failed: false };
+export type ActivityTab = "news" | "mine";
+
+interface FeedState<T> {
+  items: T[];
+  loaded: boolean;
+  failed: boolean;
+}
+const EMPTY = { items: [], loaded: false, failed: false };
 
 /**
- * Los reportes de precios de la comunidad y los propios. Se vuelven a pedir cada vez que se
- * muestra la pestaña, y también al tirar hacia abajo.
+ * Lo que muestra Actividad: "Novedades" (lo que publica el equipo) y "Para vos" (avisos propios:
+ * listas compartidas, precios que bajaron y ofertas cerca). Se vuelve a pedir cada vez que se
+ * muestra la pestaña y al tirar hacia abajo.
  */
 export function useActivityFeed() {
-  const [tab, setTab] = useState<CommunityFeedScope>("community");
-  const [feeds, setFeeds] = useState<Record<CommunityFeedScope, FeedState>>({ community: EMPTY, mine: EMPTY });
+  const [tab, setTab] = useState<ActivityTab>("news");
+  const [news, setNews] = useState<FeedState<AnnouncementResponse>>(EMPTY);
+  const [mine, setMine] = useState<FeedState<ActivityItem>>(EMPTY);
   const [refreshing, setRefreshing] = useState(false);
 
-  const load = useCallback(async (scope: CommunityFeedScope) => {
+  const load = useCallback(async (which: ActivityTab) => {
     try {
-      const { items } = await communityClient.feed(scope);
-      setFeeds((current) => ({ ...current, [scope]: { items, loaded: true, failed: false } }));
+      if (which === "news") {
+        const { announcements } = await activityClient.announcements();
+        setNews({ items: announcements, loaded: true, failed: false });
+      } else {
+        const { items } = await activityClient.feed();
+        setMine({ items, loaded: true, failed: false });
+      }
     } catch {
-      setFeeds((current) => ({ ...current, [scope]: { ...current[scope], loaded: true, failed: true } }));
+      const keepFailed = <T,>(current: FeedState<T>): FeedState<T> => ({ ...current, loaded: true, failed: true });
+      if (which === "news") setNews(keepFailed);
+      else setMine(keepFailed);
     }
   }, []);
 
@@ -36,5 +51,5 @@ export function useActivityFeed() {
     setRefreshing(false);
   };
 
-  return { tab, setTab, feed: feeds[tab], refreshing, refresh };
+  return { tab, setTab, news, mine, refreshing, refresh };
 }

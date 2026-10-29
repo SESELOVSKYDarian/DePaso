@@ -7,14 +7,14 @@ import {
   createMerchantClient,
   createGeocodeClient,
   createHomeClient,
+  createActivityClient,
   createListsClient,
   createOptimizationClient,
   createPaymentsClient,
   createPlacesClient,
   createPreferencesClient,
   createMapConfigClient,
-  createAssistantClient,
-  createCommunityClient,
+  createAssistantClient,
   createPriceReportsClient,
   createProductsClient,
   createRouteComputeClient,
@@ -89,6 +89,6 @@ export const mapConfigClient = createMapConfigClient(client);
 export const merchantClient = createMerchantClient(client);
 export const adminMerchantClient = createAdminMerchantClient(client);
 export const paymentsClient = createPaymentsClient(client);
-export const communityClient = createCommunityClient(client);
+export const activityClient = createActivityClient(client);
 export const assistantClient = createAssistantClient(client);
 export const homeClient = createHomeClient(client);

@@ -179,7 +179,9 @@ Todos con acceso 🔒. Además: `POST /api/consents` (`consentRequestSchema`) y 
 | `POST /api/products/facets` | 🔒 | `{ q?, type?, brandId? }` |
 | `POST /api/stores/branches` | 🔒 | — |
 | `POST /api/home/feed` | 🔒 | — (resumen de tu lista, productos baratos y recomendados, cambios de precio y ofertas) |
-| `POST /api/community/feed` | 🔒 | `{ scope }` |
+| `POST /api/announcements/list` | 🔒 | — : novedades que publica el equipo (solo las activas) |
+| `POST /api/activity/feed` | 🔒 | — : avisos propios: listas que te compartieron, productos de tus listas que bajaron y ofertas cerca de tus lugares |
+| `POST/PUT/DELETE /api/admin/announcements`, `POST /api/admin/announcements/list` | 🔒 ADMIN | `announcementInputSchema` / `announcementUpdateSchema` — publicar, ocultar y borrar novedades |
 | `POST /api/price-reports` | 🔒 | `priceReportInputSchema` (reportar un precio) |
 | `POST /api/optimization` | 🔒 | `optimizationRunRequestSchema` (arma el recorrido de una lista) |
 | `POST /api/optimize` | 🌐 | `optimizeRequestSchema` |

@@ -4,6 +4,7 @@ import { optimizationRunRequestSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { runInBackground } from "@/lib/http/background";
 import { getCurrentUser } from "@/lib/auth/currentUser";
+import { loadCommunityObservations, observationIfDifferent } from "@/lib/optimization/communityPrices";
 import { persistOptimizationRun } from "@/lib/optimization/persistRun";
 import { applyPaymentPromos, loadPromoContext, promoDiscountForStops } from "@/lib/promos/applyPromos";
 import { buildPlanRoute, type BranchInfo } from "@/lib/routes/planRoute";
@@ -138,13 +139,28 @@ export async function POST(request: NextRequest) {
       const branch = price.storeBranch;
       branchInfo.set(branch.id, { latitude: branch.latitude, longitude: branch.longitude, address: branch.address });
     }
+    // Lo que vieron otros usuarios para cada producto de cada parada (una sola consulta para todos los planes).
+    const observations = await loadCommunityObservations(
+      plans.flatMap((planResult: (typeof plans)[number]) =>
+        planResult.stops.flatMap((stop) =>
+          stop.items.flatMap((item) => (item.productVariantId ? [{ productVariantId: item.productVariantId, storeBranchId: stop.storeBranchId }] : [])),
+        ),
+      ),
+    );
     const publicPlans = plans.map((planResult: (typeof plans)[number]) => {
       const { debugScore: _debugScore, ...plan } = planResult;
       // Recorrido con las paradas de compra metidas, y qué tan lejos queda cada una del camino.
       const planned = buildPlanRoute(parsed.data.routeContext.waypoints, plan.stops, branchInfo);
+      const stopsWithObservations = planned.stops.map((stop) => ({
+        ...stop,
+        items: stop.items.map((item) => {
+          const observed = observationIfDifferent(observations, item.productVariantId, stop.storeBranchId, item.unitPrice);
+          return observed ? { ...item, communityObserved: observed } : item;
+        }),
+      }));
       // Nombres de lo que no se consigue a este nivel: la app explica por qué el total es menor.
       const missingProductNames = plan.missingProductIds.map((id) => names.get(id) ?? "Producto");
-      return { ...plan, stops: planned.stops, routeWaypoints: planned.routeWaypoints, missingProductNames };
+      return { ...plan, stops: stopsWithObservations, routeWaypoints: planned.routeWaypoints, missingProductNames };
     });
     // Para cada producto de la lista: las sucursales donde está más barato (precio por unidad,
     // sin promos) y qué tan lejos quedan del recorrido. Es la pestaña "Mejores precios".

@@ -18,6 +18,7 @@ export function RoleSection({ role, pendingMerchantRequests, onSyncPromos }: Rol
           {...(pendingMerchantRequests > 0 ? { value: `${pendingMerchantRequests} pendientes` } : {})}
           onPress={() => router.push("/admin/merchant-requests")}
         />
+        <GroupedRow icon="megaphone-outline" label="Publicar novedades" onPress={() => router.push("/admin/announcements")} />
         <GroupedRow icon="pricetags-outline" label="Actualizar promos de bancos y billeteras" onPress={onSyncPromos} />
       </GroupedList>
     );

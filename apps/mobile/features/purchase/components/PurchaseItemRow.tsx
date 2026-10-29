@@ -40,6 +40,12 @@ export function PurchaseItemRow({ stop, item, checked, onToggle }: PurchaseItemR
             {item.quantity} × {item.productName}
           </Text>
           <Text style={styles.meta}>{priceMeta(item)}</Text>
+          {item.communityObserved ? (
+            <Text style={styles.observed}>
+              Otros usuarios lo vieron a ~{pesos(item.communityObserved.median)} ({item.communityObserved.count}{" "}
+              {item.communityObserved.count === 1 ? "reporte" : "reportes"})
+            </Text>
+          ) : null}
         </View>
         <View style={styles.priceColumn}>
           <Text style={styles.price}>{pesos(item.unitPrice * item.quantity)}</Text>
@@ -61,6 +67,7 @@ const useStyles = makeStyles((colors) =>
     name: { fontFamily: typography.body.fontFamily, fontSize: 14, color: colors.text.primary },
     done: { textDecorationLine: "line-through", color: colors.text.secondary },
     meta: { fontFamily: typography.caption.fontFamily, fontSize: 11, color: colors.text.muted },
+    observed: { fontFamily: typography.itemTitle.fontFamily, fontSize: 11, color: colors.state.warning },
     priceColumn: { alignItems: "flex-end", gap: 2 },
     price: { fontFamily: typography.itemTitle.fontFamily, fontSize: 14, color: colors.text.primary },
     report: { minHeight: 28, justifyContent: "center" },

@@ -109,6 +109,8 @@ const planStopSchema = z.object({
     sourceType: z.string().optional(),
     reportedAt: z.string().optional(),
     confidence: z.enum(["HIGH", "MEDIUM", "LOW"]).optional(),
+    /** Si otros usuarios lo vieron a otro precio: el valor típico y cuántas personas lo reportaron. */
+    communityObserved: z.object({ median: z.number(), count: z.number().int() }).optional(),
   })),
 });
 

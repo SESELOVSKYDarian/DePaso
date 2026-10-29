@@ -111,6 +111,14 @@ check("buscar con 1 letra => 400", (await call("POST", "/api/geocode/search", { 
 const logos = await call("POST", "/api/stores/logos", {}, access);
 check("los logos de las cadenas salen de la base", logos.status === 200 && logos.body?.logos?.length > 0 && logos.body.logos[0].imageDataUri.startsWith("data:image/png;base64,"));
 
+console.log("Actividad");
+const news = await call("POST", "/api/announcements/list", {}, access);
+check("las novedades se leen con sesión", news.status === 200 && Array.isArray(news.body?.announcements));
+check("un usuario común no publica novedades (403)", (await call("POST", "/api/admin/announcements", { title: "Prueba", body: "Prueba" }, access)).status === 403);
+const personal = await call("POST", "/api/activity/feed", {}, access);
+check("los avisos personales se leen con sesión", personal.status === 200 && Array.isArray(personal.body?.items));
+check("sin sesión no hay novedades (401)", (await call("POST", "/api/announcements/list", {})).status === 401);
+
 console.log("Lugares guardados");
 const place = await call("POST", "/api/places", { name: "Casa", type: "HOME", address: "Av. Colón 1234", latitude: -38.0, longitude: -57.55 }, access);
 check("crear lugar => 201", place.status === 201 && place.body?.id);

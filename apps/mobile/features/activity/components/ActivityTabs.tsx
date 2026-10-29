@@ -1,16 +1,16 @@
-import type { CommunityFeedScope } from "@depaso/validation";
 import { StyleSheet, Text, View } from "react-native";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
 import { makeStyles } from "@/lib/theme";
+import type { ActivityTab } from "../useActivityFeed";
 
-const OPTIONS: { id: CommunityFeedScope; label: string }[] = [
-  { id: "community", label: "Comunidad" },
-  { id: "mine", label: "Mis reportes" },
+const OPTIONS: { id: ActivityTab; label: string }[] = [
+  { id: "news", label: "Novedades" },
+  { id: "mine", label: "Para vos" },
 ];
 
-/** Selector de dos opciones: reportes de todos o solo los míos. */
-export function ActivityTabs({ tab, onChange }: { tab: CommunityFeedScope; onChange: (tab: CommunityFeedScope) => void }) {
+/** Selector de dos opciones: lo que publica el equipo o los avisos propios. */
+export function ActivityTabs({ tab, onChange }: { tab: ActivityTab; onChange: (tab: ActivityTab) => void }) {
   const styles = useStyles();
   return (
     <View style={styles.tabs}>
