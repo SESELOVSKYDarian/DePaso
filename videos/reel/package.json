@@ -1,9 +1,0 @@
-{
-  "name": "depaso-reel",
-  "private": true,
-  "scripts": {
-    "dev": "..\\node_modules\\.bin\\hyperframes.cmd preview",
-    "check": "..\\node_modules\\.bin\\hyperframes.cmd check",
-    "render": "..\\node_modules\\.bin\\hyperframes.cmd render --quality delivery --fps 30 --output ../exports/depaso-reel.mp4"
-  }
-}

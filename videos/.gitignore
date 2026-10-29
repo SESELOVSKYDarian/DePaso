@@ -1,6 +1,0 @@
-node_modules/
-tools/python/
-.hyperframes/
-.hf-create-*/
-assets/inspect.png
-*.log
