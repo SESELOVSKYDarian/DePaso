@@ -1,16 +1,18 @@
-import { Ionicons } from "@expo/vector-icons";
 import type { ClaimableBranch, MerchantRequestResponse } from "@depaso/validation";
-import { makeStyles, useColors } from "@/lib/theme";
-import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, ScrollView, Text, View } from "react-native";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
-import { Button } from "@/components/common/Button";
-import { FormField } from "@/components/common/FormField";
 import { useToast } from "@/components/common/Toast";
 import { geocodeClient, merchantClient } from "@/lib/apiClient";
 import { useAuth } from "@/lib/auth/AuthContext";
+import { useColors } from "@/lib/theme";
+import { ClaimForm } from "./components/ClaimForm";
+import { NewBusinessForm } from "./components/NewBusinessForm";
+import { RequestStatus } from "./components/RequestStatus";
 import { useStyles } from "./styles";
+import { useContactFields } from "./useContactFields";
+
+type Mode = "claim" | "new";
 
 /** Un usuario común pide pasar a rol comercio; un admin lo aprueba o rechaza. */
 export default function MerchantRequestScreen() {
@@ -18,78 +20,15 @@ export default function MerchantRequestScreen() {
   const styles = useStyles();
   const { show: showToast } = useToast();
   const { refreshUser } = useAuth();
+  const contact = useContactFields();
+
   const [isLoading, setIsLoading] = useState(true);
   const [current, setCurrent] = useState<MerchantRequestResponse | null>(null);
-  const [businessName, setBusinessName] = useState("");
-  const [address, setAddress] = useState("");
-  const [phone, setPhone] = useState("");
-  const [contactEmail, setContactEmail] = useState("");
-  const [contactErrors, setContactErrors] = useState<{ phone?: string; contactEmail?: string }>({});
-  const [note, setNote] = useState("");
-  const [errors, setErrors] = useState<{ businessName?: string; address?: string }>({});
+  const [mode, setMode] = useState<Mode>("claim");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // "Mi comercio ya está en DePaso": se busca la sucursal importada y se pide administrarla.
-  const [mode, setMode] = useState<"claim" | "new">("claim");
-  const [claimQuery, setClaimQuery] = useState("");
-  const [claimResults, setClaimResults] = useState<ClaimableBranch[]>([]);
-  const [claimed, setClaimed] = useState<ClaimableBranch | null>(null);
-  const [isSearchingBranches, setIsSearchingBranches] = useState(false);
+  const [addressError, setAddressError] = useState<string | undefined>();
 
-  useEffect(() => {
-    if (mode !== "claim") return;
-    let cancelled = false;
-    setIsSearchingBranches(true);
-    const timer = setTimeout(() => {
-      merchantClient
-        .claimableBranches(claimQuery.trim())
-        .then(({ branches }) => {
-          if (!cancelled) setClaimResults(branches);
-        })
-        .catch(() => {
-          if (!cancelled) setClaimResults([]);
-        })
-        .finally(() => {
-          if (!cancelled) setIsSearchingBranches(false);
-        });
-    }, 300);
-    return () => {
-      cancelled = true;
-      clearTimeout(timer);
-    };
-  }, [claimQuery, mode]);
-
-  /** Teléfono y correo son obligatorios: sirven para confirmar que la persona trabaja en el comercio. */
-  const validateContact = (): boolean => {
-    const next: { phone?: string; contactEmail?: string } = {};
-    if (phone.replace(/\D/g, "").length < 6) next.phone = "Ingresá un teléfono al que podamos llamarte.";
-    if (!/^\S+@\S+\.\S+$/.test(contactEmail.trim())) next.contactEmail = "Ingresá un correo de contacto válido.";
-    setContactErrors(next);
-    return Object.keys(next).length === 0;
-  };
-
-  const submitClaim = async () => {
-    if (!claimed || !validateContact()) return;
-    setIsSubmitting(true);
-    try {
-      const { request } = await merchantClient.submitRequest({
-        businessName: `${claimed.storeName} ${claimed.name}`.trim().slice(0, 80),
-        address: claimed.address,
-        latitude: claimed.latitude,
-        longitude: claimed.longitude,
-        storeBranchId: claimed.id,
-        phone: phone.trim(),
-        contactEmail: contactEmail.trim(),
-        ...(note.trim() ? { note: note.trim() } : {}),
-      });
-      setCurrent(request);
-      showToast("Solicitud enviada. Un administrador la va a revisar.", "success");
-    } catch {
-      showToast("No pudimos enviar la solicitud. Probá de nuevo.", "error");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
+  // traigo la solicitud actual (si ya había una); si la aprobaron, refresco el rol del usuario
   const load = useCallback(async () => {
     try {
       const { request } = await merchantClient.myRequest();
@@ -106,32 +45,14 @@ export default function MerchantRequestScreen() {
     void load();
   }, [load]);
 
-  const handleSubmit = async () => {
-    const nextErrors: typeof errors = {};
-    if (businessName.trim().length < 2) nextErrors.businessName = "Ingresá el nombre de tu comercio.";
-    if (address.trim().length < 3) nextErrors.address = "Ingresá la dirección de tu comercio.";
-    setErrors(nextErrors);
-    const contactOk = validateContact();
-    if (Object.keys(nextErrors).length > 0 || !contactOk) return;
-
+  // envía la solicitud; `build` arma los datos (puede fallar si no se ubica la dirección)
+  const send = async (build: () => Promise<Parameters<typeof merchantClient.submitRequest>[0] | null>) => {
     setIsSubmitting(true);
+    setAddressError(undefined);
     try {
-      let coords: { latitude: number; longitude: number };
-      try {
-        coords = await geocodeClient.forward({ address: address.trim() });
-      } catch {
-        setErrors({ address: "No pudimos ubicar esa dirección. Probá con calle, número y ciudad." });
-        return;
-      }
-      const { request } = await merchantClient.submitRequest({
-        businessName: businessName.trim(),
-        address: address.trim(),
-        phone: phone.trim(),
-        contactEmail: contactEmail.trim(),
-        ...(note.trim() ? { note: note.trim() } : {}),
-        latitude: coords.latitude,
-        longitude: coords.longitude,
-      });
+      const body = await build();
+      if (!body) return;
+      const { request } = await merchantClient.submitRequest(body);
       setCurrent(request);
       showToast("Solicitud enviada. Un administrador la va a revisar.", "success");
     } catch {
@@ -139,6 +60,42 @@ export default function MerchantRequestScreen() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const contactData = () => ({ phone: contact.phone.trim(), contactEmail: contact.contactEmail.trim() });
+
+  // pedir administrar una sucursal que ya está cargada
+  const submitClaim = (branch: ClaimableBranch) => {
+    if (!contact.validate()) return;
+    void send(async () => ({
+      businessName: `${branch.storeName} ${branch.name}`.trim().slice(0, 80),
+      address: branch.address,
+      latitude: branch.latitude,
+      longitude: branch.longitude,
+      storeBranchId: branch.id,
+      ...contactData(),
+    }));
+  };
+
+  // pedir un comercio nuevo: primero se ubica la dirección en el mapa
+  const submitNew = (data: { businessName: string; address: string; note: string }) => {
+    void send(async () => {
+      let coords: { latitude: number; longitude: number };
+      try {
+        coords = await geocodeClient.forward({ address: data.address });
+      } catch {
+        setAddressError("No pudimos ubicar esa dirección. Probá con calle, número y ciudad.");
+        return null;
+      }
+      return {
+        businessName: data.businessName,
+        address: data.address,
+        ...contactData(),
+        ...(data.note ? { note: data.note } : {}),
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+      };
+    });
   };
 
   if (isLoading) {
@@ -149,31 +106,8 @@ export default function MerchantRequestScreen() {
     );
   }
 
-  if (current?.status === "PENDING") {
-    return (
-      <View style={styles.container}>
-        <View style={styles.statusCard}>
-          <Text style={styles.statusTitle}>Solicitud en revisión</Text>
-          <Text style={styles.statusBody}>
-            Pediste ser comercio con el nombre &quot;{current.businessName}&quot;. Un administrador la va a revisar y
-            cuando la apruebe tu cuenta pasa a ser de comercio.
-          </Text>
-        </View>
-        <Button label="Actualizar estado" variant="secondary" onPress={() => void load()} />
-      </View>
-    );
-  }
-
-  if (current?.status === "APPROVED") {
-    return (
-      <View style={styles.container}>
-        <View style={styles.statusCard}>
-          <Text style={styles.statusTitle}>¡Tu comercio fue aprobado!</Text>
-          <Text style={styles.statusBody}>Ya podés cargar tus productos y precios.</Text>
-        </View>
-        <Button label="Ir a Mi comercio" onPress={() => router.replace("/merchant")} />
-      </View>
-    );
+  if (current?.status === "PENDING" || current?.status === "APPROVED") {
+    return <RequestStatus request={current} onRefresh={() => void load()} />;
   }
 
   return (
@@ -210,139 +144,9 @@ export default function MerchantRequestScreen() {
       </View>
 
       {mode === "claim" ? (
-        <>
-          <Text style={styles.intro}>
-            Los supermercados que publican precios en SEPA ya están cargados. Buscá el tuyo y pedí administrarlo: vas a
-            poder corregir precios y nombres.
-          </Text>
-          <FormField
-            label="Buscar tu supermercado"
-            value={claimQuery}
-            onChangeText={(text) => {
-              setClaimQuery(text);
-              setClaimed(null);
-            }}
-            placeholder="Nombre o dirección"
-          />
-          {isSearchingBranches ? <ActivityIndicator color={colors.text.secondary} /> : null}
-          {claimResults.map((branch) => {
-            const selected = claimed?.id === branch.id;
-            return (
-              <AnimatedPressable
-                key={branch.id}
-                accessibilityLabel={`Elegir ${branch.storeName}, ${branch.address}`}
-                haptic={false}
-                onPress={() => setClaimed(branch)}
-                style={[styles.branchRow, selected ? styles.branchRowSelected : null]}
-              >
-                <Ionicons name="storefront-outline" size={20} color={colors.text.primary} />
-                <View style={styles.flex}>
-                  <Text style={styles.branchName}>{branch.storeName}</Text>
-                  <Text style={styles.branchMeta} numberOfLines={1}>
-                    {branch.address} · {branch.priceCount} precios
-                  </Text>
-                </View>
-                {selected ? <Ionicons name="checkmark-circle" size={22} color={colors.text.primary} /> : null}
-              </AnimatedPressable>
-            );
-          })}
-          {!isSearchingBranches && claimResults.length === 0 ? (
-            <Text style={styles.intro}>No encontramos sucursales libres con eso. Si tu comercio no está, elegí "Es nuevo".</Text>
-          ) : null}
-          <FormField
-            label="Teléfono de contacto"
-            value={phone}
-            onChangeText={(text) => {
-              setPhone(text);
-              setContactErrors((e) => ({ ...e, phone: undefined }));
-            }}
-            keyboardType="phone-pad"
-            error={contactErrors.phone}
-          />
-          <FormField
-            label="Correo de contacto"
-            value={contactEmail}
-            onChangeText={(text) => {
-              setContactEmail(text);
-              setContactErrors((e) => ({ ...e, contactEmail: undefined }));
-            }}
-            keyboardType="email-address"
-            autoComplete="email"
-            error={contactErrors.contactEmail}
-          />
-          <Text style={styles.intro}>
-            Te vamos a llamar o escribir para confirmar que trabajás en el comercio antes de aprobarlo. Sin esa
-            verificación no se da el alta.
-          </Text>
-          <Button
-            label={isSubmitting ? "Enviando..." : claimed ? `Pedir administrar ${claimed.storeName}` : "Elegí tu sucursal"}
-            onPress={() => void submitClaim()}
-            loading={isSubmitting}
-            disabled={!claimed}
-          />
-        </>
+        <ClaimForm contact={contact} isSubmitting={isSubmitting} onSubmit={submitClaim} />
       ) : (
-        <>
-      <FormField
-        label="Nombre del comercio"
-        value={businessName}
-        onChangeText={(text) => {
-          setBusinessName(text);
-          setErrors((e) => ({ ...e, businessName: undefined }));
-        }}
-        autoCapitalize="words"
-        error={errors.businessName}
-      />
-      <FormField
-        label="Dirección"
-        value={address}
-        onChangeText={(text) => {
-          setAddress(text);
-          setErrors((e) => ({ ...e, address: undefined }));
-        }}
-        placeholder="Calle, número, ciudad"
-        autoCapitalize="words"
-        error={errors.address}
-      />
-      <FormField
-            label="Teléfono de contacto"
-            value={phone}
-            onChangeText={(text) => {
-              setPhone(text);
-              setContactErrors((e) => ({ ...e, phone: undefined }));
-            }}
-            keyboardType="phone-pad"
-            error={contactErrors.phone}
-          />
-          <FormField
-            label="Correo de contacto"
-            value={contactEmail}
-            onChangeText={(text) => {
-              setContactEmail(text);
-              setContactErrors((e) => ({ ...e, contactEmail: undefined }));
-            }}
-            keyboardType="email-address"
-            autoComplete="email"
-            error={contactErrors.contactEmail}
-          />
-          <Text style={styles.intro}>
-            Te vamos a llamar o escribir para confirmar que trabajás en el comercio antes de aprobarlo. Sin esa
-            verificación no se da el alta.
-          </Text>
-      <FormField
-        label="Comentario para el administrador (opcional)"
-        value={note}
-        onChangeText={setNote}
-        multiline
-        autoCapitalize="sentences"
-      />
-
-      <Button
-        label={isSubmitting ? "Enviando..." : "Enviar solicitud"}
-        onPress={() => void handleSubmit()}
-        loading={isSubmitting}
-      />
-        </>
+        <NewBusinessForm contact={contact} isSubmitting={isSubmitting} addressError={addressError} onSubmit={submitNew} />
       )}
     </ScrollView>
   );
