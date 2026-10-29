@@ -16,8 +16,8 @@ import { Prisma, prisma } from "../src";
 function readSourceUrl(): string {
   if (process.env.SOURCE_DATABASE_URL) return process.env.SOURCE_DATABASE_URL;
   const file = resolve(import.meta.dirname, "../../../apps/api/.env.local");
-  const line = existsSync(file) ? readFileSync(file, "utf8").split(/?
-/).find((l) => l.startsWith("DATABASE_URL=")) : undefined;
+  const lines = existsSync(file) ? readFileSync(file, "utf8").split("\n") : [];
+  const line = lines.map((l) => l.trim()).find((l) => l.startsWith("DATABASE_URL="));
   const value = line?.replace(/^DATABASE_URL=/, "").replace(/^"|"$/g, "").replace(/\?schema=public$/, "");
   if (!value?.startsWith("postgres")) throw new Error("Falta SOURCE_DATABASE_URL (la base PostgreSQL de origen).");
   return value;
