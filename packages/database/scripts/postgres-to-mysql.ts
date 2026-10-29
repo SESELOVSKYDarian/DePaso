@@ -7,11 +7,23 @@
  *
  * Se puede volver a correr: lo que ya está cargado se saltea.
  */
+import { existsSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import pg from "pg";
 import { Prisma, prisma } from "../src";
 
-const sourceUrl = process.env.SOURCE_DATABASE_URL;
-if (!sourceUrl) throw new Error("Falta SOURCE_DATABASE_URL (la base PostgreSQL de origen).");
+/** Origen: SOURCE_DATABASE_URL, o si no está, la DATABASE_URL de PostgreSQL de apps/api/.env.local. */
+function readSourceUrl(): string {
+  if (process.env.SOURCE_DATABASE_URL) return process.env.SOURCE_DATABASE_URL;
+  const file = resolve(import.meta.dirname, "../../../apps/api/.env.local");
+  const line = existsSync(file) ? readFileSync(file, "utf8").split(/?
+/).find((l) => l.startsWith("DATABASE_URL=")) : undefined;
+  const value = line?.replace(/^DATABASE_URL=/, "").replace(/^"|"$/g, "").replace(/\?schema=public$/, "");
+  if (!value?.startsWith("postgres")) throw new Error("Falta SOURCE_DATABASE_URL (la base PostgreSQL de origen).");
+  return value;
+}
+
+const sourceUrl = readSourceUrl();
 
 const BATCH = 1000;
 // orden por dependencias (primero lo que otros referencian)
