@@ -41,7 +41,14 @@ export function ProductStrip({ title, subtitle, products, showSaving = false, on
           ? SKELETONS.map((index) => <Skeleton key={index} width={156} height={190} borderRadius={radii.lg} />)
           : products.map((product) => (
               <View key={product.productId} style={styles.card}>
-                <ProductThumb imageUrl={product.imageUrl} name={product.name} size={64} />
+                <View style={styles.photoRow}>
+                  <ProductThumb imageUrl={product.imageUrl} name={product.name} size={84} />
+                  {showSaving && product.savingPercent >= 5 ? (
+                    <View style={styles.savingChip}>
+                      <Text style={styles.savingChipText}>-{Math.round(product.savingPercent)}%</Text>
+                    </View>
+                  ) : null}
+                </View>
                 <Text style={styles.name} numberOfLines={2}>
                   {product.name}
                 </Text>
@@ -54,7 +61,6 @@ export function ProductStrip({ title, subtitle, products, showSaving = false, on
                 <View style={styles.priceRow}>
                   <View>
                     <Text style={styles.price}>{money(product.price)}</Text>
-                    {showSaving && product.savingPercent >= 5 ? <Text style={styles.saving}>Ahorrás {product.savingPercent}%</Text> : null}
                   </View>
                   <AnimatedPressable
                     accessibilityLabel={`Sumar ${product.name} a mi lista`}
@@ -79,10 +85,10 @@ const useStyles = makeStyles((colors) =>
     subtitle: { fontFamily: typography.body.fontFamily, fontSize: 13, color: colors.text.secondary, marginTop: 2 },
     row: { gap: spacing.md, paddingRight: spacing.lg },
     card: {
-      width: 156,
+      width: 164,
       gap: spacing.xs,
       padding: spacing.md,
-      borderRadius: radii.lg,
+      borderRadius: radii.xl,
       backgroundColor: colors.surface.primary,
       borderWidth: 1,
       borderColor: colors.border.subtle,
@@ -91,7 +97,17 @@ const useStyles = makeStyles((colors) =>
     store: { fontFamily: typography.body.fontFamily, fontSize: 12, color: colors.text.secondary },
     priceRow: { flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", marginTop: spacing.xs },
     price: { fontFamily: typography.screenTitle.fontFamily, fontSize: 18, color: colors.text.primary },
-    saving: { fontFamily: typography.itemTitle.fontFamily, fontSize: 12, color: colors.state.successStrong },
+    photoRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
+    // chip verde de ahorro, como en el diseño
+    savingChip: {
+      paddingHorizontal: spacing.xs,
+      paddingVertical: 2,
+      borderRadius: radii.full,
+      backgroundColor: colors.tint.green.bg,
+      borderWidth: 1,
+      borderColor: colors.tint.green.border,
+    },
+    savingChipText: { fontFamily: typography.itemTitle.fontFamily, fontSize: 12, color: colors.state.successStrong },
     add: {
       width: 34,
       height: 34,
