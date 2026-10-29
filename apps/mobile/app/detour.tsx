@@ -1,6 +1,6 @@
 import { spacing, typography } from "@depaso/design-tokens";
 import { ScrollView, StyleSheet, Text } from "react-native";
-import { DetourPicker } from "@/components/DetourPicker";
+import { DetourPicker } from "@/components/map/DetourPicker";
 import { makeStyles } from "@/lib/theme";
 
 /** Perfil → "Cuánto me desvío": cuántas cuadras aceptás salirte del camino en cada nivel de compra. */

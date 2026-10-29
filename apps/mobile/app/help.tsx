@@ -3,8 +3,8 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { radii, spacing, typography } from "@depaso/design-tokens";
-import { AnimatedPressable } from "@/components/AnimatedPressable";
-import { GroupedList, GroupedRow } from "@/components/GroupedList";
+import { AnimatedPressable } from "@/components/common/AnimatedPressable";
+import { GroupedList, GroupedRow } from "@/components/common/GroupedList";
 import { makeStyles, useColors } from "@/lib/theme";
 
 const FAQ: { question: string; answer: string }[] = [

@@ -14,10 +14,10 @@ import Animated, {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles, useColors } from "@/lib/theme";
-import { AnimatedPressable } from "@/components/AnimatedPressable";
-import { Button } from "@/components/Button";
-import { LoadingOverlay } from "@/components/LoadingOverlay";
-import { PriceDisclosureBanner } from "@/components/PriceDisclosureBanner";
+import { AnimatedPressable } from "@/components/common/AnimatedPressable";
+import { Button } from "@/components/common/Button";
+import { LoadingOverlay } from "@/components/common/LoadingOverlay";
+import { PriceDisclosureBanner } from "@/components/lists/PriceDisclosureBanner";
 import { optimizationClient } from "@/lib/apiClient";
 import { useCountUp } from "@/lib/useCountUp";
 import { useLists } from "@/lib/lists/ListsContext";

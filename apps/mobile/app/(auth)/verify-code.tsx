@@ -4,10 +4,10 @@ import { StyleSheet, Text, View } from "react-native";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { authClient } from "@/lib/apiClient";
 import { codeStepErrorKind, RESET_ERROR_MESSAGES } from "@/lib/auth/resetErrors";
-import { AuthStep } from "@/components/AuthStep";
-import { Button } from "@/components/Button";
-import { OtpInput } from "@/components/OtpInput";
-import { useToast } from "@/components/Toast";
+import { AuthStep } from "@/components/auth/AuthStep";
+import { Button } from "@/components/common/Button";
+import { OtpInput } from "@/components/common/OtpInput";
+import { useToast } from "@/components/common/Toast";
 import { makeStyles } from "@/lib/theme";
 
 const CODE_LENGTH = 8;

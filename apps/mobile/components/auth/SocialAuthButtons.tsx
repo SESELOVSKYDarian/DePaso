@@ -7,7 +7,7 @@ import { spacing } from "@depaso/design-tokens";
 import { authClient } from "@/lib/apiClient";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { SocialButton, type SocialProvider } from "./SocialButton";
-import { useToast } from "./Toast";
+import { useToast } from "../common/Toast";
 
 type ProviderInfo = OAuthProvidersResponse["providers"][number];
 

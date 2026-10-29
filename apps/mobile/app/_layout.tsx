@@ -15,13 +15,13 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { typography } from "@depaso/design-tokens";
 import { ThemeProvider, useColors, useTheme } from "@/lib/theme";
-import { SplashScreen } from "@/components/SplashScreen";
+import { SplashScreen } from "@/components/common/SplashScreen";
 import { AuthProvider, useAuth } from "@/lib/auth/AuthContext";
 import { ListsProvider } from "@/lib/lists/ListsContext";
 import { PlacesProvider } from "@/lib/places/PlacesContext";
 import { DetourProvider } from "@/lib/detour/DetourContext";
 import { TodayRouteProvider } from "@/lib/routeContext/TodayRouteContext";
-import { ToastProvider } from "@/components/Toast";
+import { ToastProvider } from "@/components/common/Toast";
 import { PurchaseProvider } from "@/lib/purchase/PurchaseContext";
 
 /**

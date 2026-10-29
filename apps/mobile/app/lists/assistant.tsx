@@ -26,15 +26,15 @@ import Animated, {
 } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { radii, spacing, typography } from "@depaso/design-tokens";
-import { AnimatedPressable } from "@/components/AnimatedPressable";
-import { Button } from "@/components/Button";
-import { useToast } from "@/components/Toast";
+import { AnimatedPressable } from "@/components/common/AnimatedPressable";
+import { Button } from "@/components/common/Button";
+import { useToast } from "@/components/common/Toast";
 import { assistantClient, productsClient } from "@/lib/apiClient";
 import { useLists } from "@/lib/lists/ListsContext";
 import { makeStyles, useColors } from "@/lib/theme";
 import { transcribeRecording, TranscribeError } from "@/lib/voice/transcribe";
 import { useVoiceRecorder } from "@/lib/voice/useVoiceRecorder";
-import { Waveform } from "@/components/Waveform";
+import { Waveform } from "@/components/common/Waveform";
 
 interface ReviewItem {
   item: AssistantItem;

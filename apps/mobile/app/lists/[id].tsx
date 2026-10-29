@@ -6,12 +6,12 @@ import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, TextInput, Vi
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles, useColors } from "@/lib/theme";
-import { AnimatedPressable } from "@/components/AnimatedPressable";
-import { Dialog } from "@/components/Dialog";
-import { ProductThumb } from "@/components/ProductThumb";
-import { EmptyState } from "@/components/EmptyState";
-import { Skeleton } from "@/components/Skeleton";
-import { useToast } from "@/components/Toast";
+import { AnimatedPressable } from "@/components/common/AnimatedPressable";
+import { Dialog } from "@/components/common/Dialog";
+import { ProductThumb } from "@/components/lists/ProductThumb";
+import { EmptyState } from "@/components/common/EmptyState";
+import { Skeleton } from "@/components/common/Skeleton";
+import { useToast } from "@/components/common/Toast";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { useLists } from "@/lib/lists/ListsContext";
 

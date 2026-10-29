@@ -1,4 +1,4 @@
-import { LegalBullet, LegalHeading, LegalParagraph, LegalScreen } from "@/components/LegalScreen";
+import { LegalBullet, LegalHeading, LegalParagraph, LegalScreen } from "@/components/common/LegalScreen";
 
 export default function CommunityGuidelinesScreen() {
   return (

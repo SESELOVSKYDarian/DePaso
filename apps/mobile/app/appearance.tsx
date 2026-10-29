@@ -1,7 +1,7 @@
 import { ScrollView, StyleSheet, Text } from "react-native";
 import { spacing, typography } from "@depaso/design-tokens";
-import { GroupedList, GroupedRow } from "@/components/GroupedList";
-import { SelectionMark } from "@/components/SelectionMark";
+import { GroupedList, GroupedRow } from "@/components/common/GroupedList";
+import { SelectionMark } from "@/components/common/SelectionMark";
 import { makeStyles, useTheme, type ThemeMode } from "@/lib/theme";
 
 const OPTIONS: { mode: ThemeMode; label: string; icon: "phone-portrait-outline" | "sunny-outline" | "moon-outline" }[] = [

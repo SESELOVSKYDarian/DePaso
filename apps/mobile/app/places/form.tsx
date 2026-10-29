@@ -6,9 +6,9 @@ import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles } from "@/lib/theme";
 import type { PlaceType } from "@depaso/types";
-import { AnimatedPressable } from "@/components/AnimatedPressable";
-import { Checkbox } from "@/components/Checkbox";
-import { FormField } from "@/components/FormField";
+import { AnimatedPressable } from "@/components/common/AnimatedPressable";
+import { Checkbox } from "@/components/common/Checkbox";
+import { FormField } from "@/components/common/FormField";
 import { geocodeClient } from "@/lib/apiClient";
 import { PLACE_TYPES, PLACE_TYPE_META } from "@/lib/placeTypes";
 import { usePlaces } from "@/lib/places/PlacesContext";

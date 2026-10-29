@@ -5,10 +5,10 @@ import { makeStyles, useColors } from "@/lib/theme";
 import { router } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
-import { AnimatedPressable } from "@/components/AnimatedPressable";
-import { Button } from "@/components/Button";
-import { FormField } from "@/components/FormField";
-import { useToast } from "@/components/Toast";
+import { AnimatedPressable } from "@/components/common/AnimatedPressable";
+import { Button } from "@/components/common/Button";
+import { FormField } from "@/components/common/FormField";
+import { useToast } from "@/components/common/Toast";
 import { geocodeClient, merchantClient } from "@/lib/apiClient";
 import { useAuth } from "@/lib/auth/AuthContext";
 

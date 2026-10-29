@@ -4,9 +4,9 @@ import { makeStyles } from "@/lib/theme";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { AnimatedPressable } from "@/components/AnimatedPressable";
-import { EmptyState } from "@/components/EmptyState";
-import { useToast } from "@/components/Toast";
+import { AnimatedPressable } from "@/components/common/AnimatedPressable";
+import { EmptyState } from "@/components/common/EmptyState";
+import { useToast } from "@/components/common/Toast";
 import { preferencesClient } from "@/lib/apiClient";
 
 const PRODUCT_TYPE_LABEL: Record<ProductPreferenceResponse["type"], string> = {

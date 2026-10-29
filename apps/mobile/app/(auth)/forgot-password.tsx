@@ -3,9 +3,9 @@ import { useState } from "react";
 import { radii } from "@depaso/design-tokens";
 import { authClient } from "@/lib/apiClient";
 import { classifyResetError, RESET_ERROR_MESSAGES } from "@/lib/auth/resetErrors";
-import { AuthStep } from "@/components/AuthStep";
-import { Button } from "@/components/Button";
-import { FormField } from "@/components/FormField";
+import { AuthStep } from "@/components/auth/AuthStep";
+import { Button } from "@/components/common/Button";
+import { FormField } from "@/components/common/FormField";
 
 /**
  * Recuperar contraseña, paso 1 de 3: el email. Las tres pantallas son rutas separadas

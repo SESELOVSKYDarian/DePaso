@@ -3,8 +3,8 @@ import { useState } from "react";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles } from "@/lib/theme";
-import { AnimatedPressable } from "./AnimatedPressable";
-import { ModalBackdrop } from "./ModalBackdrop";
+import { AnimatedPressable } from "../common/AnimatedPressable";
+import { ModalBackdrop } from "../common/ModalBackdrop";
 import { consentClient } from "@/lib/apiClient";
 
 export type LocationConsentResult = "granted" | "manual" | "later";

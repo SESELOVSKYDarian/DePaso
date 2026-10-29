@@ -2,7 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { ActivityIndicator, StyleSheet, Text } from "react-native";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles, useColors } from "@/lib/theme";
-import { AnimatedPressable } from "./AnimatedPressable";
+import { AnimatedPressable } from "../common/AnimatedPressable";
 
 export type SocialProvider = "google" | "facebook" | "discord" | "email";
 

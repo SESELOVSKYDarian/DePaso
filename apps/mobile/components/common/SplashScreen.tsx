@@ -32,7 +32,7 @@ export function SplashScreen() {
     <View style={styles.container}>
       {isDark ? null : (
         <Image
-          source={require("../assets/images/fondo-carga.png")}
+          source={require("../../assets/images/fondo-carga.png")}
           style={styles.background}
           resizeMode="cover"
         />

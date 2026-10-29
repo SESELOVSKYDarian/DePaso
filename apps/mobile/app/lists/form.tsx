@@ -3,8 +3,8 @@ import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from "react-native";
 import { spacing } from "@depaso/design-tokens";
 import { makeStyles } from "@/lib/theme";
-import { Button } from "@/components/Button";
-import { FormField } from "@/components/FormField";
+import { Button } from "@/components/common/Button";
+import { FormField } from "@/components/common/FormField";
 import { useLists } from "@/lib/lists/ListsContext";
 
 /** Crear (o renombrar) una lista de compra — Fase 9. */

@@ -6,11 +6,11 @@ import { useEffect, useRef, useState, type ComponentProps } from "react";
 import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles, useColors } from "@/lib/theme";
-import { AnimatedPressable } from "@/components/AnimatedPressable";
-import { EmptyState } from "@/components/EmptyState";
-import { ProductThumb } from "@/components/ProductThumb";
-import { Skeleton } from "@/components/Skeleton";
-import { useToast } from "@/components/Toast";
+import { AnimatedPressable } from "@/components/common/AnimatedPressable";
+import { EmptyState } from "@/components/common/EmptyState";
+import { ProductThumb } from "@/components/lists/ProductThumb";
+import { Skeleton } from "@/components/common/Skeleton";
+import { useToast } from "@/components/common/Toast";
 import { productsClient } from "@/lib/apiClient";
 import { useLists } from "@/lib/lists/ListsContext";
 

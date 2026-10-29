@@ -1,13 +1,13 @@
 import { PAYMENT_METHODS } from "@depaso/domain";
 import { spacing, typography } from "@depaso/design-tokens";
 import { makeStyles, useColors } from "@/lib/theme";
-import { SelectionMark } from "@/components/SelectionMark";
+import { SelectionMark } from "@/components/common/SelectionMark";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
-import { Button } from "@/components/Button";
-import { GroupedList, GroupedRow } from "@/components/GroupedList";
-import { useToast } from "@/components/Toast";
+import { Button } from "@/components/common/Button";
+import { GroupedList, GroupedRow } from "@/components/common/GroupedList";
+import { useToast } from "@/components/common/Toast";
 import { paymentsClient } from "@/lib/apiClient";
 
 const GROUPS = [

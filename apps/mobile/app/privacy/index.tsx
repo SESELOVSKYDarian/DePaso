@@ -4,10 +4,10 @@ import { ActivityIndicator, ScrollView, Share, StyleSheet, Text, View } from "re
 import { SafeAreaView } from "react-native-safe-area-context";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles, useColors } from "@/lib/theme";
-import { AnimatedPressable } from "@/components/AnimatedPressable";
-import { Dialog } from "@/components/Dialog";
-import { FormField } from "@/components/FormField";
-import { useToast } from "@/components/Toast";
+import { AnimatedPressable } from "@/components/common/AnimatedPressable";
+import { Dialog } from "@/components/common/Dialog";
+import { FormField } from "@/components/common/FormField";
+import { useToast } from "@/components/common/Toast";
 import { accountExportClient, authClient } from "@/lib/apiClient";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { usePlaces } from "@/lib/places/PlacesContext";

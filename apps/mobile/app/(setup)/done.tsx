@@ -3,9 +3,9 @@ import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles, useColors } from "@/lib/theme";
 import { router } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
-import { Illustration } from "@/components/Illustration";
+import { Illustration } from "@/components/common/Illustration";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AnimatedPressable } from "@/components/AnimatedPressable";
+import { AnimatedPressable } from "@/components/common/AnimatedPressable";
 import { useAuth } from "@/lib/auth/AuthContext";
 
 const CHECKLIST = ["Cuenta creada", "Lugares a mano", "Listo para ahorrar de paso"] as const;

@@ -2,9 +2,9 @@ import { radii, spacing, typography } from "@depaso/design-tokens";
 import { router } from "expo-router";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AnimatedPressable } from "@/components/AnimatedPressable";
-import { DetourPicker } from "@/components/DetourPicker";
-import { ProgressHeader } from "@/components/ProgressHeader";
+import { AnimatedPressable } from "@/components/common/AnimatedPressable";
+import { DetourPicker } from "@/components/map/DetourPicker";
+import { ProgressHeader } from "@/components/common/ProgressHeader";
 import { makeStyles } from "@/lib/theme";
 
 /**

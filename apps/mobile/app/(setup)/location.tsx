@@ -5,11 +5,11 @@ import * as Location from "expo-location";
 import { router } from "expo-router";
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { Illustration } from "@/components/Illustration";
+import { Illustration } from "@/components/common/Illustration";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AnimatedPressable } from "@/components/AnimatedPressable";
-import { ProgressHeader } from "@/components/ProgressHeader";
-import { useToast } from "@/components/Toast";
+import { AnimatedPressable } from "@/components/common/AnimatedPressable";
+import { ProgressHeader } from "@/components/common/ProgressHeader";
+import { useToast } from "@/components/common/Toast";
 
 const BENEFITS = ["Mejores resultados", "Rutas más precisas", "Siempre podés cambiarlo en la configuración"] as const;
 

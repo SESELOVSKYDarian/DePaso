@@ -5,10 +5,10 @@ import { Link, router } from "expo-router";
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AuthHero } from "@/components/AuthHero";
-import { Button } from "@/components/Button";
-import { PillInput } from "@/components/PillInput";
-import { SocialAuthButtons } from "@/components/SocialAuthButtons";
+import { AuthHero } from "@/components/auth/AuthHero";
+import { Button } from "@/components/common/Button";
+import { PillInput } from "@/components/common/PillInput";
+import { SocialAuthButtons } from "@/components/auth/SocialAuthButtons";
 import { useAuth } from "@/lib/auth/AuthContext";
 
 function loginErrorMessage(error: unknown): string {

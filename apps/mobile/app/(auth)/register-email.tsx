@@ -6,9 +6,9 @@ import { Link, router } from "expo-router";
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AnimatedPressable } from "@/components/AnimatedPressable";
-import { FormField } from "@/components/FormField";
-import { ProgressHeader } from "@/components/ProgressHeader";
+import { AnimatedPressable } from "@/components/common/AnimatedPressable";
+import { FormField } from "@/components/common/FormField";
+import { ProgressHeader } from "@/components/common/ProgressHeader";
 import { setPendingRegistration } from "@/lib/auth/pendingRegistration";
 
 function registerErrorMessage(error: unknown): string {

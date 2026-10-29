@@ -5,8 +5,8 @@ import { makeStyles, useColors } from "@/lib/theme";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ActivityIndicator, FlatList, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
-import { AnimatedPressable } from "@/components/AnimatedPressable";
-import { EmptyState } from "@/components/EmptyState";
+import { AnimatedPressable } from "@/components/common/AnimatedPressable";
+import { EmptyState } from "@/components/common/EmptyState";
 import { merchantClient } from "@/lib/apiClient";
 
 type Facets = MerchantPricesResponse["facets"];

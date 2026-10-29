@@ -4,11 +4,11 @@ import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles } from "@/lib/theme";
-import { AnimatedPressable } from "@/components/AnimatedPressable";
-import { Checkbox } from "@/components/Checkbox";
-import { FormField } from "@/components/FormField";
+import { AnimatedPressable } from "@/components/common/AnimatedPressable";
+import { Checkbox } from "@/components/common/Checkbox";
+import { FormField } from "@/components/common/FormField";
 import { priceReportsClient } from "@/lib/apiClient";
-import { useToast } from "@/components/Toast";
+import { useToast } from "@/components/common/Toast";
 
 /**
  * "Usuario ve un precio → toca 'Reportar precio'" (FLOWS.md p.6-8, paso 1). Se llega acá

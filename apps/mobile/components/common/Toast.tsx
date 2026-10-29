@@ -13,7 +13,7 @@ import {
   useDynamicNotifications,
   type AppNotification,
   type NotificationIcon,
-} from "./dynamic-notifications";
+} from "../dynamic-notifications";
 
 type ToastVariant = "info" | "success" | "error";
 

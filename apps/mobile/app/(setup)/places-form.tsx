@@ -3,7 +3,7 @@ import { router } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { spacing, typography } from "@depaso/design-tokens";
-import { AnimatedPressable } from "@/components/AnimatedPressable";
+import { AnimatedPressable } from "@/components/common/AnimatedPressable";
 import { makeStyles, useColors } from "@/lib/theme";
 import PlaceFormScreen from "../places/form";
 

@@ -3,9 +3,9 @@ import { StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles } from "@/lib/theme";
-import { AnimatedPressable } from "@/components/AnimatedPressable";
-import { BrandLogo } from "@/components/BrandLogo";
-import { Illustration } from "@/components/Illustration";
+import { AnimatedPressable } from "@/components/common/AnimatedPressable";
+import { BrandLogo } from "@/components/common/BrandLogo";
+import { Illustration } from "@/components/common/Illustration";
 import { useAuth } from "@/lib/auth/AuthContext";
 
 /**

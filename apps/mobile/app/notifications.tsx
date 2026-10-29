@@ -2,9 +2,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { useEffect } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { radii, spacing, typography } from "@depaso/design-tokens";
-import { AnimatedPressable } from "@/components/AnimatedPressable";
-import { EmptyState } from "@/components/EmptyState";
-import { useNotificationInbox } from "@/components/Toast";
+import { AnimatedPressable } from "@/components/common/AnimatedPressable";
+import { EmptyState } from "@/components/common/EmptyState";
+import { useNotificationInbox } from "@/components/common/Toast";
 import { formatRelativeTime } from "@/lib/formatRelativeTime";
 import { makeStyles, useColors } from "@/lib/theme";
 

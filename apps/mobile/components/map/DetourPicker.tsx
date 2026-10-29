@@ -3,7 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles, useColors } from "@/lib/theme";
 import { INTERMEDIATE_RANGE, STRICT_RANGE, useDetour } from "@/lib/detour/DetourContext";
-import { AnimatedPressable } from "./AnimatedPressable";
+import { AnimatedPressable } from "../common/AnimatedPressable";
 
 function Stepper({
   title,

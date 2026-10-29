@@ -5,9 +5,9 @@ import { makeStyles, useColors } from "@/lib/theme";
 import { router } from "expo-router";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AnimatedPressable } from "@/components/AnimatedPressable";
-import { EmptyState } from "@/components/EmptyState";
-import { Skeleton } from "@/components/Skeleton";
+import { AnimatedPressable } from "@/components/common/AnimatedPressable";
+import { EmptyState } from "@/components/common/EmptyState";
+import { Skeleton } from "@/components/common/Skeleton";
 import { useLists } from "@/lib/lists/ListsContext";
 
 /**

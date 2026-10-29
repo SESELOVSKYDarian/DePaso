@@ -5,16 +5,16 @@ type LogoVariant = "mark" | "wordmark" | "stacked";
 
 const SOURCES = {
   mark: {
-    light: require("../assets/images/logo-mark.png"),
-    dark: require("../assets/images/logo-mark-dark.png"),
+    light: require("../../assets/images/logo-mark.png"),
+    dark: require("../../assets/images/logo-mark-dark.png"),
   },
   wordmark: {
-    light: require("../assets/images/logo-wordmark.png"),
-    dark: require("../assets/images/logo-wordmark-dark.png"),
+    light: require("../../assets/images/logo-wordmark.png"),
+    dark: require("../../assets/images/logo-wordmark-dark.png"),
   },
   stacked: {
-    light: require("../assets/images/logo-stacked.png"),
-    dark: require("../assets/images/logo-stacked-dark.png"),
+    light: require("../../assets/images/logo-stacked.png"),
+    dark: require("../../assets/images/logo-stacked-dark.png"),
   },
 } as const;
 

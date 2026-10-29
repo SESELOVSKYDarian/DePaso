@@ -3,9 +3,9 @@ import { makeStyles } from "@/lib/theme";
 import { Link, router } from "expo-router";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { ProgressHeader } from "@/components/ProgressHeader";
-import { SocialAuthButtons } from "@/components/SocialAuthButtons";
-import { SocialButton } from "@/components/SocialButton";
+import { ProgressHeader } from "@/components/common/ProgressHeader";
+import { SocialAuthButtons } from "@/components/auth/SocialAuthButtons";
+import { SocialButton } from "@/components/auth/SocialButton";
 
 /** Paso 1 del registro: elegir cómo crear la cuenta. Los datos (email) y las declaraciones (edad,
  * términos, privacidad) se piden después, una sola vez, en los pasos siguientes. */

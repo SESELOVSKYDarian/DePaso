@@ -4,11 +4,11 @@ import { makeStyles, useColors } from "@/lib/theme";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { ActivityIndicator, FlatList, Linking, StyleSheet, Text, View } from "react-native";
-import { Button } from "@/components/Button";
-import { Checkbox } from "@/components/Checkbox";
-import { EmptyState } from "@/components/EmptyState";
-import { FormField } from "@/components/FormField";
-import { useToast } from "@/components/Toast";
+import { Button } from "@/components/common/Button";
+import { Checkbox } from "@/components/common/Checkbox";
+import { EmptyState } from "@/components/common/EmptyState";
+import { FormField } from "@/components/common/FormField";
+import { useToast } from "@/components/common/Toast";
 import { adminMerchantClient } from "@/lib/apiClient";
 
 /** Bandeja del admin: solicitudes de usuarios que quieren pasar a rol comercio. */

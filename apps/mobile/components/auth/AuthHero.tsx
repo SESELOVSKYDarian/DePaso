@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 import { elevation, radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles } from "@/lib/theme";
-import { BrandLogo } from "./BrandLogo";
+import { BrandLogo } from "../common/BrandLogo";
 
 interface AuthHeroProps {
   title: string;

@@ -3,7 +3,7 @@ import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } fr
 import { SafeAreaView } from "react-native-safe-area-context";
 import { spacing, typography } from "@depaso/design-tokens";
 import { makeStyles } from "@/lib/theme";
-import { ProgressHeader } from "./ProgressHeader";
+import { ProgressHeader } from "../common/ProgressHeader";
 
 interface AuthStepProps {
   /** Paso actual (1-based) y total, para el contador y la barra de progreso. */
