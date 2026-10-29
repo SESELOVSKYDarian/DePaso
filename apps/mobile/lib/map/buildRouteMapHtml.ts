@@ -4,6 +4,8 @@ import { buildMapCommandsScript } from "./mapCommands";
 export interface RouteMapWaypoint {
   latitude: number;
   longitude: number;
+  /** Nombre de la parada: el último (destino) se dibuja con su etiqueta. */
+  name?: string;
 }
 
 export interface BuildRouteMapHtmlOptions {
@@ -21,6 +23,10 @@ export interface BuildRouteMapHtmlOptions {
   stores?: RouteMapStore[];
   /** Recorrido original (sin compras): se dibuja punteado debajo de `polyline` para ver la variación. */
   basePolyline?: string | null;
+  /** Vista de satélite en vez del mapa azulado. */
+  satellite?: boolean;
+  /** Espacio que tapan el buscador (arriba) y la hoja de comercios (abajo): la ruta se encuadra fuera de ellos. */
+  fitPadding?: { top: number; bottom: number };
 }
 
 export interface RouteMapStore {
@@ -30,6 +36,8 @@ export interface RouteMapStore {
   longitude: number;
   /** Parada de compra del plan: se dibuja más grande y de color de marca. */
   buy?: boolean;
+  /** Logo de la cadena (`data:image/png;base64,...`): si está, el pin es el logo. */
+  logo?: string;
 }
 
 export const MAPBOX_GL_VERSION = "3.7.0";
@@ -44,13 +52,19 @@ export const MAPBOX_GL_CSS_INTEGRITY = "sha384-GTsgKcJXGSkBp0M68qpxkz9XovzVH0PwS
  * nativa) como por `RouteMapView.web` (`iframe`, porque `react-native-webview` no tiene
  * build para web). Sin lógica de React/RN acá para poder compartirlo entre ambas.
  */
-export function buildRouteMapHtml({ waypoints, polyline, mapboxToken, colors, isDark = false, stores = [], basePolyline = null }: BuildRouteMapHtmlOptions): string {
-  const mapStyle = isDark ? "mapbox://styles/mapbox/dark-v11" : "mapbox://styles/mapbox/streets-v12";
-  const waypointsJson = JSON.stringify(waypoints.map((w) => ({ lat: w.latitude, lng: w.longitude })));
+export function buildRouteMapHtml({ waypoints, polyline, mapboxToken, colors, isDark = false, stores = [], basePolyline = null, satellite = false, fitPadding = { top: 80, bottom: 80 } }: BuildRouteMapHtmlOptions): string {
+  // noche azulada (como el diseño) en oscuro; día de navegación en claro; satélite a pedido
+  const mapStyle = satellite
+    ? "mapbox://styles/mapbox/satellite-streets-v12"
+    : isDark
+      ? "mapbox://styles/mapbox/navigation-night-v1"
+      : "mapbox://styles/mapbox/navigation-day-v1";
+  const routeColor = isDark || satellite ? "#5BB0FF" : colors.brand.route;
+  const waypointsJson = JSON.stringify(waypoints.map((w) => ({ lat: w.latitude, lng: w.longitude, name: w.name ?? "" }))).replace(/</g, "\\u003c");
   const polylineJson = JSON.stringify(polyline);
   const basePolylineJson = JSON.stringify(basePolyline);
   // `<` escapado: un nombre de comercio no puede cerrar el <script> del HTML.
-  const storesJson = JSON.stringify(stores.map((s) => ({ id: s.id, name: s.name, lat: s.latitude, lng: s.longitude, buy: Boolean(s.buy) }))).replace(/</g, "\\u003c");
+  const storesJson = JSON.stringify(stores.map((s) => ({ id: s.id, name: s.name, lat: s.latitude, lng: s.longitude, buy: Boolean(s.buy), logo: s.logo ?? null }))).replace(/</g, "\\u003c");
 
   return `<!DOCTYPE html>
 <html>
@@ -71,29 +85,35 @@ export function buildRouteMapHtml({ waypoints, polyline, mapboxToken, colors, is
 <style>
   html, body { margin: 0; padding: 0; height: 100%; }
   #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+  /* origen: punto azul con aro blanco; paradas del medio: puntos chicos; destino: punto con etiqueta */
   .depaso-pin {
-    background: ${colors.brand.navy}; color: ${colors.text.onNavy}; border-radius: 999px;
-    width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;
-    font-family: sans-serif; font-size: 13px; font-weight: 600; border: 2px solid #fff;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    width: 18px; height: 18px; border-radius: 999px; background: ${routeColor}; border: 3px solid #fff;
+    box-shadow: 0 0 0 6px rgba(91,176,255,0.28), 0 1px 4px rgba(0,0,0,0.4);
   }
+  .depaso-pin.mid { width: 10px; height: 10px; border-width: 2px; box-shadow: 0 1px 3px rgba(0,0,0,0.4); }
+  .depaso-end { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .depaso-end .tag {
+    max-width: 130px; padding: 4px 10px; border-radius: 10px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+    font-family: sans-serif; font-size: 12px; font-weight: 700; background: #fff; color: #111; box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  }
+  .depaso-end .dot { width: 14px; height: 14px; border-radius: 999px; background: #fff; border: 4px solid ${routeColor}; }
+  /* comercios: el logo de la cadena en un cuadrado blanco redondeado */
   .depaso-store { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
   .depaso-store .bubble {
-    width: 30px; height: 30px; border-radius: 999px; display: flex; align-items: center; justify-content: center;
-    background: ${isDark ? "#1C1C1E" : "#FFFFFF"}; color: ${isDark ? "#F5F5F7" : "#111111"};
-    border: 2px solid ${isDark ? "#F5F5F7" : "#111111"}; box-shadow: 0 1px 5px rgba(0,0,0,0.35);
+    width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden;
+    background: #FFFFFF; color: #111111; border: 2px solid #FFFFFF; box-shadow: 0 2px 8px rgba(0,0,0,0.45);
     transition: transform 160ms ease-out;
   }
+  .depaso-store .bubble img { width: 100%; height: 100%; object-fit: contain; }
   .depaso-store .label {
-    margin-top: 2px; max-width: 92px; padding: 1px 6px; border-radius: 999px; overflow: hidden;
-    white-space: nowrap; text-overflow: ellipsis; font-family: sans-serif; font-size: 11px; font-weight: 600;
-    background: ${isDark ? "rgba(28,28,30,0.92)" : "rgba(255,255,255,0.92)"}; color: ${isDark ? "#F5F5F7" : "#111111"};
-    box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+    margin-top: 3px; max-width: 100px; padding: 1px 7px; border-radius: 999px; overflow: hidden; display: none;
+    white-space: nowrap; text-overflow: ellipsis; font-family: sans-serif; font-size: 11px; font-weight: 700;
+    background: rgba(255,255,255,0.95); color: #111111; box-shadow: 0 1px 3px rgba(0,0,0,0.3);
   }
-  .depaso-store.selected .bubble { background: ${colors.brand.navy}; color: ${colors.text.onNavy}; transform: scale(1.18); border-color: #fff; }
+  .depaso-store.selected .label, .depaso-store.buy .label { display: block; }
+  .depaso-store.selected .bubble { transform: scale(1.25); border-color: ${routeColor}; }
   .depaso-store.selected { z-index: 5; }
-  .depaso-store.buy .bubble { width: 38px; height: 38px; background: ${colors.brand.navy}; color: ${colors.text.onNavy}; border-color: #fff; }
-  .depaso-store.buy .label { font-size: 12px; max-width: 120px; background: ${colors.brand.navy}; color: ${colors.text.onNavy}; }
+  .depaso-store.buy .bubble { width: 42px; height: 42px; border-color: ${routeColor}; }
 </style>
 </head>
 <body>
@@ -125,15 +145,27 @@ export function buildRouteMapHtml({ waypoints, polyline, mapboxToken, colors, is
     center: [waypoints[0].lng, waypoints[0].lat],
     zoom: 13,
   });
-  map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
 ${buildMapCommandsScript(colors.brand.navy)}
 
   map.on("load", () => {
     const bounds = new mapboxgl.LngLatBounds();
     waypoints.forEach((w, i) => {
       const el = document.createElement("div");
-      el.className = "depaso-pin";
-      el.textContent = String(i + 1);
+      const isLast = i === waypoints.length - 1 && waypoints.length > 1;
+      if (isLast) {
+        el.className = "depaso-end";
+        if (w.name) {
+          const tag = document.createElement("div");
+          tag.className = "tag";
+          tag.textContent = w.name;
+          el.appendChild(tag);
+        }
+        const dot = document.createElement("div");
+        dot.className = "dot";
+        el.appendChild(dot);
+      } else {
+        el.className = "depaso-pin" + (i === 0 ? "" : " mid");
+      }
       new mapboxgl.Marker({ element: el }).setLngLat([w.lng, w.lat]).addTo(map);
       bounds.extend([w.lng, w.lat]);
     });
@@ -152,7 +184,14 @@ ${buildMapCommandsScript(colors.brand.navy)}
       el.className = "depaso-store" + (store.buy ? " buy" : "");
       const bubble = document.createElement("div");
       bubble.className = "bubble";
-      bubble.innerHTML = storeIcon;
+      if (store.logo) {
+        const img = document.createElement("img");
+        img.src = store.logo;
+        img.alt = "";
+        bubble.appendChild(img);
+      } else {
+        bubble.innerHTML = storeIcon;
+      }
       const label = document.createElement("div");
       label.className = "label";
       label.textContent = store.name;
@@ -189,15 +228,23 @@ ${buildMapCommandsScript(colors.brand.navy)}
       type: "geojson",
       data: { type: "Feature", properties: {}, geometry: { type: "LineString", coordinates: [coordinates[0]] } },
     });
+    // brillo suave debajo de la línea, como en el diseño
+    map.addLayer({
+      id: "route-glow",
+      type: "line",
+      source: "route",
+      layout: { "line-join": "round", "line-cap": "round" },
+      paint: { "line-color": ${JSON.stringify(routeColor)}, "line-width": 14, "line-opacity": 0.22, "line-blur": 6 },
+    });
     map.addLayer({
       id: "route",
       type: "line",
       source: "route",
       layout: { "line-join": "round", "line-cap": "round" },
-      paint: { "line-color": "${colors.brand.route}", "line-width": 4, "line-opacity": 0.9 },
+      paint: { "line-color": ${JSON.stringify(routeColor)}, "line-width": 6, "line-opacity": 0.95 },
     });
 
-    map.fitBounds(bounds, { padding: 56, maxZoom: 15 });
+    map.fitBounds(bounds, { padding: { top: ${fitPadding.top}, bottom: ${fitPadding.bottom}, left: 48, right: 48 }, maxZoom: 15 });
 
     // Dibujo progresivo de la ruta (MOTION-SYSTEM.md) — revela el trazo real en vez de
     // aparecer de golpe; respeta prefers-reduced-motion del sistema.

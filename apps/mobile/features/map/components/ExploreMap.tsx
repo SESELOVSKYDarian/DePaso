@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
-import { radii, spacing, typography } from "@depaso/design-tokens";
+import { spacing, typography } from "@depaso/design-tokens";
 import { MapPicker } from "@/components/map/MapPicker";
 import type { MapFocus, MapPoint } from "@/lib/map/mapCommands";
 import { makeStyles } from "@/lib/theme";
@@ -15,7 +15,7 @@ interface ExploreMapProps {
   placePin: MapFocus | null;
 }
 
-/** Mapa para explorar sin recorrido armado: se toca un punto o se usa el buscador. */
+/** Mapa para explorar sin recorrido armado: ocupa todo el espacio; se toca un punto o se usa el buscador. */
 export function ExploreMap({ token, onPick, focus, userLocation, placePin }: ExploreMapProps) {
   const styles = useStyles();
 
@@ -36,14 +36,7 @@ export function ExploreMap({ token, onPick, focus, userLocation, placePin }: Exp
 
 const useStyles = makeStyles((colors) =>
   StyleSheet.create({
-    frame: {
-      height: 360,
-      borderRadius: radii.xl,
-      overflow: "hidden",
-      borderWidth: 1,
-      borderColor: colors.border.subtle,
-      backgroundColor: colors.surface.secondary,
-    },
+    frame: { flex: 1, backgroundColor: colors.surface.secondary },
     empty: { alignItems: "center", justifyContent: "center", padding: spacing.lg },
     emptyText: { fontFamily: typography.body.fontFamily, fontSize: 13, color: colors.text.secondary, textAlign: "center" },
   }),

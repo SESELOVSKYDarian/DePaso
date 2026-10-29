@@ -1,18 +1,20 @@
-import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useEffect, useMemo, useState } from "react";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { spacing, typography } from "@depaso/design-tokens";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
 import { useToast } from "@/components/common/Toast";
 import { PlaceSearchBox } from "@/components/map/PlaceSearchBox";
 import { RouteMapView } from "@/components/map/RouteMapView";
 import { usePurchase } from "@/lib/purchase/PurchaseContext";
 import { useTodayRoute, type TodayWaypoint } from "@/lib/routeContext/TodayRouteContext";
-import { useColors } from "@/lib/theme";
+import { findBrandLogo } from "@/lib/stores/matchBrandLogo";
+import { useBrandLogos } from "@/lib/stores/useBrandLogos";
+import { makeStyles, useColors } from "@/lib/theme";
 import { ExploreMap } from "./components/ExploreMap";
-import { FullMapModal } from "./components/FullMapModal";
-import { MapTools } from "./components/MapTools";
+import { MapControls } from "./components/MapControls";
+import { MapSheet, PEEK_VISIBLE } from "./components/MapSheet";
 import { NearbyStoresList, SelectedStoreCard } from "./components/NearbyStores";
 import { NoRouteCard } from "./components/NoRouteCard";
 import { PlanCard } from "./components/PlanCard";
@@ -21,28 +23,32 @@ import { PlanTabs } from "./components/PlanTabs";
 import { RouteStops } from "./components/RouteStops";
 import { SearchResultCard } from "./components/SearchResultCard";
 import { sameBase } from "./helpers";
-import { useStyles } from "./styles";
 import { useMapSearch } from "./useMapSearch";
 import { useMapToken } from "./useMapToken";
 import { useRouteMapData } from "./useRouteMapData";
 
 /** Una ruta tiene como máximo 6 paradas (origen, paradas y destino). */
 const MAX_STOPS = 6;
+/** Alto que ocupan el buscador y los botones arriba del mapa. */
+const TOP_OVERLAY = 76;
 
 /**
- * Mapa: buscar un lugar (como en Google Maps), ver dónde estás y planificar el recorrido de hoy.
- * Con recorrido, muestra la ruta con sus paradas y los comercios que quedan "de paso", con cuánto
- * te desviás para pasar por cada uno. Sin recorrido, queda un mapa para explorar y armar la ruta.
+ * Mapa a pantalla completa: arriba flotan el buscador y los botones; abajo una hoja deslizable
+ * con los comercios de paso (con su logo y cuánto te desviás) y el plan de compra. Sin recorrido,
+ * queda un mapa para explorar y armar la ruta.
  */
 export default function MapScreen() {
   const s = useStyles();
   const colors = useColors();
+  const insets = useSafeAreaInsets();
   const { show: showToast } = useToast();
   const { waypoints, setWaypoints } = useTodayRoute();
   const { routePlan, routePlans, setRoutePlan } = usePurchase();
+  const logos = useBrandLogos();
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  // Mapa a pantalla completa: en el recuadro chico costaba moverse y tocar los comercios.
-  const [fullMap, setFullMap] = useState(false);
+  const [containerHeight, setContainerHeight] = useState(0);
+  const [expandSignal, setExpandSignal] = useState(0);
+  const [satellite, setSatellite] = useState(false);
 
   const hasRoute = waypoints.length >= 2;
   const search = useMapSearch();
@@ -58,25 +64,29 @@ export default function MapScreen() {
   // si cambia el recorrido, se limpia el comercio elegido
   useEffect(() => setSelectedId(null), [waypoints]);
 
-  const mapWaypoints = useMemo(() => waypoints.map(({ latitude, longitude }) => ({ latitude, longitude })), [waypoints]);
+  const mapWaypoints = useMemo(
+    () => waypoints.map(({ latitude, longitude, name }) => ({ latitude, longitude, name })),
+    [waypoints],
+  );
 
-  // Paradas de compra del plan (grandes y de color) ordenadas a lo largo de la ruta.
+  // Paradas de compra del plan (grandes) ordenadas a lo largo de la ruta.
   const planStops = useMemo(
     () => [...(plan?.stops ?? [])].sort((a, b) => (a.routeIndex ?? a.order) - (b.routeIndex ?? b.order)),
     [plan],
   );
 
-  // Marcadores: las paradas de compra del plan + el resto de los comercios de paso (chicos).
+  // Pines: las paradas de compra del plan + el resto de los comercios de paso, con el logo de la cadena.
   const mapStores = useMemo(() => {
+    const logoOf = (name: string) => findBrandLogo(logos, name)?.imageDataUri;
     const buyIds = new Set(planStops.map((stop) => stop.storeBranchId));
     const buy = planStops
       .filter((stop) => stop.latitude !== undefined && stop.longitude !== undefined)
-      .map((stop) => ({ id: stop.storeBranchId, name: stop.storeName, latitude: stop.latitude!, longitude: stop.longitude!, buy: true }));
+      .map((stop) => ({ id: stop.storeBranchId, name: stop.storeName, latitude: stop.latitude!, longitude: stop.longitude!, buy: true, logo: logoOf(stop.storeName) }));
     const others = stores
       .filter((store) => !buyIds.has(store.branchId))
-      .map((store) => ({ id: store.branchId, name: store.storeName, latitude: store.latitude, longitude: store.longitude }));
+      .map((store) => ({ id: store.branchId, name: store.storeName, latitude: store.latitude, longitude: store.longitude, logo: logoOf(store.storeName) }));
     return [...buy, ...others];
-  }, [stores, planStops]);
+  }, [stores, planStops, logos]);
 
   const selected = stores.find((store) => store.branchId === selectedId) ?? null;
   const selectedStop = planStops.find((stop) => stop.storeBranchId === selectedId) ?? null;
@@ -103,15 +113,7 @@ export default function MapScreen() {
     showToast(`Sumamos "${place.name}" a tu recorrido.`, "success");
   };
 
-  const subtitle = !hasRoute
-    ? "Buscá un lugar o tocá el mapa"
-    : isLoadingRoute
-      ? "Buscando qué tenés de paso…"
-      : stores.length > 0
-        ? `Tenés ${stores.length} ${stores.length === 1 ? "comercio" : "comercios"} de paso`
-        : `${waypoints.length} paradas en orden`;
-
-  // props que comparten el mapa chico y el de pantalla completa
+  // props del mapa con ruta; el encuadre deja libre lo que tapan el buscador y la hoja
   const searchPin = search.place ? { latitude: search.place.latitude, longitude: search.place.longitude } : null;
   const mapProps = mapboxToken
     ? {
@@ -125,52 +127,62 @@ export default function MapScreen() {
         focus: search.focus,
         userLocation: search.userLocation,
         searchPin,
+        satellite,
+        fitPadding: { top: insets.top + TOP_OVERLAY + 24, bottom: PEEK_VISIBLE + 24 },
       }
     : null;
 
+  const sheetHeader = (
+    <View style={s.sheetHeader}>
+      <View style={s.sheetTitleBlock}>
+        <Text accessibilityRole="header" style={s.sheetTitle}>
+          {hasRoute ? "Comercios de paso" : "Explorá el mapa"}
+        </Text>
+        {!hasRoute ? <Text style={s.sheetHint}>Buscá un lugar o tocá el mapa</Text> : null}
+        {hasRoute && isLoadingRoute ? <Text style={s.sheetHint}>Buscando qué tenés de paso…</Text> : null}
+      </View>
+      {hasRoute && stores.length > 0 ? (
+        <AnimatedPressable accessibilityLabel="Ver todos los comercios de paso" haptic={false} onPress={() => setExpandSignal((n) => n + 1)}>
+          <Text style={s.seeAll}>Ver todos</Text>
+        </AnimatedPressable>
+      ) : null}
+    </View>
+  );
+
   return (
-    <SafeAreaView style={s.container} edges={["top"]}>
-      <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
-        <View style={s.header}>
-          <View>
-            <Text style={s.title}>Mapa</Text>
-            <Text style={s.subtitle}>{subtitle}</Text>
-          </View>
-          {hasRoute ? (
-            <AnimatedPressable accessibilityLabel="Editar recorrido" haptic={false} onPress={() => router.push("/route-builder")} style={s.edit}>
-              <Ionicons name="create-outline" size={19} color={colors.text.primary} />
-            </AnimatedPressable>
-          ) : null}
-        </View>
-
-        <PlaceSearchBox near={search.userLocation} onSelect={search.chooseResult} placeholder="Buscar un lugar: Shell, Técnica 5, Colón 1234…" />
-
+    <View style={s.container} onLayout={(event) => setContainerHeight(event.nativeEvent.layout.height)}>
+      {/* el mapa ocupa todo el fondo */}
+      <View style={StyleSheet.absoluteFill}>
         {!hasRoute ? (
-          <MapTools onLocated={search.showUser}>
-            <ExploreMap token={exploreToken} onPick={(point) => void search.choosePoint(point)} focus={search.focus} userLocation={search.userLocation} placePin={search.pinFocus} />
-          </MapTools>
+          <ExploreMap token={exploreToken} onPick={(point) => void search.choosePoint(point)} focus={search.focus} userLocation={search.userLocation} placePin={search.pinFocus} />
         ) : isLoadingRoute ? (
           <View style={s.mapLoading}>
-            <ActivityIndicator color={colors.brand.navy} />
+            <ActivityIndicator color={colors.brand.route} />
           </View>
         ) : mapProps ? (
-          <MapTools onLocated={search.showUser}>
-            <RouteMapView {...mapProps} />
-            <AnimatedPressable accessibilityLabel="Ver el mapa en pantalla completa" onPress={() => setFullMap(true)} style={s.expandButton}>
-              <Ionicons name="expand-outline" size={18} color={colors.text.primary} />
-              <Text style={s.expandLabel}>Ampliar</Text>
-            </AnimatedPressable>
-          </MapTools>
+          <RouteMapView {...mapProps} fill />
         ) : (
-          <View style={s.routeCard}>
-            <Ionicons name="navigate-outline" size={30} color={colors.brand.route} />
-            <Text style={s.routeLabel}>Tu recorrido de hoy</Text>
-            <Text style={s.routeHint}>
-              El mapa visual necesita un token de Mapbox configurado — ver docs/development/GEOCODING-SETUP.md (misma key).
-            </Text>
+          <View style={s.mapLoading}>
+            <Text style={s.sheetHint}>El mapa necesita un token de Mapbox configurado en el servidor.</Text>
           </View>
         )}
+      </View>
 
+      {/* buscador y botones flotando arriba */}
+      <View style={[s.searchLayer, { top: insets.top + spacing.sm }]}>
+        <PlaceSearchBox near={search.userLocation} onSelect={search.chooseResult} placeholder="Buscar un lugar: Shell, Técnica 5, Colón 1234…" />
+      </View>
+      <View style={[s.controlsLayer, { top: insets.top + TOP_OVERLAY }]}>
+        <MapControls
+          onLocated={search.showUser}
+          satellite={satellite}
+          onToggleSatellite={() => setSatellite((value) => !value)}
+          onEditRoute={hasRoute ? () => router.push("/route-builder") : undefined}
+        />
+      </View>
+
+      {/* hoja deslizable con los comercios y el plan */}
+      <MapSheet containerHeight={containerHeight} topGap={insets.top + TOP_OVERLAY} header={sheetHeader} expandSignal={expandSignal}>
         {search.place ? (
           <SearchResultCard
             place={search.place}
@@ -181,6 +193,12 @@ export default function MapScreen() {
         ) : null}
 
         {!hasRoute ? <NoRouteCard stopCount={waypoints.length} /> : null}
+
+        {hasRoute && selected && !selectedStop ? <SelectedStoreCard store={selected} /> : null}
+
+        {hasRoute ? (
+          <NearbyStoresList stores={stores} selectedId={selectedId} isLoading={isLoadingRoute} hasMap={Boolean(mapboxToken)} onSelect={setSelectedId} />
+        ) : null}
 
         {hasRoute && routePlans.length > 1 && planIsCurrent ? (
           <PlanTabs
@@ -201,18 +219,22 @@ export default function MapScreen() {
           )
         ) : null}
 
-        {hasRoute && selected && !selectedStop ? <SelectedStoreCard store={selected} /> : null}
-
-        {hasRoute ? (
-          <NearbyStoresList stores={stores} selectedId={selectedId} isLoading={isLoadingRoute} hasMap={Boolean(mapboxToken)} onSelect={setSelectedId} />
-        ) : null}
-
-        {hasRoute && mapProps ? (
-          <FullMapModal visible={fullMap} mapProps={mapProps} selectedStop={selectedStop} selectedStore={selected} onClose={() => setFullMap(false)} />
-        ) : null}
-
         {waypoints.length > 0 ? <RouteStops waypoints={waypoints} /> : null}
-      </ScrollView>
-    </SafeAreaView>
+      </MapSheet>
+    </View>
   );
 }
+
+const useStyles = makeStyles((colors) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.surface.base },
+    mapLoading: { flex: 1, alignItems: "center", justifyContent: "center", padding: spacing.lg, backgroundColor: colors.surface.secondary },
+    searchLayer: { position: "absolute", left: spacing.md, right: spacing.md, zIndex: 30 },
+    controlsLayer: { position: "absolute", right: spacing.md, zIndex: 20 },
+    sheetHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: spacing.md, paddingHorizontal: spacing.lg, paddingBottom: spacing.sm },
+    sheetTitleBlock: { flex: 1, gap: 2 },
+    sheetTitle: { fontFamily: typography.screenTitle.fontFamily, fontSize: 20, color: colors.text.primary },
+    sheetHint: { fontFamily: typography.body.fontFamily, fontSize: 13, color: colors.text.secondary },
+    seeAll: { fontFamily: typography.itemTitle.fontFamily, fontSize: 14, color: colors.brand.route },
+  }),
+);

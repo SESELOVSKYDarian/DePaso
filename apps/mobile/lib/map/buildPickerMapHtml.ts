@@ -14,7 +14,7 @@ export interface BuildPickerMapHtmlOptions {
  * app recibe `{ type: "pick", latitude, longitude }`. Mismo Mapbox GL JS que el mapa de rutas.
  */
 export function buildPickerMapHtml({ mapboxToken, center, isDark, pinColor }: BuildPickerMapHtmlOptions): string {
-  const mapStyle = isDark ? "mapbox://styles/mapbox/dark-v11" : "mapbox://styles/mapbox/streets-v12";
+  const mapStyle = isDark ? "mapbox://styles/mapbox/navigation-night-v1" : "mapbox://styles/mapbox/navigation-day-v1";
   return `<!DOCTYPE html>
 <html>
 <head>
