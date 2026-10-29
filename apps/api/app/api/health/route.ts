@@ -10,10 +10,9 @@ async function handle() {
     await prisma.$queryRaw`SELECT 1`;
     return NextResponse.json({ ok: true });
   } catch (error) {
-    const name = error instanceof Error ? error.name : "UnknownError";
-    const code = typeof (error as { code?: unknown })?.code === "string" ? (error as { code: string }).code : null;
-    const message = error instanceof Error ? error.message.replace(/\s+/g, " ").slice(0, 300) : "unknown";
-    return NextResponse.json({ ok: false, name, code, message }, { status: 503 });
+    // el detalle queda en el log del servidor; el público solo ve que no está disponible
+    console.error("health: la base no responde", error);
+    return NextResponse.json({ ok: false }, { status: 503 });
   }
 }
 

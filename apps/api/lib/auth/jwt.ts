@@ -17,6 +17,10 @@ export interface AccessPayload {
 function getSecret(): string {
   const secret = process.env.AUTH_SESSION_SECRET;
   if (!secret) throw new Error("AUTH_SESSION_SECRET no está configurada");
+  // un secreto corto se puede adivinar por fuerza bruta: en producción exige al menos 32 caracteres
+  if (process.env.NODE_ENV === "production" && secret.length < 32) {
+    throw new Error("AUTH_SESSION_SECRET es muy corta (mínimo 32 caracteres)");
+  }
   return secret;
 }
 

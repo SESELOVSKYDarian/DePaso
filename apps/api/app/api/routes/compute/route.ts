@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     return NextResponse.json(
-      { error: "ROUTE_COMPUTE_FAILED", message: error instanceof Error ? error.message : "unknown" },
+      { error: "ROUTE_COMPUTE_FAILED" },
       { status: 422 }
     );
   }

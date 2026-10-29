@@ -15,9 +15,15 @@ export function getTokenFromRequest(request: NextRequest): string | null {
   return request.cookies.get(SESSION_COOKIE_NAME)?.value ?? null;
 }
 
-/** Best-effort — sin infra de proxy real todavía, `x-forwarded-for` puede faltar en dev. */
+/**
+ * IP del cliente para los límites de intentos. Detrás del proxy de EasyPanel el cliente puede
+ * escribir lo que quiera en `x-forwarded-for`; lo que agrega el proxy va al FINAL, por eso se
+ * toma el último valor (el primero se podía inventar para esquivar el límite).
+ */
 export function getClientIp(request: NextRequest): string {
+  const realIp = request.headers.get("x-real-ip")?.trim();
+  if (realIp) return realIp;
   const forwardedFor = request.headers.get("x-forwarded-for");
-  if (forwardedFor) return forwardedFor.split(",")[0]!.trim();
+  if (forwardedFor) return forwardedFor.split(",").at(-1)!.trim();
   return "unknown";
 }

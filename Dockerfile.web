@@ -21,4 +21,5 @@ RUN cd apps/mobile && npx expo export -p web --output-dir /app/web-dist
 FROM nginx:1.27-alpine
 COPY --from=build /app/web-dist /usr/share/nginx/html
 COPY nginx.web.conf /etc/nginx/conf.d/default.conf
+COPY nginx.security-headers.conf /etc/nginx/security-headers.conf
 EXPOSE 80
