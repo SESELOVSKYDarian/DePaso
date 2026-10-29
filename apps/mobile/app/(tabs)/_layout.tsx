@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { typography } from "@depaso/design-tokens";
+import { useBreakpoint } from "@/lib/responsive/useBreakpoint";
 import { useColors } from "@/lib/theme";
 
 /**
@@ -10,10 +11,13 @@ import { useColors } from "@/lib/theme";
  */
 export default function TabsLayout() {
   const colors = useColors();
+  // En escritorio el menú pasa a la izquierda; en celu y tablet queda abajo.
+  const { isDesktop } = useBreakpoint();
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
+        tabBarPosition: isDesktop ? "left" : "bottom",
         // Las pestañas son pares, no una jerarquía: un fundido corto, nunca un deslizamiento.
         animation: "fade",
         // Fondo del tema detrás de cada pestaña: sin esto el fundido pasaba por blanco.

@@ -40,3 +40,19 @@ del servicio (`pnpm data:sepa:import --wholesale`) y después `pnpm data:sepa:ba
 
 ## 4. App mobile
 `EXPO_PUBLIC_API_URL=https://<dominio-de-la-api>` y volver a abrir Expo.
+
+## 5. Web (la app en el navegador)
+La misma app de Expo se exporta como sitio web y se sirve con nginx. Es un **segundo servicio App**
+en el mismo proyecto de EasyPanel, aparte de la API.
+
+1. **Create Service → App**, origen GitHub `SESELOVSKYDarian/DePaso`, rama `easypanel`.
+2. **Build**: elegí **Dockerfile** y en la ruta del archivo escribí `Dockerfile.web`
+   (en la raíz del repo; ya trae su `Dockerfile.web.dockerignore`).
+3. **Environment**: `EXPO_PUBLIC_API_URL=https://<dominio-de-la-api>` (si EasyPanel pasa las variables al
+   build, se usa esa; si no, el Dockerfile ya trae la URL actual como valor por defecto).
+4. **Domains**: puerto **80**. Ese dominio es la URL de la web.
+5. **Deploy**. Tarda unos minutos porque compila la app.
+6. En el servicio de la **API**, agregá `CORS_ALLOWED_ORIGINS=https://<dominio-de-la-web>` y
+   volvé a desplegarla: sin eso el navegador bloquea las llamadas.
+
+Para probarla en local: `cd apps/mobile && EXPO_PUBLIC_API_URL=http://localhost:3000 npx expo start --web`.

@@ -23,6 +23,7 @@ import { DetourProvider } from "@/lib/detour/DetourContext";
 import { TodayRouteProvider } from "@/lib/routeContext/TodayRouteContext";
 import { ToastProvider } from "@/components/common/Toast";
 import { PurchaseProvider } from "@/lib/purchase/PurchaseContext";
+import { CONTENT_MAX_WIDTH, useBreakpoint } from "@/lib/responsive/useBreakpoint";
 
 /**
  * Hoja que sube desde abajo. En iOS es la hoja nativa (con manija y alturas); en Android se usa
@@ -237,7 +238,14 @@ export function ErrorBoundary({ error, retry }: { error: Error; retry: () => Pro
  */
 function ThemedRoot({ children }: { children: ReactNode }) {
   const colors = useColors();
-  return <View style={{ flex: 1, backgroundColor: colors.surface.base }}>{children}</View>;
+  const { isTablet } = useBreakpoint();
+  // En pantallas grandes (tablet, escritorio, web) el contenido se centra con un ancho máximo
+  // y los costados quedan con el fondo del tema; en el celu ocupa todo el ancho.
+  return (
+    <View style={{ flex: 1, backgroundColor: colors.surface.base, alignItems: "center" }}>
+      <View style={{ flex: 1, width: "100%", maxWidth: isTablet ? CONTENT_MAX_WIDTH : undefined }}>{children}</View>
+    </View>
+  );
 }
 
 export default function RootLayout() {

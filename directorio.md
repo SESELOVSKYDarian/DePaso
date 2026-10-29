@@ -54,6 +54,7 @@ Monorepo pnpm + Turborepo. Todo lo de un tema vive en una sola carpeta.
 | `lib/auth/` | `AuthContext` (estado global del login) y `secureStore` (tokens guardados en el celular). |
 | `lib/apiClient.ts` | Clientes de la API y renovación automática del access token. |
 | `lib/theme/` | Tema claro / oscuro. |
+| `lib/responsive/` | Tamaño de pantalla (celular, tablet, escritorio) y giro del dispositivo. |
 | `lib/{lists,places,routeContext,purchase,voice}/` | Estado y lógica por tema. |
 
 Pantallas que ya están divididas en `features/`: `assistant`, `route-context`, `map`, `list-detail`,
@@ -80,6 +81,7 @@ Pantallas que ya están divididas en `features/`: `assistant`, `route-context`, 
 |---|---|
 | `README.md` | Presentación, instalación rápida y cumplimiento de la consigna. |
 | `Dockerfile`, `.dockerignore` | Imagen de la API para EasyPanel. |
+| `Dockerfile.web`, `nginx.web.conf` | Imagen de la versión web de la app (Expo exportado + nginx) para EasyPanel. |
 | `docker-compose.yml` | MySQL local para desarrollo. |
 | `.env.example` | Variables de entorno (sin valores reales). |
 | `docs/GUIA-DE-INSTALACION.md` | Cómo instalar y configurar backend, base de datos y app. |
