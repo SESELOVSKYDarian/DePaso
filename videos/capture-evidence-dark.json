@@ -1,0 +1,169 @@
+{
+  "mode": "Real Expo UI, local intercepted demo responses; not a live-backend verification.",
+  "seen": [
+    "/api/auth/me",
+    "/api/lists/list",
+    "/api/places/list",
+    "/api/route-contexts/list",
+    "/api/home/feed",
+    "/api/lists/detail",
+    "/api/products/search",
+    "/api/products/facets",
+    "/api/ai/shopping-parse",
+    "/api/payment-methods/list",
+    "/api/optimization",
+    "/api/stores/logos",
+    "/api/announcements/list",
+    "/api/preferences/products/list",
+    "/api/preferences/stores/list",
+    "/api/merchant/requests/list",
+    "/api/merchant/claimable-branches",
+    "/api/merchant/branch",
+    "/api/merchant/prices/list",
+    "/api/admin/merchant-requests",
+    "/api/auth/providers"
+  ],
+  "unhandled": [],
+  "screens": [
+    {
+      "name": "home",
+      "url": "http://localhost:8082/",
+      "text": "Hola, Alex\n¿Qué te queda de paso hoy?\n\nTU LISTA\nCompra de hoy\nVer\n\n1 × Leche entera 1 L\n1 × Yerba mate 1 kg\n1 × Fideos 500 g\n1 × Arroz 1 kg\nComprando lo más barato de cada uno\n$9.600\n\nCasa → Trabajo\nIniciar mi recorrido\nTe mostramos lo más barato según cuánto te desviás.\nGuardar esta ruta con un nombre\nCambios en tu lista\n\nYerba mate 1 kg\nBajó en Almacén del Centro: $4.500 → $4.200\n-6,67%\n\n\nInicio\n\n\nListas\n\n\nMapa\n\n\nActividad\n\n\nPerfil"
+    },
+    {
+      "name": "lists",
+      "url": "http://localhost:8082/lists",
+      "text": "Mis listas\n\n\nTodas\nMías\nCompartidas\n\nCompra de hoy\n4 productos\n\nCompartida\n\n\n\nInicio\n\n\nListas\n\n\nMapa\n\n\nActividad\n\n\nPerfil"
+    },
+    {
+      "name": "list",
+      "url": "http://localhost:8082/lists/11111111-1111-4111-8111-111111111111",
+      "text": "Lista\n\n\n\nLeche entera 1 L\n\n1\n\n\n\nYerba mate 1 kg\n\n1\n\n\n\nFideos 500 g\n\n1\n\n\n\nArroz 1 kg\n\n1\n\n\n\nSumar producto\n\nArmar con IA"
+    },
+    {
+      "name": "search",
+      "url": "http://localhost:8082/lists/search?listId=11111111-1111-4111-8111-111111111111",
+      "text": "Agregar producto\nLeches\nYerbas\nArroz\n\nLeche entera 1 L\n1u\nSumar"
+    },
+    {
+      "name": "voice",
+      "url": "http://localhost:8082/lists/assistant?listId=11111111-1111-4111-8111-111111111111",
+      "text": "Armar con IA\nDecime lo que te falta\nTocá el micrófono y nombrá todo de corrido. Después elegís las marcas.\n\n \nPrefiero escribir"
+    },
+    {
+      "name": "voice-review",
+      "url": "http://localhost:8082/lists/assistant?listId=11111111-1111-4111-8111-111111111111",
+      "text": "Armar con IA\nEsto entendimos\nDijiste\nCorregir\nleche, yerba y fideos\nElegí la marca de cada uno, o dejá “Me da igual”.\nLeche entera 1 L\n\n1\n\nSe agrega: Leche entera 1 L\nCambiar\nQuitar\nYerba mate 1 kg\n\n1\n\nSe agrega: Yerba mate 1 kg\nCambiar\nQuitar\nFideos 500 g\n\n1\n\nSe agrega: Fideos 500 g\nCambiar\nQuitar\nAgregar 3 productos\nVolver a decirlo"
+    },
+    {
+      "name": "places",
+      "url": "http://localhost:8082/places",
+      "text": "Mis lugares\n🏠\nCasa\nZona Güemes, Mar del Plata\n★\n💼\nTrabajo\nCentro, Mar del Plata\n★\n+ Agregar lugar"
+    },
+    {
+      "name": "route",
+      "url": "http://localhost:8082/route-context",
+      "text": "\nElegí tu recorrido\n\nUsar mi ubicación actual\n\n📍\nTu recorrido de hoy\n2 paradas · Casa → Trabajo\nArmar una ruta nueva\nAgregar destino\n\nBuscar un lugar…\n🏠\nCasa\n💼\nTrabajo\nVer en el mapa\nIniciar recorrido"
+    },
+    {
+      "name": "route-builder",
+      "url": "http://localhost:8082/route-builder",
+      "text": "\nArmar ruta\nSumá las paradas de tu recorrido.\n\nSeleccioná los lugares que vas a visitar y armamos la mejor ruta.\nMis lugares\nEditar\n🏠\nCasa\nZona Güemes, Mar del Plata\n💼\nTrabajo\nCentro, Mar del Plata\n\nUbicación actual\n\nElegir en el mapa\n\nAgregar lugar de hoy\nListo"
+    },
+    {
+      "name": "detour",
+      "url": "http://localhost:8082/detour",
+      "text": "Cuánto me desvío\nUna cuadra son unos 100 metros. Se usa al armar tu compra de paso; el nivel hipereconómico no tiene tope.\nSin desvíos\nComercios casi sobre tu camino.\n\n2\ncuadras\n\nIntermedio\nUn desvío razonable si ahorrás más.\n\n15\ncuadras\n"
+    },
+    {
+      "name": "payments",
+      "url": "http://localhost:8082/payment-methods",
+      "text": "Métodos de pago\nElegí con qué pagás y descontamos esas promos en tu Top 3, según el comercio y el día.\nBilleteras\n\nCuenta DNI\n\n\nMercado Pago\n\n\nMODO\nTarjetas\n\nVisa\n\nMastercard\n\nAmerican Express\n\nCabal\n\nNaranja X\nLas promos son informativas: confirmá condiciones, tope y vigencia en el comercio antes de pagar.\nGuardar"
+    },
+    {
+      "name": "optimization-setup",
+      "url": "http://localhost:8082/optimization",
+      "text": "OPTIMIZAR COMPRA\nEncontrá tu mejor compra\nUsamos tu recorrido, lista y preferencias para comparar precios reales sin hacerte salirte del camino.\n1. Elegí una lista\n\nCompra de hoy\n4 productos\n\n2. Confirmá tu recorrido\n\nCasa → Trabajo\n2 paradas para hoy\n\nVer mi Top 3"
+    },
+    {
+      "name": "plans",
+      "url": "http://localhost:8082/optimization",
+      "text": "TU COMPRA\nComprá mejor, de paso\n\nOpciones de compra\nMejores precios\nTres formas de comprar, de menos a más desvío. En cada una, lo más barato con las promos de tus medios de pago.\nLos precios y ahorros son estimaciones informativas y pueden variar por sucursal, stock, promociones, medios de pago o actualizaciones. Verificá el precio final en el comercio.\nHoy no encontramos promos de tus medios de pago en estos comercios, así que los precios van sin descuento.\n\nSin desvíos\nA 2 cuadras de tu camino como mucho\nCosto de toda tu lista\n$ 9.600\n1 comercio  ·  100 m extra  · 1 min\nTu lista en un comercio cercano a tu recorrido.\nVer mi ruta en el mapa\n\nEmpezar compra\n\n\nIntermedio\nRECOMENDADO\nAlgunos desvíos, más ahorro\nCosto de toda tu lista\n$ 9.300\nAhorrás $ 300\n1 comercio  ·  400 m extra  · 3 min\nTu lista en un comercio cercano a tu recorrido.\nVer mi ruta en el mapa\n\nEmpezar compra\n\n\nHipereconómico\nLo más barato, sin importar tu ruta\nCosto de toda tu lista\n$ 9.000\nAhorrás $ 600\n1 comercio  ·  900 m extra  · 6 min\nTu lista en un comercio cercano a tu recorrido.\nVer mi ruta en el mapa\n\nEmpezar compra\n"
+    },
+    {
+      "name": "best-prices",
+      "url": "http://localhost:8082/optimization",
+      "text": "TU COMPRA\nComprá mejor, de paso\n\nOpciones de compra\nMejores precios\nDónde está más barato cada cosa de tu lista. Precio por unidad, sin promos.\nLeche entera 1 L\nMás barato\n\nAlmacén del Centro · Centro\nA 1 cuadra de tu camino\n$ 1.800\nYerba mate 1 kg\nMás barato\n\nAlmacén del Centro · Centro\nA 1 cuadra de tu camino\n$ 4.200\nFideos 500 g\nMás barato\n\nAlmacén del Centro · Centro\nA 1 cuadra de tu camino\n$ 1.500\nArroz 1 kg\nMás barato\n\nAlmacén del Centro · Centro\nA 1 cuadra de tu camino\n$ 2.100"
+    },
+    {
+      "name": "plans-again",
+      "url": "http://localhost:8082/optimization",
+      "text": "TU COMPRA\nComprá mejor, de paso\n\nOpciones de compra\nMejores precios\nTres formas de comprar, de menos a más desvío. En cada una, lo más barato con las promos de tus medios de pago.\nLos precios y ahorros son estimaciones informativas y pueden variar por sucursal, stock, promociones, medios de pago o actualizaciones. Verificá el precio final en el comercio.\nHoy no encontramos promos de tus medios de pago en estos comercios, así que los precios van sin descuento.\n\nSin desvíos\nA 2 cuadras de tu camino como mucho\nCosto de toda tu lista\n$ 9.600\n1 comercio  ·  100 m extra  · 1 min\nTu lista en un comercio cercano a tu recorrido.\nVer mi ruta en el mapa\n\nEmpezar compra\n\n\nIntermedio\nRECOMENDADO\nAlgunos desvíos, más ahorro\nCosto de toda tu lista\n$ 9.300\nAhorrás $ 300\n1 comercio  ·  400 m extra  · 3 min\nTu lista en un comercio cercano a tu recorrido.\nVer mi ruta en el mapa\n\nEmpezar compra\n\n\nHipereconómico\nLo más barato, sin importar tu ruta\nCosto de toda tu lista\n$ 9.000\nAhorrás $ 600\n1 comercio  ·  900 m extra  · 6 min\nTu lista en un comercio cercano a tu recorrido.\nVer mi ruta en el mapa\n\nEmpezar compra\n"
+    },
+    {
+      "name": "purchase",
+      "url": "http://localhost:8082/purchase",
+      "text": "\nMODO COMPRA\n0 de 4 productos\n\nAlmacén del Centro\n4 productos · $9.600\nLos precios y ahorros son estimaciones informativas y pueden variar por sucursal, stock, promociones, medios de pago o actualizaciones. Verificá el precio final en el comercio.\nAlmacén del Centro (Mar del Plata · comercio de ejemplo)\n\n1 × Leche entera 1 L\nPublicado por el comercio · Confianza alta · Actualizado hace 6h\n$1.800\n\n1 × Yerba mate 1 kg\nPublicado por el comercio · Confianza alta · Actualizado hace 6h\n$4.200\n\n1 × Fideos 500 g\nPublicado por el comercio · Confianza alta · Actualizado hace 6h\n$1.500\n\n1 × Arroz 1 kg\nPublicado por el comercio · Confianza alta · Actualizado hace 6h\n$2.100\n0/4 productos\n$0\nFinalizar compra"
+    },
+    {
+      "name": "purchase-check",
+      "url": "http://localhost:8082/purchase",
+      "text": "\nMODO COMPRA\n2 de 4 productos\n\nAlmacén del Centro\n4 productos · $9.600\nLos precios y ahorros son estimaciones informativas y pueden variar por sucursal, stock, promociones, medios de pago o actualizaciones. Verificá el precio final en el comercio.\nAlmacén del Centro (Mar del Plata · comercio de ejemplo)\n✓\n\n1 × Leche entera 1 L\nPublicado por el comercio · Confianza alta · Actualizado hace 6h\n$1.800\n✓\n\n1 × Yerba mate 1 kg\nPublicado por el comercio · Confianza alta · Actualizado hace 6h\n$4.200\n\n1 × Fideos 500 g\nPublicado por el comercio · Confianza alta · Actualizado hace 6h\n$1.500\n\n1 × Arroz 1 kg\nPublicado por el comercio · Confianza alta · Actualizado hace 6h\n$2.100\n2/4 productos\n$6.000\nFinalizar compra"
+    },
+    {
+      "name": "purchase-done",
+      "url": "http://localhost:8082/purchase",
+      "text": "\nMODO COMPRA\n4 de 4 productos\n\nAlmacén del Centro\nListo ✓\nLos precios y ahorros son estimaciones informativas y pueden variar por sucursal, stock, promociones, medios de pago o actualizaciones. Verificá el precio final en el comercio.\nAlmacén del Centro (Mar del Plata · comercio de ejemplo)\n✓\n\n1 × Leche entera 1 L\nPublicado por el comercio · Confianza alta · Actualizado hace 6h\n$1.800\n✓\n\n1 × Yerba mate 1 kg\nPublicado por el comercio · Confianza alta · Actualizado hace 6h\n$4.200\n✓\n\n1 × Fideos 500 g\nPublicado por el comercio · Confianza alta · Actualizado hace 6h\n$1.500\n✓\n\n1 × Arroz 1 kg\nPublicado por el comercio · Confianza alta · Actualizado hace 6h\n$2.100\n4/4 productos\n$9.600\nFinalizar compra"
+    },
+    {
+      "name": "activity",
+      "url": "http://localhost:8082/activity",
+      "text": "Actividad\nNovedades\nPara vos\n\nBienvenido a DePaso\nTu lista, tus recorridos y mejores decisiones de compra.\nhace 7 h\n\n\nInicio\n\n\nListas\n\n\nMapa\n\n\nActividad\n\n\nPerfil"
+    },
+    {
+      "name": "profile",
+      "url": "http://localhost:8082/profile",
+      "text": "Mi perfil\nA\nAlex\ndemo@example.com\nMis preferencias\n\nMarcas y comercios\n0 productos\n\n\nLugares guardados\n2 lugares\n\n\nCuánto me desvío\n2 y 15 cuadras\n\n\nMétodos de pago\n\nComercios\n\nQuiero ser comercio\n\nConfiguración\n\nApariencia\nOscuro\n\n\nNotificaciones\n\n\nPrivacidad y datos\n\n\nAyuda\n\n\nCerrar sesión\n\n\nInicio\n\n\nListas\n\n\nMapa\n\n\nActividad\n\n\nPerfil"
+    },
+    {
+      "name": "appearance",
+      "url": "http://localhost:8082/appearance",
+      "text": "Apariencia\nElegí cómo se ve DePaso. En automático usa el modo claro u oscuro de tu teléfono.\n\nAutomático\n\nClaro\n\nOscuro\n"
+    },
+    {
+      "name": "privacy",
+      "url": "http://localhost:8082/privacy",
+      "text": "Privacidad y datos\nPrivacidad y datos\nEstos son tus derechos sobre tu información en DePaso. Podés ejercerlos acá directamente o escribiendo a privacidad@depaso.app.\n\nDescargar mis datos\nCuenta, lugares, listas, preferencias y reportes de precio, en un archivo que podés compartir o guardar.\nDescargar\n\nCorregir mis datos\nEditá el nombre visible de tu cuenta.\nEditar\n\nBorrar lugares\nElimina los 2 lugares guardados de tu cuenta (Casa, Trabajo, etc.).\nBorrar todos\n\nEliminar cuenta\nBorra tu acceso y anonimiza tu cuenta. No se puede deshacer.\nEliminar cuenta"
+    },
+    {
+      "name": "preferences",
+      "url": "http://localhost:8082/preferences",
+      "text": "Mis preferencias\nMarcas de producto\nEl motor de optimización respeta esto antes de rankear (sección 87): \"marca exacta\" nunca se reemplaza, \"preferida\" suma puntos, \"cualquiera\" no restringe.\n🏷️\nSin preferencias de marca\nElegí un producto y decile a DePaso si querés siempre la misma marca.\n+ Agregar preferencia de marca\nComercios por categoría\n\"Obligatorio\" fija el comercio antes del ranking; \"preferido\" suma puntos sin descartar otras opciones (BUSINESS-RULES.md).\n🏬\nSin preferencias de comercio\nEj.: siempre la carnicería de siempre, aunque haya otra más barata.\n+ Agregar preferencia de comercio\n\nNo se pudo\nNo pudimos cargar tus preferencias."
+    },
+    {
+      "name": "merchant-request",
+      "url": "http://localhost:8082/merchant/request",
+      "text": "Quiero ser comercio\nSi tenés un comercio y querés publicar tus productos y precios en DePaso, completá estos datos. Un administrador revisa la solicitud y, si la aprueba, tu cuenta pasa a ser de comercio.\nYa aparece en DePaso\nEs nuevo\nLos supermercados que publican precios en SEPA ya están cargados. Buscá el tuyo y pedí administrarlo: vas a poder corregir precios y nombres.\nBuscar tu supermercado\nNo encontramos sucursales libres con eso. Si tu comercio no está, elegí \"Es nuevo\".\nTeléfono de contacto\nCorreo de contacto\nTe vamos a llamar o escribir para confirmar que trabajás en el comercio antes de aprobarlo. Sin esa verificación no se da el alta.\nElegí tu sucursal"
+    },
+    {
+      "name": "merchant",
+      "url": "http://localhost:8082/merchant",
+      "text": "Mi comercio\n\nAlmacén del Centro\nMar del Plata · ejemplo\n4\nproductos\n\nAgregar producto\n\n\nLeche entera 1 L\n1u\n$1.800,00\n\n\nYerba mate 1 kg\n1u\n$4.200,00\n\n\nFideos 500 g\n1u\n$1.500,00\n\n\nArroz 1 kg\n1u\n$2.100,00\n"
+    },
+    {
+      "name": "admin",
+      "url": "http://localhost:8082/admin/merchant-requests",
+      "text": "Solicitudes de comercio\n✅\nSin solicitudes pendientes\nCuando un usuario pida ser comercio va a aparecer acá."
+    },
+    {
+      "name": "login",
+      "url": "http://localhost:8082/login",
+      "text": "Iniciá sesión\nAhorrá en el camino, en serio.\n\n\n\nOlvidé mi contraseña\nIngresar\no\n\nContinuar con Google\n\nContinuar con Meta\n\nContinuar con Discord\n¿No tenés cuenta? Registrate"
+    },
+    {
+      "name": "register",
+      "url": "http://localhost:8082/register",
+      "text": "\nCreá tu cuenta\nElegí cómo querés empezar\n\nContinuar con Google\n\nContinuar con Meta\n\nContinuar con Discord\no\n\nContinuar con Email\nYa tengo una cuenta. Iniciar sesión"
+    }
+  ]
+}

@@ -1,0 +1,460 @@
+{
+  "user": {
+    "id": "demo-user",
+    "email": "demo@example.com",
+    "displayName": "Alex",
+    "marketingOptIn": false,
+    "role": "ADMIN",
+    "createdAt": "2026-10-29T15:00:00.000Z"
+  },
+  "list": {
+    "id": "11111111-1111-4111-8111-111111111111",
+    "name": "Compra de hoy",
+    "archivedAt": null,
+    "createdAt": "2026-10-29T15:00:00.000Z",
+    "updatedAt": "2026-10-29T15:00:00.000Z",
+    "role": "OWNER",
+    "ownerName": null,
+    "members": [
+      {
+        "userId": "demo-two",
+        "email": "hogar@example.com",
+        "displayName": "Sofi"
+      }
+    ],
+    "items": [
+      {
+        "id": "item-0",
+        "productId": "leche",
+        "productName": "Leche entera 1 L",
+        "brandName": null,
+        "imageUrl": null,
+        "category": "Lácteos",
+        "quantity": 1,
+        "note": null
+      },
+      {
+        "id": "item-1",
+        "productId": "yerba",
+        "productName": "Yerba mate 1 kg",
+        "brandName": null,
+        "imageUrl": null,
+        "category": "Almacén",
+        "quantity": 1,
+        "note": null
+      },
+      {
+        "id": "item-2",
+        "productId": "fideos",
+        "productName": "Fideos 500 g",
+        "brandName": null,
+        "imageUrl": null,
+        "category": "Almacén",
+        "quantity": 1,
+        "note": null
+      },
+      {
+        "id": "item-3",
+        "productId": "arroz",
+        "productName": "Arroz 1 kg",
+        "brandName": null,
+        "imageUrl": null,
+        "category": "Almacén",
+        "quantity": 1,
+        "note": null
+      }
+    ]
+  },
+  "products": [
+    {
+      "id": "leche",
+      "name": "Leche entera 1 L",
+      "category": "Lácteos",
+      "price": 1800,
+      "brandName": null,
+      "imageUrl": null,
+      "variants": [
+        {
+          "id": "leche-v",
+          "name": "Leche entera 1 L",
+          "unit": "u",
+          "unitSize": 1
+        }
+      ]
+    },
+    {
+      "id": "yerba",
+      "name": "Yerba mate 1 kg",
+      "category": "Almacén",
+      "price": 4200,
+      "brandName": null,
+      "imageUrl": null,
+      "variants": [
+        {
+          "id": "yerba-v",
+          "name": "Yerba mate 1 kg",
+          "unit": "u",
+          "unitSize": 1
+        }
+      ]
+    },
+    {
+      "id": "fideos",
+      "name": "Fideos 500 g",
+      "category": "Almacén",
+      "price": 1500,
+      "brandName": null,
+      "imageUrl": null,
+      "variants": [
+        {
+          "id": "fideos-v",
+          "name": "Fideos 500 g",
+          "unit": "u",
+          "unitSize": 1
+        }
+      ]
+    },
+    {
+      "id": "arroz",
+      "name": "Arroz 1 kg",
+      "category": "Almacén",
+      "price": 2100,
+      "brandName": null,
+      "imageUrl": null,
+      "variants": [
+        {
+          "id": "arroz-v",
+          "name": "Arroz 1 kg",
+          "unit": "u",
+          "unitSize": 1
+        }
+      ]
+    }
+  ],
+  "places": [
+    {
+      "id": "home",
+      "name": "Casa",
+      "type": "HOME",
+      "address": "Zona Güemes, Mar del Plata",
+      "latitude": -38.021,
+      "longitude": -57.539,
+      "isFavorite": true,
+      "createdAt": "2026-10-29T15:00:00.000Z",
+      "updatedAt": "2026-10-29T15:00:00.000Z"
+    },
+    {
+      "id": "work",
+      "name": "Trabajo",
+      "type": "WORK",
+      "address": "Centro, Mar del Plata",
+      "latitude": -38.005,
+      "longitude": -57.548,
+      "isFavorite": true,
+      "createdAt": "2026-10-29T15:00:00.000Z",
+      "updatedAt": "2026-10-29T15:00:00.000Z"
+    }
+  ],
+  "plans": [
+    {
+      "label": "FASTEST",
+      "promoSavings": 0,
+      "appliedPromos": [],
+      "totalProductCost": 9600,
+      "estimatedTravelCost": 0,
+      "estimatedEffectiveCost": 9600,
+      "additionalDistanceMeters": 100,
+      "additionalTimeSeconds": 60,
+      "numberOfStops": 1,
+      "missingProductIds": [],
+      "missingProductNames": [],
+      "priceConfidence": "HIGH",
+      "estimatedSavings": 0,
+      "stores": [
+        "Almacén del Centro"
+      ],
+      "stops": [
+        {
+          "storeBranchId": "store-1",
+          "storeName": "Almacén del Centro",
+          "branchName": "Centro",
+          "address": "Mar del Plata · comercio de ejemplo",
+          "order": 0,
+          "latitude": -38.011,
+          "longitude": -57.543,
+          "distanceFromRouteMeters": 100,
+          "detourMeters": 100,
+          "detourSeconds": 60,
+          "routeIndex": 1,
+          "items": [
+            {
+              "productId": "leche",
+              "productName": "Leche entera 1 L",
+              "quantity": 1,
+              "unitPrice": 1800,
+              "sourceType": "MERCHANT",
+              "reportedAt": "2026-10-29T15:00:00.000Z",
+              "confidence": "HIGH"
+            },
+            {
+              "productId": "yerba",
+              "productName": "Yerba mate 1 kg",
+              "quantity": 1,
+              "unitPrice": 4200,
+              "sourceType": "MERCHANT",
+              "reportedAt": "2026-10-29T15:00:00.000Z",
+              "confidence": "HIGH"
+            },
+            {
+              "productId": "fideos",
+              "productName": "Fideos 500 g",
+              "quantity": 1,
+              "unitPrice": 1500,
+              "sourceType": "MERCHANT",
+              "reportedAt": "2026-10-29T15:00:00.000Z",
+              "confidence": "HIGH"
+            },
+            {
+              "productId": "arroz",
+              "productName": "Arroz 1 kg",
+              "quantity": 1,
+              "unitPrice": 2100,
+              "sourceType": "MERCHANT",
+              "reportedAt": "2026-10-29T15:00:00.000Z",
+              "confidence": "HIGH"
+            }
+          ]
+        }
+      ],
+      "routeWaypoints": [
+        {
+          "id": "home",
+          "name": "Casa",
+          "type": "HOME",
+          "address": "Zona Güemes, Mar del Plata",
+          "latitude": -38.021,
+          "longitude": -57.539,
+          "isFavorite": true,
+          "createdAt": "2026-10-29T15:00:00.000Z",
+          "updatedAt": "2026-10-29T15:00:00.000Z"
+        },
+        {
+          "latitude": -38.011,
+          "longitude": -57.543
+        },
+        {
+          "id": "work",
+          "name": "Trabajo",
+          "type": "WORK",
+          "address": "Centro, Mar del Plata",
+          "latitude": -38.005,
+          "longitude": -57.548,
+          "isFavorite": true,
+          "createdAt": "2026-10-29T15:00:00.000Z",
+          "updatedAt": "2026-10-29T15:00:00.000Z"
+        }
+      ],
+      "explanation": "Tu lista en un comercio cercano a tu recorrido."
+    },
+    {
+      "label": "BALANCED",
+      "promoSavings": 0,
+      "appliedPromos": [],
+      "totalProductCost": 9300,
+      "estimatedTravelCost": 0,
+      "estimatedEffectiveCost": 9300,
+      "additionalDistanceMeters": 400,
+      "additionalTimeSeconds": 180,
+      "numberOfStops": 1,
+      "missingProductIds": [],
+      "missingProductNames": [],
+      "priceConfidence": "HIGH",
+      "estimatedSavings": 300,
+      "stores": [
+        "Almacén del Centro"
+      ],
+      "stops": [
+        {
+          "storeBranchId": "store-1",
+          "storeName": "Almacén del Centro",
+          "branchName": "Centro",
+          "address": "Mar del Plata · comercio de ejemplo",
+          "order": 0,
+          "latitude": -38.011,
+          "longitude": -57.543,
+          "distanceFromRouteMeters": 400,
+          "detourMeters": 400,
+          "detourSeconds": 180,
+          "routeIndex": 1,
+          "items": [
+            {
+              "productId": "leche",
+              "productName": "Leche entera 1 L",
+              "quantity": 1,
+              "unitPrice": 1800,
+              "sourceType": "MERCHANT",
+              "reportedAt": "2026-10-29T15:00:00.000Z",
+              "confidence": "HIGH"
+            },
+            {
+              "productId": "yerba",
+              "productName": "Yerba mate 1 kg",
+              "quantity": 1,
+              "unitPrice": 3900,
+              "sourceType": "MERCHANT",
+              "reportedAt": "2026-10-29T15:00:00.000Z",
+              "confidence": "HIGH"
+            },
+            {
+              "productId": "fideos",
+              "productName": "Fideos 500 g",
+              "quantity": 1,
+              "unitPrice": 1500,
+              "sourceType": "MERCHANT",
+              "reportedAt": "2026-10-29T15:00:00.000Z",
+              "confidence": "HIGH"
+            },
+            {
+              "productId": "arroz",
+              "productName": "Arroz 1 kg",
+              "quantity": 1,
+              "unitPrice": 2100,
+              "sourceType": "MERCHANT",
+              "reportedAt": "2026-10-29T15:00:00.000Z",
+              "confidence": "HIGH"
+            }
+          ]
+        }
+      ],
+      "routeWaypoints": [
+        {
+          "id": "home",
+          "name": "Casa",
+          "type": "HOME",
+          "address": "Zona Güemes, Mar del Plata",
+          "latitude": -38.021,
+          "longitude": -57.539,
+          "isFavorite": true,
+          "createdAt": "2026-10-29T15:00:00.000Z",
+          "updatedAt": "2026-10-29T15:00:00.000Z"
+        },
+        {
+          "latitude": -38.011,
+          "longitude": -57.543
+        },
+        {
+          "id": "work",
+          "name": "Trabajo",
+          "type": "WORK",
+          "address": "Centro, Mar del Plata",
+          "latitude": -38.005,
+          "longitude": -57.548,
+          "isFavorite": true,
+          "createdAt": "2026-10-29T15:00:00.000Z",
+          "updatedAt": "2026-10-29T15:00:00.000Z"
+        }
+      ],
+      "explanation": "Tu lista en un comercio cercano a tu recorrido."
+    },
+    {
+      "label": "CHEAPEST",
+      "promoSavings": 0,
+      "appliedPromos": [],
+      "totalProductCost": 9000,
+      "estimatedTravelCost": 0,
+      "estimatedEffectiveCost": 9000,
+      "additionalDistanceMeters": 900,
+      "additionalTimeSeconds": 360,
+      "numberOfStops": 1,
+      "missingProductIds": [],
+      "missingProductNames": [],
+      "priceConfidence": "HIGH",
+      "estimatedSavings": 600,
+      "stores": [
+        "Almacén del Centro"
+      ],
+      "stops": [
+        {
+          "storeBranchId": "store-1",
+          "storeName": "Almacén del Centro",
+          "branchName": "Centro",
+          "address": "Mar del Plata · comercio de ejemplo",
+          "order": 0,
+          "latitude": -38.011,
+          "longitude": -57.543,
+          "distanceFromRouteMeters": 900,
+          "detourMeters": 900,
+          "detourSeconds": 360,
+          "routeIndex": 1,
+          "items": [
+            {
+              "productId": "leche",
+              "productName": "Leche entera 1 L",
+              "quantity": 1,
+              "unitPrice": 1800,
+              "sourceType": "MERCHANT",
+              "reportedAt": "2026-10-29T15:00:00.000Z",
+              "confidence": "HIGH"
+            },
+            {
+              "productId": "yerba",
+              "productName": "Yerba mate 1 kg",
+              "quantity": 1,
+              "unitPrice": 3600,
+              "sourceType": "MERCHANT",
+              "reportedAt": "2026-10-29T15:00:00.000Z",
+              "confidence": "HIGH"
+            },
+            {
+              "productId": "fideos",
+              "productName": "Fideos 500 g",
+              "quantity": 1,
+              "unitPrice": 1500,
+              "sourceType": "MERCHANT",
+              "reportedAt": "2026-10-29T15:00:00.000Z",
+              "confidence": "HIGH"
+            },
+            {
+              "productId": "arroz",
+              "productName": "Arroz 1 kg",
+              "quantity": 1,
+              "unitPrice": 2100,
+              "sourceType": "MERCHANT",
+              "reportedAt": "2026-10-29T15:00:00.000Z",
+              "confidence": "HIGH"
+            }
+          ]
+        }
+      ],
+      "routeWaypoints": [
+        {
+          "id": "home",
+          "name": "Casa",
+          "type": "HOME",
+          "address": "Zona Güemes, Mar del Plata",
+          "latitude": -38.021,
+          "longitude": -57.539,
+          "isFavorite": true,
+          "createdAt": "2026-10-29T15:00:00.000Z",
+          "updatedAt": "2026-10-29T15:00:00.000Z"
+        },
+        {
+          "latitude": -38.011,
+          "longitude": -57.543
+        },
+        {
+          "id": "work",
+          "name": "Trabajo",
+          "type": "WORK",
+          "address": "Centro, Mar del Plata",
+          "latitude": -38.005,
+          "longitude": -57.548,
+          "isFavorite": true,
+          "createdAt": "2026-10-29T15:00:00.000Z",
+          "updatedAt": "2026-10-29T15:00:00.000Z"
+        }
+      ],
+      "explanation": "Tu lista en un comercio cercano a tu recorrido."
+    }
+  ]
+}

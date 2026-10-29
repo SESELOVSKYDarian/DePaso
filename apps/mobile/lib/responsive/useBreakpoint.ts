@@ -4,8 +4,8 @@ import { useWindowDimensions } from "react-native";
 export const TABLET_MIN_WIDTH = 768;
 /** Ancho desde el cual el menú pasa a la izquierda (escritorio). */
 export const DESKTOP_MIN_WIDTH = 1024;
-/** Ancho máximo del contenido en pantallas grandes: más que esto se lee mal. */
-export const CONTENT_MAX_WIDTH = 1100;
+/** Ancho máximo de la app en pantallas grandes: queda una columna como la del celular, centrada. */
+export const CONTENT_MAX_WIDTH = 520;
 
 /**
  * Tamaño de pantalla actual. Se actualiza solo al girar el celular o cambiar el tamaño de

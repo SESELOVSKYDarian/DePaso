@@ -1,0 +1,72 @@
+[
+  {
+    "id": "hook",
+    "sourceDuration": 2.712,
+    "speed": 1,
+    "start": 0.14,
+    "end": 2.8306666666666667
+  },
+  {
+    "id": "problem",
+    "sourceDuration": 4.584,
+    "speed": 1.0074725274725274,
+    "start": 5.14,
+    "end": 9.668875
+  },
+  {
+    "id": "reveal",
+    "sourceDuration": 4.728,
+    "speed": 1.039120879120879,
+    "start": 10.14,
+    "end": 14.669729166666666
+  },
+  {
+    "id": "list",
+    "sourceDuration": 5.232,
+    "speed": 1,
+    "start": 15.14,
+    "end": 20.35066666666667
+  },
+  {
+    "id": "voice",
+    "sourceDuration": 5.328,
+    "speed": 1,
+    "start": 21.14,
+    "end": 26.446666666666665
+  },
+  {
+    "id": "route",
+    "sourceDuration": 6.264,
+    "speed": 1.1286486486486487,
+    "start": 27.14,
+    "end": 32.67183333333333
+  },
+  {
+    "id": "payment",
+    "sourceDuration": 5.16,
+    "speed": 1.134065934065934,
+    "start": 33.14,
+    "end": 37.672333333333334
+  },
+  {
+    "id": "plans",
+    "sourceDuration": 6.336,
+    "speed": 1,
+    "start": 38.14,
+    "end": 44.45466666666667
+  },
+  {
+    "id": "purchase",
+    "sourceDuration": 5.16,
+    "speed": 1,
+    "start": 45.14,
+    "end": 50.278666666666666
+  },
+  {
+    "id": "outro",
+    "sourceDuration": 5.424,
+    "speed": 1,
+    "start": 52.14,
+    "end": 57.54266666666667
+  }
+]

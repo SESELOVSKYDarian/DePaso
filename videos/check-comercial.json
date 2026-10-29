@@ -1,0 +1,881 @@
+{
+  "ok": true,
+  "strict": false,
+  "browserSkipped": false,
+  "lint": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 3,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "timeline_track_too_dense",
+        "severity": "warning",
+        "message": "Track 3 has 23 timed elements in this HTML file. Smaller sub-compositions keep timelines easier to read, iterate on, and diff.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "D:\\DePaso\\videos\\compositions\\comercial-captions.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move coherent scene groups into smaller .html files and mount them from the parent with data-composition-src so the timeline stays easier to inspect, revise, and validate."
+      },
+      {
+        "code": "timeline_track_too_dense",
+        "severity": "warning",
+        "message": "Track 3 has 75 timed elements in this HTML file. Smaller sub-compositions keep timelines easier to read, iterate on, and diff.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "D:\\DePaso\\videos\\compositions\\funciones-captions.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move coherent scene groups into smaller .html files and mount them from the parent with data-composition-src so the timeline stays easier to inspect, revise, and validate."
+      },
+      {
+        "code": "timeline_track_too_dense",
+        "severity": "warning",
+        "message": "Track 3 has 12 timed elements in this HTML file. Smaller sub-compositions keep timelines easier to read, iterate on, and diff.",
+        "selector": "[data-composition-id]",
+        "dataAttributes": {},
+        "sourceFile": "D:\\DePaso\\videos\\compositions\\reel-captions.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "time": 0,
+        "fixHint": "Move coherent scene groups into smaller .html files and mount them from the parent with data-composition-src so the timeline stays easier to inspect, revise, and validate."
+      }
+    ],
+    "filesScanned": 43
+  },
+  "runtime": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "layout": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 11,
+    "findings": [
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 3.333,
+        "selector": "#comercial-hook-stage > div:nth-of-type(3)",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": -1939.2,
+          "top": 0,
+          "right": -19.2,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "containerSelector": "#comercial-hook-stage",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "left": 1939.2
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/comercial-hook.html",
+        "bbox": {
+          "x": -1939.2,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "firstSeen": 3.333,
+        "lastSeen": 3.333,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          3.333
+        ]
+      },
+      {
+        "code": "canvas_covered",
+        "severity": "info",
+        "time": 10,
+        "selector": "#comercial-reveal-stage",
+        "message": "An opaque element covers the canvas above every other visible clip, so the frame shows only it.",
+        "rect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "fixHint": "Move the full-frame element below the content (earlier in the DOM or a lower z-index / track), or mark a deliberate full-frame card with data-layout-allow-occlusion.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/comercial-reveal.html",
+        "bbox": {
+          "x": 0,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "firstSeen": 10,
+        "lastSeen": 10,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          10
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 10,
+        "selector": "#comercial-reveal-stage > div:nth-of-type(2)",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": -1939.2,
+          "top": 0,
+          "right": -19.2,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "containerSelector": "#comercial-reveal-stage",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "left": 1939.2
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/comercial-reveal.html",
+        "bbox": {
+          "x": -1939.2,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "firstSeen": 10,
+        "lastSeen": 10,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          10
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 16.667,
+        "selector": "#comercial-list-stage > div:nth-of-type(3)",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": -1939.2,
+          "top": 0,
+          "right": -19.2,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "containerSelector": "#comercial-list-stage",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "left": 1939.2
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/comercial-list.html",
+        "bbox": {
+          "x": -1939.2,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "firstSeen": 16.667,
+        "lastSeen": 16.667,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          16.667
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 23.333,
+        "selector": "#comercial-voice-stage > div:nth-of-type(3)",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": -1939.2,
+          "top": 0,
+          "right": -19.2,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "containerSelector": "#comercial-voice-stage",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "left": 1939.2
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/comercial-voice.html",
+        "bbox": {
+          "x": -1939.2,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "firstSeen": 23.333,
+        "lastSeen": 23.333,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          23.333
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 30,
+        "selector": "#comercial-route-stage > div:nth-of-type(3)",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": -1939.2,
+          "top": 0,
+          "right": -19.2,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "containerSelector": "#comercial-route-stage",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "left": 1939.2
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/comercial-route.html",
+        "bbox": {
+          "x": -1939.2,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "firstSeen": 30,
+        "lastSeen": 30,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          30
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 30,
+        "selector": "div.map-stage > svg:nth-of-type(1) > path:nth-of-type(1)",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": 960.13,
+          "top": 51.13,
+          "right": 1857.88,
+          "bottom": 948.88,
+          "width": 897.75,
+          "height": 897.75
+        },
+        "containerSelector": "div.map-stage > svg:nth-of-type(1)",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 1010,
+          "top": 100,
+          "right": 1808,
+          "bottom": 900,
+          "width": 798,
+          "height": 800
+        },
+        "overflow": {
+          "left": 49.87,
+          "right": 49.88,
+          "top": 48.87,
+          "bottom": 48.88
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/comercial-route.html",
+        "bbox": {
+          "x": 960.13,
+          "y": 51.13,
+          "width": 897.75,
+          "height": 897.75
+        },
+        "firstSeen": 30,
+        "lastSeen": 30,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          30
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 36.667,
+        "selector": "#comercial-payment-stage > div:nth-of-type(3)",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": -1939.2,
+          "top": 0,
+          "right": -19.2,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "containerSelector": "#comercial-payment-stage",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "left": 1939.2
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/comercial-payment.html",
+        "bbox": {
+          "x": -1939.2,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "firstSeen": 36.667,
+        "lastSeen": 36.667,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          36.667
+        ]
+      },
+      {
+        "code": "content_overlap",
+        "severity": "info",
+        "time": 41.564,
+        "selector": "#comercial-caption-16 > p:nth-of-type(1) > span:nth-of-type(1)",
+        "message": "Two text blocks overlap and may render unreadable.",
+        "rect": {
+          "left": 669.7,
+          "top": 991.89,
+          "right": 1250.3,
+          "bottom": 1026.89,
+          "width": 580.6,
+          "height": 35
+        },
+        "containerSelector": "#comercial-caption-17 > p:nth-of-type(1) > span:nth-of-type(1)",
+        "text": "Compará hasta tres opciones Vos elegís",
+        "fixHint": "Give each block its own zone, or put data-layout-allow-overlap on the text or on a container inside the scene. A marker on the scene root does not apply.",
+        "dataAttributes": {},
+        "sourceFile": "compositions/comercial-captions.html",
+        "bbox": {
+          "x": 669.7,
+          "y": 991.89,
+          "width": 580.6,
+          "height": 35
+        },
+        "firstSeen": 41.564,
+        "lastSeen": 41.564,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          41.564
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 43.333,
+        "selector": "#comercial-plans-stage > div:nth-of-type(3)",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": -1939.2,
+          "top": 0,
+          "right": -19.2,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "containerSelector": "#comercial-plans-stage",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "left": 1939.2
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/comercial-plans.html",
+        "bbox": {
+          "x": -1939.2,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "firstSeen": 43.333,
+        "lastSeen": 43.333,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          43.333
+        ]
+      },
+      {
+        "code": "container_overflow",
+        "severity": "info",
+        "time": 50,
+        "selector": "#comercial-purchase-stage > div:nth-of-type(3)",
+        "message": "Element extends outside a clipping layout container.",
+        "rect": {
+          "left": -1939.2,
+          "top": 0,
+          "right": -19.2,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "containerSelector": "#comercial-purchase-stage",
+        "fixHint": "Resize/reposition the child or container, or mark intentional overflow with data-layout-allow-overflow.",
+        "containerRect": {
+          "left": 0,
+          "top": 0,
+          "right": 1920,
+          "bottom": 1080,
+          "width": 1920,
+          "height": 1080
+        },
+        "overflow": {
+          "left": 1939.2
+        },
+        "dataAttributes": {},
+        "sourceFile": "compositions/comercial-purchase.html",
+        "bbox": {
+          "x": -1939.2,
+          "y": 0,
+          "width": 1920,
+          "height": 1080
+        },
+        "firstSeen": 50,
+        "lastSeen": 50,
+        "occurrences": 1,
+        "heldMs": 0,
+        "times": [
+          50
+        ]
+      }
+    ],
+    "duration": 60,
+    "samples": [
+      3.333,
+      10,
+      16.667,
+      23.333,
+      30,
+      36.667,
+      43.333,
+      50,
+      56.667
+    ],
+    "transitionSamples": [],
+    "transitionSamplesDropped": 0,
+    "tolerance": 2,
+    "totalIssueCount": 11,
+    "truncated": false
+  },
+  "motion": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": false,
+    "samples": 0
+  },
+  "contrast": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": [],
+    "enabled": true,
+    "samples": [
+      3.333,
+      16.667,
+      30,
+      43.333,
+      56.667
+    ],
+    "checked": 31,
+    "passed": 31
+  },
+  "craft": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 8,
+    "infoCount": 0,
+    "findings": [
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and \"Una parada en el camino\" renders at 24 px for 5.00 s: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "Una parada en el camino",
+        "selector": "div.hero-route > svg:nth-of-type(1) > text:nth-of-type(4)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/comercial-hook.html",
+        "bbox": {
+          "x": 1536.8,
+          "y": 776.1,
+          "width": 298.72,
+          "height": 28.7
+        },
+        "time": 0,
+        "times": [
+          0
+        ],
+        "fontPx": 23.58,
+        "floorPx": 28,
+        "seconds": 5,
+        "elements": [
+          {
+            "selector": "div.hero-route > svg:nth-of-type(1) > text:nth-of-type(4)",
+            "text": "Una parada en el camino",
+            "fontPx": 23.58,
+            "time": 0,
+            "seconds": 5
+          }
+        ]
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and \"Interfaz real · datos de ejemplo\" renders at 23 px for 6.00 s: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "Interfaz real · datos de ejemplo",
+        "selector": "#comercial-list-stage > p:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/comercial-list.html",
+        "bbox": {
+          "x": 1010,
+          "y": 923,
+          "width": 359.17,
+          "height": 28
+        },
+        "time": 15,
+        "times": [
+          15
+        ],
+        "fontPx": 23,
+        "floorPx": 28,
+        "seconds": 6,
+        "elements": [
+          {
+            "selector": "#comercial-list-stage > p:nth-of-type(1)",
+            "text": "Interfaz real · datos de ejemplo",
+            "fontPx": 23,
+            "time": 15,
+            "seconds": 6
+          }
+        ]
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and \"Interfaz real · datos de ejemplo\" renders at 23 px for 6.00 s: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "Interfaz real · datos de ejemplo",
+        "selector": "#comercial-voice-stage > p:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/comercial-voice.html",
+        "bbox": {
+          "x": 1010,
+          "y": 923,
+          "width": 359.17,
+          "height": 28
+        },
+        "time": 21,
+        "times": [
+          21
+        ],
+        "fontPx": 23,
+        "floorPx": 28,
+        "seconds": 6,
+        "elements": [
+          {
+            "selector": "#comercial-voice-stage > p:nth-of-type(1)",
+            "text": "Interfaz real · datos de ejemplo",
+            "fontPx": 23,
+            "time": 21,
+            "seconds": 6
+          }
+        ]
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and 2 text elements stay under it for 0.5 s or more, the smallest \"Recorrido ilustrativo · Mar del Plata\" at 22 px: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "Recorrido ilustrativo · Mar del Plata",
+        "selector": "p.map-caption",
+        "dataAttributes": {},
+        "sourceFile": "compositions/comercial-route.html",
+        "bbox": {
+          "x": 1072.53,
+          "y": 848,
+          "width": 388.64,
+          "height": 27
+        },
+        "time": 27.25,
+        "times": [
+          27.25,
+          27.25
+        ],
+        "fontPx": 22,
+        "floorPx": 28,
+        "seconds": 5.75,
+        "elements": [
+          {
+            "selector": "p.map-caption",
+            "text": "Recorrido ilustrativo · Mar del Plata",
+            "fontPx": 22,
+            "time": 27.25,
+            "seconds": 5.75
+          },
+          {
+            "selector": "div.map-stage > svg:nth-of-type(1) > text:nth-of-type(4)",
+            "text": "Una parada en el camino",
+            "fontPx": 22.94,
+            "time": 27.25,
+            "seconds": 5.75
+          }
+        ]
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and \"Interfaz real · datos de ejemplo\" renders at 23 px for 5.00 s: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "Interfaz real · datos de ejemplo",
+        "selector": "#comercial-payment-stage > p:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/comercial-payment.html",
+        "bbox": {
+          "x": 1010,
+          "y": 923,
+          "width": 359.17,
+          "height": 28
+        },
+        "time": 33,
+        "times": [
+          33
+        ],
+        "fontPx": 23,
+        "floorPx": 28,
+        "seconds": 5,
+        "elements": [
+          {
+            "selector": "#comercial-payment-stage > p:nth-of-type(1)",
+            "text": "Interfaz real · datos de ejemplo",
+            "fontPx": 23,
+            "time": 33,
+            "seconds": 5
+          }
+        ]
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and \"Interfaz real · datos de ejemplo\" renders at 23 px for 7.00 s: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "Interfaz real · datos de ejemplo",
+        "selector": "#comercial-plans-stage > p:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/comercial-plans.html",
+        "bbox": {
+          "x": 1010,
+          "y": 923,
+          "width": 359.17,
+          "height": 28
+        },
+        "time": 38,
+        "times": [
+          38
+        ],
+        "fontPx": 23,
+        "floorPx": 28,
+        "seconds": 7,
+        "elements": [
+          {
+            "selector": "#comercial-plans-stage > p:nth-of-type(1)",
+            "text": "Interfaz real · datos de ejemplo",
+            "fontPx": 23,
+            "time": 38,
+            "seconds": 7
+          }
+        ]
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and \"Interfaz real · datos de ejemplo\" renders at 23 px for 7.00 s: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "Interfaz real · datos de ejemplo",
+        "selector": "#comercial-purchase-stage > p:nth-of-type(1)",
+        "dataAttributes": {},
+        "sourceFile": "compositions/comercial-purchase.html",
+        "bbox": {
+          "x": 1010,
+          "y": 923,
+          "width": 359.17,
+          "height": 28
+        },
+        "time": 45,
+        "times": [
+          45
+        ],
+        "fontPx": 23,
+        "floorPx": 28,
+        "seconds": 7,
+        "elements": [
+          {
+            "selector": "#comercial-purchase-stage > p:nth-of-type(1)",
+            "text": "Interfaz real · datos de ejemplo",
+            "fontPx": 23,
+            "time": 45,
+            "seconds": 7
+          }
+        ]
+      },
+      {
+        "code": "text_below_floor",
+        "severity": "warning",
+        "message": "Type floor is 28 px (2.6% of the 1080 px short side, what a phone can read) and \"Música: «Cipher» · Kevin MacLeod · incompetec...\" renders at 18 px for 8.00 s: set reading text to at least 28 px, or put data-layout-ignore on text that is texture rather than reading; see references/look.md.",
+        "text": "Música: «Cipher» · Kevin MacLeod · incompetech.comCC BY 3.0 · Edición y mezcla para esta campaña",
+        "selector": "p.end-credit",
+        "dataAttributes": {},
+        "sourceFile": "compositions/comercial-outro.html",
+        "bbox": {
+          "x": 716.72,
+          "y": 933,
+          "width": 486.55,
+          "height": 49
+        },
+        "time": 52,
+        "times": [
+          52
+        ],
+        "fontPx": 18,
+        "floorPx": 28,
+        "seconds": 8,
+        "elements": [
+          {
+            "selector": "p.end-credit",
+            "text": "Música: «Cipher» · Kevin MacLeod · incompetech.comCC BY 3.0 · Edición y mezcla para esta campaña",
+            "fontPx": 18,
+            "time": 52,
+            "seconds": 8
+          }
+        ]
+      }
+    ],
+    "enabled": true,
+    "step": 0.125,
+    "samples": 480
+  },
+  "audio": {
+    "ok": true,
+    "errorCount": 0,
+    "warningCount": 0,
+    "infoCount": 0,
+    "findings": []
+  },
+  "hdr": {
+    "autoPromotion": null,
+    "inspection": "available"
+  },
+  "snapshots": {
+    "enabled": true,
+    "files": [
+      ".hyperframes\\artifacts\\snapshots\\c04a8c0a-b84f-43a3-a0b3-b2431e6fc3e0\\frame-00-at-3.3s.png",
+      ".hyperframes\\artifacts\\snapshots\\c04a8c0a-b84f-43a3-a0b3-b2431e6fc3e0\\frame-01-at-16.7s.png",
+      ".hyperframes\\artifacts\\snapshots\\c04a8c0a-b84f-43a3-a0b3-b2431e6fc3e0\\frame-02-at-30.0s.png",
+      ".hyperframes\\artifacts\\snapshots\\c04a8c0a-b84f-43a3-a0b3-b2431e6fc3e0\\frame-03-at-43.3s.png",
+      ".hyperframes\\artifacts\\snapshots\\c04a8c0a-b84f-43a3-a0b3-b2431e6fc3e0\\frame-04-at-56.7s.png"
+    ],
+    "times": [
+      3.333,
+      16.667,
+      30,
+      43.333,
+      56.667
+    ],
+    "findingFiles": []
+  },
+  "saved": {
+    "id": "8532ac6f-247b-4044-8390-64112fcf072d",
+    "revision": "a20333ba-d24a-4f76-9e38-b1fdc3916fb2",
+    "report": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\checks\\8532ac6f-247b-4044-8390-64112fcf072d.json",
+    "attribution": "recorded-revision"
+  },
+  "_meta": {
+    "version": "0.8.217",
+    "latestVersion": "0.8.217",
+    "updateAvailable": false
+  }
+}

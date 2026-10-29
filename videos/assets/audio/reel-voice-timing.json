@@ -1,0 +1,44 @@
+[
+  {
+    "id": "hook",
+    "sourceDuration": 2.928,
+    "speed": 1.148235294117647,
+    "start": 0.14,
+    "end": 2.6735208333333333
+  },
+  {
+    "id": "voice",
+    "sourceDuration": 4.992,
+    "speed": 1,
+    "start": 3.14,
+    "end": 8.110666666666667
+  },
+  {
+    "id": "route",
+    "sourceDuration": 4.128,
+    "speed": 1,
+    "start": 9.14,
+    "end": 13.246666666666666
+  },
+  {
+    "id": "plans",
+    "sourceDuration": 4.776,
+    "speed": 1.0496703296703296,
+    "start": 14.14,
+    "end": 18.670020833333332
+  },
+  {
+    "id": "purchase",
+    "sourceDuration": 4.032,
+    "speed": 1,
+    "start": 19.14,
+    "end": 23.150666666666666
+  },
+  {
+    "id": "outro",
+    "sourceDuration": 5.424,
+    "speed": 1.1920879120879122,
+    "start": 25.14,
+    "end": 29.673916666666667
+  }
+]

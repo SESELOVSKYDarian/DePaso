@@ -1,0 +1,12 @@
+[
+ {"id":"hook","from":0,"duration":96,"voice":"La misma compra. ¿Por qué pagar de más?"},
+ {"id":"time","from":96,"duration":96,"voice":"Tu tiempo tampoco está para perderlo."},
+ {"id":"brand","from":192,"duration":48,"voice":"Esto es DePaso."},
+ {"id":"voice","from":240,"duration":144,"voice":"Decí lo que te falta. Tu lista, lista."},
+ {"id":"route","from":384,"duration":144,"voice":"Seguí tu camino. Encontrá dónde conviene comprar."},
+ {"id":"plans","from":528,"duration":96,"voice":"Compará opciones y elegí lo que te conviene."},
+ {"id":"payments","from":624,"duration":96,"voice":"Aprovechá las promos de tus medios de pago."},
+ {"id":"purchase","from":720,"duration":144,"voice":"Marcá lo que llevás y seguí con tu día."},
+ {"id":"payoff","from":864,"duration":96,"voice":"Ahorrar puede quedarte de paso."},
+ {"id":"end","from":960,"duration":96,"voice":"Descargá DePaso."}
+]

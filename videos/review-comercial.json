@@ -1,0 +1,780 @@
+{
+  "ok": true,
+  "outputDir": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926",
+  "frames": [
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-01-at-0.3s.png",
+      "time": 0.3,
+      "role": "beat",
+      "label": "comercial-hook"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-02-at-2.5s.png",
+      "time": 2.5,
+      "role": "beat",
+      "label": "comercial-hook mid"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-03-at-5.3s.png",
+      "time": 5.3,
+      "role": "beat",
+      "label": "comercial-problem"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-04-at-7.5s.png",
+      "time": 7.5,
+      "role": "beat",
+      "label": "comercial-problem mid"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-05-at-10.3s.png",
+      "time": 10.3,
+      "role": "beat",
+      "label": "comercial-reveal"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-06-at-12.5s.png",
+      "time": 12.5,
+      "role": "beat",
+      "label": "comercial-reveal mid"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-07-at-15.3s.png",
+      "time": 15.3,
+      "role": "beat",
+      "label": "comercial-list"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-08-at-18s.png",
+      "time": 18,
+      "role": "beat",
+      "label": "comercial-list mid"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-09-at-21.3s.png",
+      "time": 21.3,
+      "role": "beat",
+      "label": "comercial-voice"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-10-at-24s.png",
+      "time": 24,
+      "role": "beat",
+      "label": "comercial-voice mid"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-11-at-27.3s.png",
+      "time": 27.3,
+      "role": "beat",
+      "label": "comercial-route"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-12-at-30s.png",
+      "time": 30,
+      "role": "beat",
+      "label": "comercial-route mid"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-13-at-33.3s.png",
+      "time": 33.3,
+      "role": "beat",
+      "label": "comercial-payment"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-14-at-35.5s.png",
+      "time": 35.5,
+      "role": "beat",
+      "label": "comercial-payment mid"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-15-at-38.3s.png",
+      "time": 38.3,
+      "role": "beat",
+      "label": "comercial-plans"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-16-at-41.5s.png",
+      "time": 41.5,
+      "role": "beat",
+      "label": "comercial-plans mid"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-17-at-45.3s.png",
+      "time": 45.3,
+      "role": "beat",
+      "label": "comercial-purchase"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-18-at-48.5s.png",
+      "time": 48.5,
+      "role": "beat",
+      "label": "comercial-purchase mid"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-19-at-52.3s.png",
+      "time": 52.3,
+      "role": "beat",
+      "label": "comercial-outro"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-20-at-56s.png",
+      "time": 56,
+      "role": "beat",
+      "label": "comercial-outro mid"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-01-1-at-4.8s.png",
+      "time": 4.8,
+      "role": "seam",
+      "label": "cut -0.2"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-01-2-at-4.9s.png",
+      "time": 4.9,
+      "role": "seam",
+      "label": "-0.1"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-01-3-at-5s.png",
+      "time": 5,
+      "role": "seam",
+      "label": "cut comercial-hook -> comercial-problem"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-01-4-at-5.1s.png",
+      "time": 5.1,
+      "role": "seam",
+      "label": "+0.1"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-01-5-at-5.2s.png",
+      "time": 5.2,
+      "role": "seam",
+      "label": "+0.2"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-02-1-at-9.8s.png",
+      "time": 9.8,
+      "role": "seam",
+      "label": "cut -0.2"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-02-2-at-9.9s.png",
+      "time": 9.9,
+      "role": "seam",
+      "label": "-0.1"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-02-3-at-10s.png",
+      "time": 10,
+      "role": "seam",
+      "label": "cut comercial-problem -> comercial-reveal"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-02-4-at-10.1s.png",
+      "time": 10.1,
+      "role": "seam",
+      "label": "+0.1"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-02-5-at-10.2s.png",
+      "time": 10.2,
+      "role": "seam",
+      "label": "+0.2"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-03-1-at-14.8s.png",
+      "time": 14.8,
+      "role": "seam",
+      "label": "cut -0.2"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-03-2-at-14.9s.png",
+      "time": 14.9,
+      "role": "seam",
+      "label": "-0.1"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-03-3-at-15s.png",
+      "time": 15,
+      "role": "seam",
+      "label": "cut comercial-reveal -> comercial-list"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-03-4-at-15.1s.png",
+      "time": 15.1,
+      "role": "seam",
+      "label": "+0.1"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-03-5-at-15.2s.png",
+      "time": 15.2,
+      "role": "seam",
+      "label": "+0.2"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-04-1-at-20.8s.png",
+      "time": 20.8,
+      "role": "seam",
+      "label": "cut -0.2"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-04-2-at-20.9s.png",
+      "time": 20.9,
+      "role": "seam",
+      "label": "-0.1"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-04-3-at-21s.png",
+      "time": 21,
+      "role": "seam",
+      "label": "cut comercial-list -> comercial-voice"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-04-4-at-21.1s.png",
+      "time": 21.1,
+      "role": "seam",
+      "label": "+0.1"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-04-5-at-21.2s.png",
+      "time": 21.2,
+      "role": "seam",
+      "label": "+0.2"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-05-1-at-26.8s.png",
+      "time": 26.8,
+      "role": "seam",
+      "label": "cut -0.2"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-05-2-at-26.9s.png",
+      "time": 26.9,
+      "role": "seam",
+      "label": "-0.1"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-05-3-at-27s.png",
+      "time": 27,
+      "role": "seam",
+      "label": "cut comercial-voice -> comercial-route"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-05-4-at-27.1s.png",
+      "time": 27.1,
+      "role": "seam",
+      "label": "+0.1"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-05-5-at-27.2s.png",
+      "time": 27.2,
+      "role": "seam",
+      "label": "+0.2"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-06-1-at-32.8s.png",
+      "time": 32.8,
+      "role": "seam",
+      "label": "cut -0.2"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-06-2-at-32.9s.png",
+      "time": 32.9,
+      "role": "seam",
+      "label": "-0.1"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-06-3-at-33s.png",
+      "time": 33,
+      "role": "seam",
+      "label": "cut comercial-route -> comercial-payment"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-06-4-at-33.1s.png",
+      "time": 33.1,
+      "role": "seam",
+      "label": "+0.1"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-06-5-at-33.2s.png",
+      "time": 33.2,
+      "role": "seam",
+      "label": "+0.2"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-07-1-at-37.8s.png",
+      "time": 37.8,
+      "role": "seam",
+      "label": "cut -0.2"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-07-2-at-37.9s.png",
+      "time": 37.9,
+      "role": "seam",
+      "label": "-0.1"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-07-3-at-38s.png",
+      "time": 38,
+      "role": "seam",
+      "label": "cut comercial-payment -> comercial-plans"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-07-4-at-38.1s.png",
+      "time": 38.1,
+      "role": "seam",
+      "label": "+0.1"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-07-5-at-38.2s.png",
+      "time": 38.2,
+      "role": "seam",
+      "label": "+0.2"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-08-1-at-44.8s.png",
+      "time": 44.8,
+      "role": "seam",
+      "label": "cut -0.2"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-08-2-at-44.9s.png",
+      "time": 44.9,
+      "role": "seam",
+      "label": "-0.1"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-08-3-at-45s.png",
+      "time": 45,
+      "role": "seam",
+      "label": "cut comercial-plans -> comercial-purchase"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-08-4-at-45.1s.png",
+      "time": 45.1,
+      "role": "seam",
+      "label": "+0.1"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-08-5-at-45.2s.png",
+      "time": 45.2,
+      "role": "seam",
+      "label": "+0.2"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-09-1-at-51.8s.png",
+      "time": 51.8,
+      "role": "seam",
+      "label": "cut -0.2"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-09-2-at-51.9s.png",
+      "time": 51.9,
+      "role": "seam",
+      "label": "-0.1"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-09-3-at-52s.png",
+      "time": 52,
+      "role": "seam",
+      "label": "cut comercial-purchase -> comercial-outro"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-09-4-at-52.1s.png",
+      "time": 52.1,
+      "role": "seam",
+      "label": "+0.1"
+    },
+    {
+      "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-09-5-at-52.2s.png",
+      "time": 52.2,
+      "role": "seam",
+      "label": "+0.2"
+    }
+  ],
+  "contactSheets": [
+    "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-beats-1.jpg",
+    "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-beats-2.jpg",
+    "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-seam-01.jpg",
+    "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-seam-02.jpg",
+    "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-seam-03.jpg",
+    "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-seam-04.jpg",
+    "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-seam-05.jpg",
+    "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-seam-06.jpg",
+    "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-seam-07.jpg",
+    "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-seam-08.jpg",
+    "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-seam-09.jpg",
+    "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-phone-1.jpg",
+    "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-phone-2.jpg"
+  ],
+  "review": {
+    "window": [
+      0,
+      60
+    ],
+    "scenes": [
+      {
+        "id": "comercial-hook",
+        "start": 0,
+        "end": 5
+      },
+      {
+        "id": "comercial-problem",
+        "start": 5,
+        "end": 10
+      },
+      {
+        "id": "comercial-reveal",
+        "start": 10,
+        "end": 15
+      },
+      {
+        "id": "comercial-list",
+        "start": 15,
+        "end": 21
+      },
+      {
+        "id": "comercial-voice",
+        "start": 21,
+        "end": 27
+      },
+      {
+        "id": "comercial-route",
+        "start": 27,
+        "end": 33
+      },
+      {
+        "id": "comercial-payment",
+        "start": 33,
+        "end": 38
+      },
+      {
+        "id": "comercial-plans",
+        "start": 38,
+        "end": 45
+      },
+      {
+        "id": "comercial-purchase",
+        "start": 45,
+        "end": 52
+      },
+      {
+        "id": "comercial-outro",
+        "start": 52,
+        "end": 60
+      }
+    ],
+    "beats": [
+      {
+        "time": 0.3,
+        "label": "comercial-hook",
+        "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-01-at-0.3s.png"
+      },
+      {
+        "time": 2.5,
+        "label": "comercial-hook mid",
+        "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-02-at-2.5s.png"
+      },
+      {
+        "time": 5.3,
+        "label": "comercial-problem",
+        "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-03-at-5.3s.png"
+      },
+      {
+        "time": 7.5,
+        "label": "comercial-problem mid",
+        "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-04-at-7.5s.png"
+      },
+      {
+        "time": 10.3,
+        "label": "comercial-reveal",
+        "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-05-at-10.3s.png"
+      },
+      {
+        "time": 12.5,
+        "label": "comercial-reveal mid",
+        "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-06-at-12.5s.png"
+      },
+      {
+        "time": 15.3,
+        "label": "comercial-list",
+        "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-07-at-15.3s.png"
+      },
+      {
+        "time": 18,
+        "label": "comercial-list mid",
+        "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-08-at-18s.png"
+      },
+      {
+        "time": 21.3,
+        "label": "comercial-voice",
+        "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-09-at-21.3s.png"
+      },
+      {
+        "time": 24,
+        "label": "comercial-voice mid",
+        "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-10-at-24s.png"
+      },
+      {
+        "time": 27.3,
+        "label": "comercial-route",
+        "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-11-at-27.3s.png"
+      },
+      {
+        "time": 30,
+        "label": "comercial-route mid",
+        "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-12-at-30s.png"
+      },
+      {
+        "time": 33.3,
+        "label": "comercial-payment",
+        "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-13-at-33.3s.png"
+      },
+      {
+        "time": 35.5,
+        "label": "comercial-payment mid",
+        "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-14-at-35.5s.png"
+      },
+      {
+        "time": 38.3,
+        "label": "comercial-plans",
+        "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-15-at-38.3s.png"
+      },
+      {
+        "time": 41.5,
+        "label": "comercial-plans mid",
+        "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-16-at-41.5s.png"
+      },
+      {
+        "time": 45.3,
+        "label": "comercial-purchase",
+        "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-17-at-45.3s.png"
+      },
+      {
+        "time": 48.5,
+        "label": "comercial-purchase mid",
+        "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-18-at-48.5s.png"
+      },
+      {
+        "time": 52.3,
+        "label": "comercial-outro",
+        "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-19-at-52.3s.png"
+      },
+      {
+        "time": 56,
+        "label": "comercial-outro mid",
+        "path": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\beat-20-at-56s.png"
+      }
+    ],
+    "seams": [
+      {
+        "time": 5,
+        "from": "comercial-hook",
+        "to": "comercial-problem",
+        "times": [
+          4.8,
+          4.9,
+          5,
+          5.1,
+          5.2
+        ],
+        "paths": [
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-01-1-at-4.8s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-01-2-at-4.9s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-01-3-at-5s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-01-4-at-5.1s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-01-5-at-5.2s.png"
+        ],
+        "sheet": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-seam-01.jpg"
+      },
+      {
+        "time": 10,
+        "from": "comercial-problem",
+        "to": "comercial-reveal",
+        "times": [
+          9.8,
+          9.9,
+          10,
+          10.1,
+          10.2
+        ],
+        "paths": [
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-02-1-at-9.8s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-02-2-at-9.9s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-02-3-at-10s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-02-4-at-10.1s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-02-5-at-10.2s.png"
+        ],
+        "sheet": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-seam-02.jpg"
+      },
+      {
+        "time": 15,
+        "from": "comercial-reveal",
+        "to": "comercial-list",
+        "times": [
+          14.8,
+          14.9,
+          15,
+          15.1,
+          15.2
+        ],
+        "paths": [
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-03-1-at-14.8s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-03-2-at-14.9s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-03-3-at-15s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-03-4-at-15.1s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-03-5-at-15.2s.png"
+        ],
+        "sheet": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-seam-03.jpg"
+      },
+      {
+        "time": 21,
+        "from": "comercial-list",
+        "to": "comercial-voice",
+        "times": [
+          20.8,
+          20.9,
+          21,
+          21.1,
+          21.2
+        ],
+        "paths": [
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-04-1-at-20.8s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-04-2-at-20.9s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-04-3-at-21s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-04-4-at-21.1s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-04-5-at-21.2s.png"
+        ],
+        "sheet": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-seam-04.jpg"
+      },
+      {
+        "time": 27,
+        "from": "comercial-voice",
+        "to": "comercial-route",
+        "times": [
+          26.8,
+          26.9,
+          27,
+          27.1,
+          27.2
+        ],
+        "paths": [
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-05-1-at-26.8s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-05-2-at-26.9s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-05-3-at-27s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-05-4-at-27.1s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-05-5-at-27.2s.png"
+        ],
+        "sheet": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-seam-05.jpg"
+      },
+      {
+        "time": 33,
+        "from": "comercial-route",
+        "to": "comercial-payment",
+        "times": [
+          32.8,
+          32.9,
+          33,
+          33.1,
+          33.2
+        ],
+        "paths": [
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-06-1-at-32.8s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-06-2-at-32.9s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-06-3-at-33s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-06-4-at-33.1s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-06-5-at-33.2s.png"
+        ],
+        "sheet": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-seam-06.jpg"
+      },
+      {
+        "time": 38,
+        "from": "comercial-payment",
+        "to": "comercial-plans",
+        "times": [
+          37.8,
+          37.9,
+          38,
+          38.1,
+          38.2
+        ],
+        "paths": [
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-07-1-at-37.8s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-07-2-at-37.9s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-07-3-at-38s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-07-4-at-38.1s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-07-5-at-38.2s.png"
+        ],
+        "sheet": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-seam-07.jpg"
+      },
+      {
+        "time": 45,
+        "from": "comercial-plans",
+        "to": "comercial-purchase",
+        "times": [
+          44.8,
+          44.9,
+          45,
+          45.1,
+          45.2
+        ],
+        "paths": [
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-08-1-at-44.8s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-08-2-at-44.9s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-08-3-at-45s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-08-4-at-45.1s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-08-5-at-45.2s.png"
+        ],
+        "sheet": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-seam-08.jpg"
+      },
+      {
+        "time": 52,
+        "from": "comercial-purchase",
+        "to": "comercial-outro",
+        "times": [
+          51.8,
+          51.9,
+          52,
+          52.1,
+          52.2
+        ],
+        "paths": [
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-09-1-at-51.8s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-09-2-at-51.9s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-09-3-at-52s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-09-4-at-52.1s.png",
+          "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\seam-09-5-at-52.2s.png"
+        ],
+        "sheet": "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-seam-09.jpg"
+      }
+    ],
+    "sheets": {
+      "beats": [
+        "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-beats-1.jpg",
+        "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-beats-2.jpg"
+      ],
+      "seams": [
+        "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-seam-01.jpg",
+        "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-seam-02.jpg",
+        "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-seam-03.jpg",
+        "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-seam-04.jpg",
+        "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-seam-05.jpg",
+        "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-seam-06.jpg",
+        "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-seam-07.jpg",
+        "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-seam-08.jpg",
+        "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-seam-09.jpg"
+      ],
+      "phone": [
+        "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-phone-1.jpg",
+        "D:\\DePaso\\videos\\.hyperframes\\artifacts\\snapshots\\d4fc1d69-10ba-4453-9fcb-d9a7b989a926\\review-phone-2.jpg"
+      ]
+    },
+    "notes": []
+  },
+  "_meta": {
+    "version": "0.8.217",
+    "latestVersion": "0.8.217",
+    "updateAvailable": false
+  }
+}

@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
+import { useRef, useState, type ComponentRef } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View, type TextInputProps } from "react-native";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles, useColors } from "@/lib/theme";
@@ -19,12 +19,15 @@ export function PillInput({ icon, error, isPassword = false, secureTextEntry, st
   const colors = useColors();
   const styles = useStyles();
   const [reveal, setReveal] = useState(false);
+  const inputRef = useRef<ComponentRef<typeof TextInput>>(null);
 
   return (
     <View style={styles.container}>
-      <View style={[styles.pill, error ? styles.pillError : null]}>
+      {/* tocar cualquier parte de la píldora (ícono, bordes) lleva el cursor al campo */}
+      <Pressable accessible={false} onPress={() => inputRef.current?.focus()} style={[styles.pill, error ? styles.pillError : null]}>
         <Ionicons name={icon} size={18} color={colors.text.muted} style={styles.leftIcon} />
         <TextInput
+          ref={inputRef}
           style={[styles.input, style]}
           placeholderTextColor={colors.text.muted}
           autoCapitalize="none"
@@ -42,7 +45,7 @@ export function PillInput({ icon, error, isPassword = false, secureTextEntry, st
             <Ionicons name={reveal ? "eye-off-outline" : "eye-outline"} size={18} color={colors.text.muted} />
           </Pressable>
         ) : null}
-      </View>
+      </Pressable>
       {error ? <Text style={styles.error}>{error}</Text> : null}
     </View>
   );
@@ -77,6 +80,9 @@ const useStyles = makeStyles((colors) => StyleSheet.create({
     fontSize: 15,
     color: colors.text.primary,
     paddingVertical: 0,
+    // el campo ocupa todo el alto de la píldora: el área donde se puede tocar es toda
+    alignSelf: "stretch",
+    minHeight: 48,
   },
   error: {
     fontFamily: typography.caption.fontFamily,

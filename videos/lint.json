@@ -1,0 +1,287 @@
+{
+  "ok": false,
+  "errorCount": 1,
+  "warningCount": 27,
+  "infoCount": 0,
+  "findings": [
+    {
+      "code": "timeline_track_too_dense",
+      "severity": "warning",
+      "message": "Track 3 has 26 timed elements in this HTML file. Smaller sub-compositions keep timelines easier to read, iterate on, and diff.",
+      "fixHint": "Move coherent scene groups into separate .html files under compositions/ and mount them from the parent with data-composition-src so the timeline stays easier to inspect, revise, and validate.",
+      "file": "D:\\DePaso\\videos\\index.html"
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"comercial-caption-0\"> is a timeline element that contains nested <p>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "comercial-caption-0",
+      "fixHint": "Move <div id=\"comercial-caption-0\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "D:\\DePaso\\videos\\index.html",
+      "line": 10,
+      "column": 260
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"comercial-caption-1\"> is a timeline element that contains nested <p>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "comercial-caption-1",
+      "fixHint": "Move <div id=\"comercial-caption-1\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "D:\\DePaso\\videos\\index.html",
+      "line": 11,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"comercial-caption-2\"> is a timeline element that contains nested <p>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "comercial-caption-2",
+      "fixHint": "Move <div id=\"comercial-caption-2\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "D:\\DePaso\\videos\\index.html",
+      "line": 12,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"comercial-caption-3\"> is a timeline element that contains nested <p>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "comercial-caption-3",
+      "fixHint": "Move <div id=\"comercial-caption-3\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "D:\\DePaso\\videos\\index.html",
+      "line": 13,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"comercial-caption-4\"> is a timeline element that contains nested <p>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "comercial-caption-4",
+      "fixHint": "Move <div id=\"comercial-caption-4\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "D:\\DePaso\\videos\\index.html",
+      "line": 14,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"comercial-caption-5\"> is a timeline element that contains nested <p>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "comercial-caption-5",
+      "fixHint": "Move <div id=\"comercial-caption-5\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "D:\\DePaso\\videos\\index.html",
+      "line": 15,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"comercial-caption-6\"> is a timeline element that contains nested <p>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "comercial-caption-6",
+      "fixHint": "Move <div id=\"comercial-caption-6\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "D:\\DePaso\\videos\\index.html",
+      "line": 16,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"comercial-caption-7\"> is a timeline element that contains nested <p>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "comercial-caption-7",
+      "fixHint": "Move <div id=\"comercial-caption-7\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "D:\\DePaso\\videos\\index.html",
+      "line": 17,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"comercial-caption-8\"> is a timeline element that contains nested <p>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "comercial-caption-8",
+      "fixHint": "Move <div id=\"comercial-caption-8\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "D:\\DePaso\\videos\\index.html",
+      "line": 18,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"comercial-caption-9\"> is a timeline element that contains nested <p>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "comercial-caption-9",
+      "fixHint": "Move <div id=\"comercial-caption-9\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "D:\\DePaso\\videos\\index.html",
+      "line": 19,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"comercial-caption-10\"> is a timeline element that contains nested <p>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "comercial-caption-10",
+      "fixHint": "Move <div id=\"comercial-caption-10\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "D:\\DePaso\\videos\\index.html",
+      "line": 20,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"comercial-caption-11\"> is a timeline element that contains nested <p>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "comercial-caption-11",
+      "fixHint": "Move <div id=\"comercial-caption-11\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "D:\\DePaso\\videos\\index.html",
+      "line": 21,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"comercial-caption-12\"> is a timeline element that contains nested <p>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "comercial-caption-12",
+      "fixHint": "Move <div id=\"comercial-caption-12\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "D:\\DePaso\\videos\\index.html",
+      "line": 22,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"comercial-caption-13\"> is a timeline element that contains nested <p>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "comercial-caption-13",
+      "fixHint": "Move <div id=\"comercial-caption-13\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "D:\\DePaso\\videos\\index.html",
+      "line": 23,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"comercial-caption-14\"> is a timeline element that contains nested <p>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "comercial-caption-14",
+      "fixHint": "Move <div id=\"comercial-caption-14\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "D:\\DePaso\\videos\\index.html",
+      "line": 24,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"comercial-caption-15\"> is a timeline element that contains nested <p>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "comercial-caption-15",
+      "fixHint": "Move <div id=\"comercial-caption-15\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "D:\\DePaso\\videos\\index.html",
+      "line": 25,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"comercial-caption-16\"> is a timeline element that contains nested <p>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "comercial-caption-16",
+      "fixHint": "Move <div id=\"comercial-caption-16\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "D:\\DePaso\\videos\\index.html",
+      "line": 26,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"comercial-caption-17\"> is a timeline element that contains nested <p>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "comercial-caption-17",
+      "fixHint": "Move <div id=\"comercial-caption-17\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "D:\\DePaso\\videos\\index.html",
+      "line": 27,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"comercial-caption-18\"> is a timeline element that contains nested <p>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "comercial-caption-18",
+      "fixHint": "Move <div id=\"comercial-caption-18\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "D:\\DePaso\\videos\\index.html",
+      "line": 28,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"comercial-caption-19\"> is a timeline element that contains nested <p>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "comercial-caption-19",
+      "fixHint": "Move <div id=\"comercial-caption-19\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "D:\\DePaso\\videos\\index.html",
+      "line": 29,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"comercial-caption-20\"> is a timeline element that contains nested <p>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "comercial-caption-20",
+      "fixHint": "Move <div id=\"comercial-caption-20\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "D:\\DePaso\\videos\\index.html",
+      "line": 30,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"comercial-caption-21\"> is a timeline element that contains nested <p>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "comercial-caption-21",
+      "fixHint": "Move <div id=\"comercial-caption-21\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "D:\\DePaso\\videos\\index.html",
+      "line": 31,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"comercial-caption-22\"> is a timeline element that contains nested <p>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "comercial-caption-22",
+      "fixHint": "Move <div id=\"comercial-caption-22\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "D:\\DePaso\\videos\\index.html",
+      "line": 32,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"comercial-caption-23\"> is a timeline element that contains nested <p>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "comercial-caption-23",
+      "fixHint": "Move <div id=\"comercial-caption-23\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "D:\\DePaso\\videos\\index.html",
+      "line": 33,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"comercial-caption-24\"> is a timeline element that contains nested <p>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "comercial-caption-24",
+      "fixHint": "Move <div id=\"comercial-caption-24\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "D:\\DePaso\\videos\\index.html",
+      "line": 34,
+      "column": 1
+    },
+    {
+      "code": "nested_structure_needs_subcomposition",
+      "severity": "warning",
+      "message": "<div id=\"comercial-caption-25\"> is a timeline element that contains nested <p>. The timeline shows one row per top-level element, and the root composition is built only from sub-compositions.",
+      "elementId": "comercial-caption-25",
+      "fixHint": "Move <div id=\"comercial-caption-25\"> and its contents into a sub-composition file and mount it with data-composition-src.",
+      "file": "D:\\DePaso\\videos\\index.html",
+      "line": 35,
+      "column": 1
+    },
+    {
+      "code": "multiple_root_compositions",
+      "severity": "error",
+      "message": "Multiple root-level HTML files with data-composition-id: funciones.html, index.html, reel.html. The runtime may discover both as entry points, causing duplicate audio playback.",
+      "fixHint": "A project should have exactly one root index.html with data-composition-id. Remove or rename extra files."
+    }
+  ],
+  "filesScanned": 40,
+  "_meta": {
+    "version": "0.8.217",
+    "latestVersion": "0.8.217",
+    "updateAvailable": false
+  }
+}
