@@ -9,6 +9,7 @@ interface CardProps {
   elevated?: boolean;
 }
 
+/** Tarjeta contenedora; `elevated` le da más sombra. */
 export function Card({ children, style, elevated = false }: CardProps) {
   const styles = useStyles();
   return <View style={[styles.base, elevated ? elevation.level2 : elevation.level1, style]}>{children}</View>;

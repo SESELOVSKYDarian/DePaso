@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
 import { branchInclude, resolveRegionId, toStoreBranchResponse } from "@/lib/catalog/catalogAdmin";
 
+/** POST /api/admin/store-branches — el administrador crea una sucursal (solo ADMIN). */
 export async function POST(request: NextRequest) {
   const admin = await requireAdmin(request);
   if (!admin) return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });

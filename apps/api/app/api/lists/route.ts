@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
 import { listAccessWhere, listInclude, toListResponse, toListSummary } from "@/lib/lists/lists";
 
+/** POST /api/lists — crea una lista de compras vacía para el usuario. */
 export async function POST(request: NextRequest) {
   const current = await getCurrentUser(request);
   if (!current) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });

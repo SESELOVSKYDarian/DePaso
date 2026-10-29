@@ -1,8 +1,10 @@
 import type { SavedRouteContext, SavedRouteStop } from "@depaso/database";
 import type { RouteContextResponse } from "@depaso/validation";
 
+/** Al leer un recorrido guardado se traen sus paradas, en orden. */
 export const routeContextInclude = { stops: { orderBy: { position: "asc" } } } as const;
 
+/** Recorrido guardado con sus paradas, listo para enviar. */
 export function toRouteContextResponse(context: SavedRouteContext & { stops: SavedRouteStop[] }): RouteContextResponse {
   return {
     id: context.id,

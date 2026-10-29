@@ -1,6 +1,7 @@
 import type { UserPlace } from "@depaso/database";
 import type { UserPlaceResponse } from "@depaso/validation";
 
+/** Lugar guardado del usuario, listo para enviar. */
 export function toPlaceResponse(place: UserPlace): UserPlaceResponse {
   return {
     id: place.id,

@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
 import { toPlaceResponse } from "@/lib/user/places";
 
+/** POST /api/places — guarda un lugar del usuario (casa, trabajo, otro). */
 export async function POST(request: NextRequest) {
   const current = await getCurrentUser(request);
   if (!current) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });

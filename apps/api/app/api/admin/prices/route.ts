@@ -6,6 +6,7 @@ import { toPriceResponse } from "@/lib/catalog/catalogAdmin";
 
 const include = { productVariant: true, storeBranch: true } as const;
 
+/** POST /api/admin/prices — el administrador carga un precio nuevo (solo ADMIN). */
 export async function POST(request: NextRequest) {
   const admin = await requireAdmin(request);
   if (!admin) return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });

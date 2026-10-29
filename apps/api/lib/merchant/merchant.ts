@@ -6,6 +6,7 @@ import type {
   MerchantRequestResponse,
 } from "@depaso/validation";
 
+/** Nombre en minúsculas y sin tildes ni espacios de más, para comparar sin errores. */
 export function normalizeName(raw: string): string {
   return raw
     .normalize("NFD")
@@ -15,6 +16,7 @@ export function normalizeName(raw: string): string {
     .trim();
 }
 
+/** Solicitud de comercio tal como la ve quien la pidió. */
 export function toMerchantRequestResponse(request: MerchantRequest): MerchantRequestResponse {
   return {
     id: request.id,
@@ -31,6 +33,7 @@ export function toMerchantRequestResponse(request: MerchantRequest): MerchantReq
   };
 }
 
+/** Solicitud de comercio para el administrador (con los datos de quien la pidió). */
 export function toAdminMerchantRequestResponse(
   request: MerchantRequest & { user: User }
 ): AdminMerchantRequestResponse {
@@ -43,6 +46,7 @@ export function toAdminMerchantRequestResponse(
   };
 }
 
+/** Precio de un producto en la sucursal del comercio. */
 export function toMerchantPriceResponse(
   price: Price & { productVariant: ProductVariant & { product: Product & { brand: Brand | null } } }
 ): MerchantPriceResponse {
@@ -63,4 +67,5 @@ export function toMerchantPriceResponse(
   };
 }
 
+/** Qué traer junto con un precio: variante, producto y marca. */
 export const merchantPriceInclude = { productVariant: { include: { product: { include: { brand: true } } } } } as const;

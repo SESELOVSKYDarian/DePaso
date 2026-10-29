@@ -1,6 +1,7 @@
 import type { ProductPreference, StoreBranch, Store, StorePreference } from "@depaso/database";
 import type { ProductPreferenceResponse, StorePreferenceResponse } from "@depaso/validation";
 
+/** Preferencia de producto (marca que quiere o que evita) lista para enviar. */
 export function toProductPreferenceResponse(
   pref: ProductPreference & { product: { name: string } }
 ): ProductPreferenceResponse {
@@ -13,6 +14,7 @@ export function toProductPreferenceResponse(
   };
 }
 
+/** Preferencia de comercio lista para enviar. */
 export function toStorePreferenceResponse(
   pref: StorePreference & { storeBranch: StoreBranch & { store: Store } }
 ): StorePreferenceResponse {

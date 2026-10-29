@@ -6,6 +6,7 @@ import { toStorePreferenceResponse } from "@/lib/user/preferences";
 
 const include = { storeBranch: { include: { store: true } } } as const;
 
+/** POST /api/preferences/stores — guarda un comercio preferido (o a evitar) para una categoría. */
 export async function POST(request: NextRequest) {
   const current = await getCurrentUser(request);
   if (!current) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });

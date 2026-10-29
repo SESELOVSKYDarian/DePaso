@@ -3,6 +3,7 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { spacing, typography } from "@depaso/design-tokens";
 import { makeStyles } from "@/lib/theme";
 
+/** Contenedor con scroll de las pantallas legales (términos, privacidad, comunidad). */
 export function LegalScreen({ children }: { children: ReactNode }) {
   const styles = useStyles();
   return (
@@ -12,6 +13,7 @@ export function LegalScreen({ children }: { children: ReactNode }) {
   );
 }
 
+/** Título de una sección del texto legal. */
 export function LegalHeading({ children }: { children: ReactNode }) {
   const styles = useStyles();
   return (
@@ -21,11 +23,13 @@ export function LegalHeading({ children }: { children: ReactNode }) {
   );
 }
 
+/** Párrafo de texto legal. */
 export function LegalParagraph({ children }: { children: ReactNode }) {
   const styles = useStyles();
   return <Text style={styles.paragraph}>{children}</Text>;
 }
 
+/** Ítem con viñeta dentro de un texto legal. */
 export function LegalBullet({ children }: { children: ReactNode }) {
   const styles = useStyles();
   return (
@@ -36,6 +40,7 @@ export function LegalBullet({ children }: { children: ReactNode }) {
   );
 }
 
+/** Recuadro de aviso destacado dentro de un texto legal. */
 export function LegalNotice({ children }: { children: ReactNode }) {
   const styles = useStyles();
   return (

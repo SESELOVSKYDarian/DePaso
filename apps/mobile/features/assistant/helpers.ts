@@ -1,15 +1,18 @@
 import { ApiError } from "@depaso/api-client";
 import { transcribeRecording, TranscribeError } from "@/lib/voice/transcribe";
 
+/** Primera letra en mayúscula. */
 export function capitalize(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
+/** Milisegundos a reloj de grabación (m:ss). */
 export function formatClock(ms: number): string {
   const seconds = Math.floor(ms / 1000);
   return `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
 }
 
+/** Mensaje para el usuario cuando falla el armado de la lista con IA. */
 export function parseErrorMessage(error: unknown): string {
   if (error instanceof ApiError) {
     const code = (error.body as { error?: string } | null)?.error;
@@ -20,6 +23,7 @@ export function parseErrorMessage(error: unknown): string {
   return "No pudimos conectar. Revisá tu conexión e intentá de nuevo.";
 }
 
+/** Mensaje para el usuario cuando falla la grabación o el paso de voz a texto. */
 export function voiceErrorMessage(error: unknown): string {
   if (error instanceof TranscribeError) {
     if (error.reason === "not_configured") return "La voz todavía no está activada en el servidor. Podés escribirlo.";
@@ -44,4 +48,5 @@ export function voiceErrorMessage(error: unknown): string {
   return "No pudimos entender el audio. Probá de nuevo o escribilo.";
 }
 
+/** Tamaño base del micrófono: el anillo que late se calcula a partir de este valor. */
 export const MIC_SIZE = 112;
