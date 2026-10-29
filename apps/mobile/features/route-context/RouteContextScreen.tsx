@@ -267,17 +267,11 @@ export default function RouteContextScreen() {
       />
 
       <MapPickerModal
-        visible={map.isOpen}
-        token={map.token}
+        picking={map}
         center={waypoints[waypoints.length - 1]}
-        picked={map.picked}
-        pickedAddress={map.pickedAddress}
-        isResolving={map.isResolving}
         name={tempName}
         onChangeName={setTempName}
-        onPick={(point) => void map.pick(point)}
         onConfirm={addPickedPoint}
-        onClose={map.close}
       />
     </SafeAreaView>
   );

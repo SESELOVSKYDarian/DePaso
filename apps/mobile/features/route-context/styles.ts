@@ -29,6 +29,8 @@ export const useStyles = makeStyles((colors) => StyleSheet.create({
   orLabel: { fontFamily: typography.caption.fontFamily, fontSize: 13, color: colors.text.secondary, marginBottom: spacing.xs },
   mapModal: { flex: 1, backgroundColor: colors.surface.base },
   mapArea: { flex: 1 },
+  mapSearch: { paddingHorizontal: spacing.lg, paddingBottom: spacing.sm, zIndex: 2 },
+  mapLocate: { position: "absolute", left: spacing.md, bottom: spacing.md },
   mapLoader: { marginTop: spacing.xl },
   mapFooter: { padding: spacing.lg, gap: spacing.sm, borderTopWidth: 1, borderTopColor: colors.border.subtle },
   pickedRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm },

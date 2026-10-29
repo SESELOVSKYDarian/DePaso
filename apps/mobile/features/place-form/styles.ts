@@ -51,6 +51,7 @@ export const useStyles = makeStyles((colors) => StyleSheet.create({
     color: colors.text.primary,
     fontWeight: "600",
   },
+  searchBox: { zIndex: 2 },
   locationButton: {
     alignSelf: "flex-start",
     marginTop: -spacing.xs,

@@ -7,6 +7,8 @@ import type { PlaceType } from "@depaso/types";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
 import { Checkbox } from "@/components/common/Checkbox";
 import { FormField } from "@/components/common/FormField";
+import type { PlaceSuggestionResponse } from "@depaso/validation";
+import { PlaceSearchBox } from "@/components/map/PlaceSearchBox";
 import { geocodeClient } from "@/lib/apiClient";
 import { PLACE_TYPES, PLACE_TYPE_META } from "@/lib/placeTypes";
 import { usePlaces } from "@/lib/places/PlacesContext";
@@ -28,6 +30,20 @@ export default function PlaceFormScreen() {
   const [addressError, setAddressError] = useState<string | undefined>();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLocating, setIsLocating] = useState(false);
+  // Coordenadas ya conocidas (del buscador, del GPS o del lugar que se edita): si están, no hace
+  // falta volver a ubicar la dirección al guardar. Si se escribe a mano la dirección, se borran.
+  const [coords, setCoords] = useState<{ latitude: number; longitude: number } | null>(
+    existing ? { latitude: existing.latitude, longitude: existing.longitude } : null,
+  );
+
+  // eligió un resultado del buscador: completa la dirección (y el nombre, si estaba vacío)
+  const handlePickResult = (place: PlaceSuggestionResponse) => {
+    const text = place.kind === "poi" ? place.address || place.name : [place.name, place.address].filter(Boolean).join(", ");
+    setAddress(text);
+    setAddressError(undefined);
+    setCoords({ latitude: place.latitude, longitude: place.longitude });
+    if (!name.trim() && place.kind === "poi") setName(place.name);
+  };
 
   // pide permiso de ubicación y usa el GPS para completar la dirección
   const handleUseCurrentLocation = async () => {
@@ -43,6 +59,7 @@ export default function PlaceFormScreen() {
       try {
         const { address: resolved } = await geocodeClient.reverse({ latitude, longitude });
         setAddress(resolved);
+        setCoords({ latitude, longitude });
         setAddressError(undefined);
       } catch (err) {
         if (err instanceof ApiError && err.status === 503) {
@@ -77,17 +94,17 @@ export default function PlaceFormScreen() {
 
     setIsSubmitting(true);
     try {
-      const coords = await geocodeAddress(address);
-      if (!coords) {
+      const resolved = coords ?? (await geocodeAddress(address));
+      if (!resolved) {
         setAddressError("No pudimos ubicar esa dirección — probá ser más específico.");
         return;
       }
       setAddressError(undefined);
 
       if (isEditing) {
-        await updatePlace(existing.id, { name, type, address, isFavorite, ...coords });
+        await updatePlace(existing.id, { name, type, address, isFavorite, ...resolved });
       } else {
-        await createPlace({ name, type, address, isFavorite, ...coords });
+        await createPlace({ name, type, address, isFavorite, ...resolved });
       }
       router.back();
     } catch (err) {
@@ -143,10 +160,16 @@ export default function PlaceFormScreen() {
           })}
         </View>
 
+        <Text style={styles.label}>Buscar el lugar</Text>
+        <PlaceSearchBox onSelect={handlePickResult} placeholder="Shell, Técnica 5, Colón 1234…" style={styles.searchBox} />
+
         <FormField
           label="Dirección"
           value={address}
-          onChangeText={setAddress}
+          onChangeText={(text) => {
+            setAddress(text);
+            setCoords(null);
+          }}
           placeholder="Calle y altura, barrio"
           error={addressError}
         />
