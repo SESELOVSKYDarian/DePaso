@@ -6,7 +6,7 @@ Monorepo pnpm + Turborepo. Todo lo de un tema vive en una sola carpeta.
 
 | Carpeta | Qué es |
 |---|---|
-| `apps/api/` | Backend: API REST en Next.js. **Todos los endpoints son POST.** Corre en EasyPanel. |
+| `apps/api/` | Backend: API REST en Next.js. **Sin GET: POST (leer y crear), PUT (actualizar) y DELETE (borrar).** Corre en EasyPanel. |
 | `apps/mobile/` | App Expo / React Native (el producto). |
 | `apps/web/` | Sitio web (landing, legales, descarga). |
 | `apps/admin/` | Panel de administración web. |
@@ -17,8 +17,8 @@ Monorepo pnpm + Turborepo. Todo lo de un tema vive en una sola carpeta.
 
 | Ruta | Responsabilidad |
 |---|---|
-| `app/api/<recurso>/route.ts` | Crear (POST). |
-| `app/api/<recurso>/{list,detail,update,delete}/route.ts` | Resto del CRUD, cada acción en su carpeta. |
+| `app/api/<recurso>/route.ts` | Crear (POST), actualizar (PUT) y borrar (DELETE) el recurso. |
+| `app/api/<recurso>/{list,detail}/route.ts` | Listar y ver (POST), cada acción en su carpeta. |
 | `app/api/auth/` | Registro, login, refresh de tokens, logout, recuperar contraseña, OAuth. |
 | `app/api/{lists,places,preferences,route-contexts,payment-methods}/` | Datos del usuario. |
 | `app/api/{merchant,admin}/` | Funciones por rol (comercio y administrador). |
@@ -84,6 +84,7 @@ Pantallas que ya están divididas en `features/`: `assistant`, `route-context`, 
 | `.env.example` | Variables de entorno (sin valores reales). |
 | `docs/GUIA-DE-INSTALACION.md` | Cómo instalar y configurar backend, base de datos y app. |
 | `docs/MANUAL-DE-USUARIO.md` | Cómo usar la app. |
-| `docs/development/API.md` | Documentación de todos los endpoints. |
+| `apps/api/README.md` | Documentación de todos los endpoints. |
+| `apps/api/tests/e2e.mjs` | Prueba de punta a punta de la API. |
 | `docs/development/DEPLOY-EASYPANEL.md` | Deploy, variables y cron jobs. |
 | `docs/development/DATABASE.md` | Modelo de datos, normalización y decisiones. |

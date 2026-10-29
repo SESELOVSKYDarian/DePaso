@@ -1,5 +1,5 @@
 /**
- * Todos los endpoints son POST: los datos viajan en el body JSON, nunca en la URL.
+ * Nunca se usa GET: los datos (ids incluidos) viajan en el body JSON, nunca en la URL.
  * Estos helpers arman, a partir del body, la request que espera cada handler:
  *  - postWithParams: saca ids del body y los entrega como `params` (antes eran /[id]).
  *  - postAsQuery: pasa los campos del body como searchParams (antes era ?q=...).

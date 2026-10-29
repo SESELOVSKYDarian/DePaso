@@ -2,7 +2,7 @@
 
 Cómo dejar DePaso funcionando en una máquina nueva: backend (API), base de datos y la app
 móvil. Para usar la app ya instalada, ver el [Manual de usuario](MANUAL-DE-USUARIO.md); para los
-endpoints, la [Referencia de la API](development/API.md).
+endpoints, la [Referencia de la API](../apps/api/README.md).
 
 ## 1. Qué hay que tener instalado
 
