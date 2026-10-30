@@ -1,0 +1,7 @@
+{
+  "name": "depaso-manual",
+  "private": true,
+  "type": "module",
+  "scripts": { "pdf": "node build-pdf.mjs" },
+  "dependencies": { "marked": "^15.0.0" }
+}

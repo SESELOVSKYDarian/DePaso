@@ -50,9 +50,11 @@ Nunca subas valores reales a Git (`.env*` está ignorado).
 | `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` | Login con Google | El botón avisa que no está activado |
 | `META_APP_ID` + `META_APP_SECRET` (o `FACEBOOK_APP_ID/SECRET`) | Login con Meta (Facebook) | Ídem |
 | `DISCORD_CLIENT_ID` + `DISCORD_CLIENT_SECRET` | Login con Discord | Ídem |
-| `LLM_API_KEY`, `LLM_BASE_URL`, `LLM_MODEL` | Asistente de compras con IA | "Modo básico": corta el texto por comas |
-| `STT_API_KEY`, `STT_BASE_URL`, `STT_MODEL` | Micrófono del asistente (voz a texto) | El micrófono avisa y se puede escribir |
+| `LLM_API_KEY`, `LLM_BASE_URL`, `LLM_MODEL` | Asistente de compras con IA (Enigma: `https://llm.enigma-it.com.ar/v1`, modelo `enigma-27b`) | "Modo básico": corta el texto por comas |
+| `STT_API_KEY`, `STT_BASE_URL`, `STT_MODEL` | Micrófono del asistente (Groq: `https://api.groq.com/openai/v1`, modelo `whisper-large-v3`) | El micrófono avisa y se puede escribir |
+| `CORS_ALLOWED_ORIGINS` | Dominios desde donde se abre la **web** de la app, separados por coma | Solo acepta pedidos del navegador desde `localhost` |
 | `PHOTON_URL` | Servidor del buscador de lugares (por defecto el público de OpenStreetMap, gratuito y con uso moderado) | Usa el servidor público |
+| `INTERNAL_CRON` | `off` apaga las tareas automáticas (fotos, promos, popularidad) que corre la propia API | Corren solas en producción |
 | `CRON_SECRET` | Autoriza a los cron jobs de EasyPanel a sincronizar promos | Solo un admin puede sincronizar |
 
 Para **Gmail** como SMTP: activá la verificación en dos pasos y generá una "contraseña de
@@ -118,6 +120,20 @@ npx expo start
 
 Escaneá el QR con Expo Go. Si el celu y la PC están en la misma red Wi‑Fi alcanza con eso.
 
+### App web
+
+La misma app corre en el navegador (Expo Web), en una columna angosta centrada como en el celular:
+
+```bash
+cd apps/mobile
+npx expo start --web                 # desarrollo: http://localhost:8081
+npx expo export -p web               # genera dist/ para publicar
+```
+
+En producción la web se sirve con nginx (`Dockerfile.web` + `nginx.web.conf`, puerto 80). En
+EasyPanel es un servicio App aparte (`depaso-web`, build con `Dockerfile.web`). Para que el
+navegador pueda hablar con la API, agregá el dominio de la web a `CORS_ALLOWED_ORIGINS` en la API.
+
 ### Probar desde otra red (o con datos móviles)
 
 ```bash
@@ -173,4 +189,6 @@ jobs. La URL pública del servicio App es la que va en `EXPO_PUBLIC_API_URL`.
 | "No pudimos enviar el mail" | Falta o es inválida `SMTP_PASS` (Gmail pide contraseña de aplicación) |
 | El login social dice "no está activado" | Faltan las claves del proveedor o hay que redesplegar el servicio |
 | Búsqueda sin chips de tipo | Falta correr `pnpm data:sepa:backfill-types` |
+| La web carga pero no trae datos (error de CORS en la consola) | Falta el dominio de la web en `CORS_ALLOWED_ORIGINS` de la API; redesplegá la API |
+| En la web no puedo escribir en los campos | Usá la versión desplegada más reciente (los campos se enfocan al tocar cualquier parte) |
 | `/api/health` devuelve 503 | `DATABASE_URL` incorrecta (revisá usuario, contraseña y que esté URL-encodeada) |
