@@ -69,3 +69,6 @@ videos/
 
 docs/manual/node_modules/
 docs/manual/_manual.html
+
+# APKs compilados (pesados, no van a Git)
+apks/
