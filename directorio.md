@@ -101,7 +101,8 @@ Todas las pantallas viven en `features/`, agrupadas por área:
 | `docs/GUIA-DE-INSTALACION.md` | Cómo instalar y configurar backend, base de datos y app. |
 | `docs/MANUAL-DE-USUARIO.md` | Cómo usar la app (con capturas). |
 | `docs/manual/` | Capturas (`img/`) y `build-pdf.mjs`, que genera `DePaso-Manual-de-usuario.pdf` desde el manual. |
-| `promo-video/` | Video de presentación hecho con Remotion (`npm run studio` / `npm run render`), solo música. |
+| `promo-video/` | Videos con Remotion: presentación horizontal (`npm run render`) y reel publicitario vertical (`npm run reel`), solo música. |
+| `promo-video/hyperframes/` | Escena "realista" del reel (noche, lluvia, precios) hecha en HyperFrames; `npm run reel` la renderiza primero. |
 | `apps/api/README.md` | Documentación de todos los endpoints. |
 | `apps/api/tests/e2e.mjs` | Prueba de punta a punta de la API. |
 | `docs/development/DEPLOY-EASYPANEL.md` | Deploy, variables y cron jobs. |

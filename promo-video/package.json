@@ -7,7 +7,11 @@
     "render:video": "remotion render src/index.ts DePasoPromo out/silent.mp4 --codec=h264 --crf=18 --muted --port=3456",
     "render:audio": "node mux-audio.mjs",
     "render": "npm run render:video && npm run render:audio",
-    "still": "remotion still src/index.ts DePasoPromo out/preview.png --frame=300"
+    "still": "remotion still src/index.ts DePasoPromo out/preview.png --frame=300",
+    "reel:realista": "cd hyperframes && npm run render",
+    "reel:video": "remotion render src/index.ts DePasoReel out/reel-silent.mp4 --codec=h264 --crf=18 --muted --port=3456",
+    "reel:audio": "node mux-reel.mjs",
+    "reel": "npm run reel:realista && npm run reel:video && npm run reel:audio"
   },
   "dependencies": {
     "@remotion/cli": "4.0.539",

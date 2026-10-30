@@ -1,0 +1,8 @@
+{
+  "name": "depaso-reel-realista",
+  "private": true,
+  "scripts": {
+    "check": "..\..\videos\node_modules\.bin\hyperframes.cmd check",
+    "render": "..\..\videos\node_modules\.bin\hyperframes.cmd render --quality delivery --fps 30 --output ../public/realista.mp4"
+  }
+}
