@@ -3,7 +3,7 @@
 // Reglas APA: Arial 12, interlineado 1,5, sangría de primera línea 0,5", texto justificado,
 // títulos por niveles sin numerar, "Figura N" / "Tabla N" con título en cursiva y encabezado "Título | n".
 // La portada conserva el diseño oscuro de DePaso.
-import { readFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, readFileSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -137,4 +137,6 @@ await page.pdf({
   footerTemplate: "<span></span>",
 });
 await browser.close();
+// copia para la app: la web la sirve en /manual/ y la pantalla "Cómo usar DePaso" la descarga
+copyFileSync(join(aca, "DePaso-Manual-de-usuario.pdf"), join(aca, "..", "..", "apps", "mobile", "public", "manual", "DePaso-Manual-de-usuario.pdf"));
 console.log("PDF listo");

@@ -49,6 +49,10 @@ export default function HelpScreen() {
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.intro}>Lo que más nos preguntan. Si no está acá, probablemente lo veas en Privacidad y datos.</Text>
 
+      <GroupedList title="Guía">
+        <GroupedRow icon="book-outline" label="Cómo usar DePaso (manual en PDF)" onPress={() => router.push("/how-to")} />
+      </GroupedList>
+
       <View style={styles.card}>
         {FAQ.map((item, index) => {
           const expanded = open === index;

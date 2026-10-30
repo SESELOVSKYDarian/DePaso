@@ -69,6 +69,7 @@ export default function ProfileScreen() {
             onPress={() => router.push("/notifications")}
           />
           <GroupedRow icon="lock-closed-outline" label="Privacidad y datos" onPress={() => router.push("/privacy")} />
+          <GroupedRow icon="book-outline" label="Cómo usar DePaso" onPress={() => router.push("/how-to")} />
           <GroupedRow icon="help-circle-outline" label="Ayuda" onPress={() => router.push("/help")} />
         </GroupedList>
 

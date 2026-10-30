@@ -91,7 +91,8 @@ export function RootNavigator() {
         <Stack.Screen name="admin/merchant-requests" options={{ headerShown: true, title: "Solicitudes de comercio" }} />
       </Stack.Protected>
 
-      {/* textos legales: se pueden abrir con o sin sesión */}
+      {/* textos legales y el manual: se pueden abrir con o sin sesión */}
+      <Stack.Screen name="how-to" options={{ headerShown: true, title: "Cómo usar DePaso" }} />
       <Stack.Screen name="legal/terms" options={{ headerShown: true, title: "Términos" }} />
       <Stack.Screen name="legal/privacy" options={{ headerShown: true, title: "Privacidad" }} />
       <Stack.Screen name="legal/community" options={{ headerShown: true, title: "Normas de la comunidad" }} />

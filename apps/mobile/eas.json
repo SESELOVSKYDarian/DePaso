@@ -20,14 +20,16 @@
       },
       "channel": "preview",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://estanga-estanga-darian.evo4vr.easypanel.host"
+        "EXPO_PUBLIC_API_URL": "https://estanga-estanga-darian.evo4vr.easypanel.host",
+        "EXPO_PUBLIC_WEB_URL": "https://estanga-depaso-web.evo4vr.easypanel.host"
       }
     },
     "production": {
       "autoIncrement": true,
       "channel": "production",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://estanga-estanga-darian.evo4vr.easypanel.host"
+        "EXPO_PUBLIC_API_URL": "https://estanga-estanga-darian.evo4vr.easypanel.host",
+        "EXPO_PUBLIC_WEB_URL": "https://estanga-depaso-web.evo4vr.easypanel.host"
       }
     }
   },

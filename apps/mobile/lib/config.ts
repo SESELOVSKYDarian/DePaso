@@ -5,3 +5,6 @@
  * máquina). Configurar `EXPO_PUBLIC_API_URL` en `.env` según el entorno de prueba.
  */
 export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:3000";
+
+/** Web pública de DePaso: de ahí baja el manual en PDF cuando la app corre en el celular. */
+export const WEB_BASE_URL = process.env.EXPO_PUBLIC_WEB_URL ?? "https://estanga-depaso-web.evo4vr.easypanel.host";
