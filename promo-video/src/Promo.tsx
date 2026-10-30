@@ -1,4 +1,5 @@
-import { AbsoluteFill, Audio, Sequence, interpolate, staticFile } from "remotion";
+import { AbsoluteFill, Sequence, interpolate, staticFile } from "remotion";
+import { Sonido } from "./components/Sonido";
 import { Background } from "./components/Background";
 import { FeatureScene } from "./scenes/FeatureScene";
 import { FEATURES } from "./scenes/features";
@@ -18,7 +19,7 @@ const volumenMusica = (frame: number) =>
 export const Promo = () => (
   <AbsoluteFill>
     <Background />
-    <Audio src={staticFile("audio/cipher.oga")} startFrom={8 * 30} volume={volumenMusica} />
+    <Sonido src={staticFile("audio/cipher.oga")} startFrom={8 * 30} volume={volumenMusica} />
     <Sequence durationInFrames={INTRO_FRAMES}>
       <Intro />
     </Sequence>

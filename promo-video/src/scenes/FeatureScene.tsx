@@ -1,4 +1,5 @@
-import { AbsoluteFill, Audio, interpolate, staticFile, useCurrentFrame } from "remotion";
+import { AbsoluteFill, interpolate, staticFile, useCurrentFrame } from "remotion";
+import { Sonido } from "../components/Sonido";
 import { Headline } from "../components/Headline";
 import { Phone } from "../components/Phone";
 import { SCENE_FRAMES } from "../theme";
@@ -28,7 +29,7 @@ export const FeatureScene = ({ feature, invertida }: { feature: Feature; inverti
         padding: "0 130px",
       }}
     >
-      <Audio src={staticFile("audio/whoosh.mp3")} volume={0.35} />
+      <Sonido src={staticFile("audio/whoosh.mp3")} volume={0.35} />
       <Headline etiqueta={feature.etiqueta} titulo={feature.titulo} detalle={feature.detalle} />
       <div style={{ display: "flex", gap: doble ? 34 : 0, alignItems: "center" }}>
         {feature.pantallas.map((pantalla, i) => (

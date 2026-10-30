@@ -4,7 +4,9 @@
   "type": "module",
   "scripts": {
     "studio": "remotion studio",
-    "render": "remotion render src/index.ts DePasoPromo out/depaso-presentacion.mp4 --codec=h264 --crf=18 --port=3456",
+    "render:video": "remotion render src/index.ts DePasoPromo out/silent.mp4 --codec=h264 --crf=18 --muted --port=3456",
+    "render:audio": "node mux-audio.mjs",
+    "render": "npm run render:video && npm run render:audio",
     "still": "remotion still src/index.ts DePasoPromo out/preview.png --frame=300"
   },
   "dependencies": {
