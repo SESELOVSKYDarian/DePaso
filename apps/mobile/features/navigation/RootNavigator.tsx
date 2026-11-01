@@ -15,7 +15,9 @@ import { useColors } from "@/lib/theme";
  */
 export function RootNavigator() {
   const colors = useColors();
-  const { isBootstrapping, onboardingSeen, isAuthenticated, postSignupDone } = useAuth();
+  const { isBootstrapping, onboardingSeen, isAuthenticated, postSignupDone, user } = useAuth();
+  // cuenta nueva con el mail sin confirmar (y el servidor puede mandar mails): primero el código
+  const needsEmail = isAuthenticated && Boolean(user?.emailVerificationRequired);
 
   if (isBootstrapping) return <SplashScreen />;
 
@@ -46,15 +48,20 @@ export function RootNavigator() {
         <Stack.Screen name="(auth)" />
       </Stack.Protected>
 
+      {/* 2b. con sesión pero sin confirmar el mail: pantalla del código */}
+      <Stack.Protected guard={onboardingSeen && needsEmail}>
+        <Stack.Screen name="verify-email" />
+      </Stack.Protected>
+
       {/* 3. recién registrado: ubicación, lugares y desvío. `(setup)/places.tsx` usa su propia ruta
           interna `(setup)/places-form`: registrar el MISMO nombre en dos grupos hermanos rompe
           `router.push` ("route not handled by any navigator"). */}
-      <Stack.Protected guard={onboardingSeen && isAuthenticated && !postSignupDone}>
+      <Stack.Protected guard={onboardingSeen && isAuthenticated && !needsEmail && !postSignupDone}>
         <Stack.Screen name="(setup)" />
       </Stack.Protected>
 
       {/* 4. con sesión: la app */}
-      <Stack.Protected guard={onboardingSeen && isAuthenticated && postSignupDone}>
+      <Stack.Protected guard={onboardingSeen && isAuthenticated && !needsEmail && postSignupDone}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="places/index" options={{ headerShown: true, title: "Mis lugares" }} />
         <Stack.Screen name="places/form" options={{ headerShown: true, title: "Lugar", presentation: "modal" }} />

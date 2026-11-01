@@ -7,7 +7,7 @@ import { radii, spacing } from "@depaso/design-tokens";
 import { makeStyles } from "@/lib/theme";
 
 /** Cuánto se ve de la hoja en cada posición (en píxeles, desde abajo). */
-export const PEEK_VISIBLE = 320;
+export const PEEK_VISIBLE = 380;
 const CLOSED_VISIBLE = 88;
 
 interface MapSheetProps {

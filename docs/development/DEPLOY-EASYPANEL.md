@@ -22,6 +22,8 @@ EasyPanel (esa es la URL de la API). Al arrancar, el contenedor aplica las migra
 | `MAPBOX_ACCESS_TOKEN` | mapas, geocoding y rutas |
 | `LLM_API_KEY`, `LLM_BASE_URL`, `LLM_MODEL` | asistente de listas con IA (Enigma: `https://llm.enigma-it.com.ar/v1`, modelo `enigma-27b`) |
 | `STT_API_KEY`, `STT_BASE_URL`, `STT_MODEL` | dictado por voz (Groq: `https://api.groq.com/openai/v1`, modelo `whisper-large-v3`) |
+| `ADMIN_EMAILS` | mails que son administradores (coma). La cuenta debe existir y tener el mail confirmado |
+| `TEST_ACCOUNTS_PASSWORD` | si se define, al arrancar crea un comercio y dos usuarios de prueba (`comercio.prueba@`, `ana.prueba@`, `luis.prueba@` `depaso.test`) con esa contraseña |
 | `CORS_ALLOWED_ORIGINS` | dominio de la web (sin esto el navegador no puede llamar a la API) |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` | mail de recuperar contraseña |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | login con Google (opcional) |

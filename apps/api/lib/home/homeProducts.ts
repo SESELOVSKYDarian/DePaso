@@ -12,6 +12,8 @@ const SUSPICIOUS_FACTOR = 0.3;
 const MIN_PRICES_TO_COMPARE = 3;
 /** Estas listas no dependen del usuario: se guardan 30 minutos para no recalcular en cada visita. */
 const CACHE_TTL_MS = 30 * 60 * 1000;
+/** Se comparan solo los más buscados: calcular sobre millones de precios tardaba muchísimo. */
+const CANDIDATES = 600;
 
 interface ProductRow {
   productId: string;
@@ -24,10 +26,13 @@ interface ProductRow {
 }
 
 const cache = new Map<string, { at: number; value: HomeProduct[] }>();
+/** Cálculos en curso: si dos visitas piden lo mismo a la vez, se calcula una sola vez. */
+const loading = new Map<string, Promise<HomeProduct[]>>();
 
 /** Vacía la caché (lo usan las pruebas). */
 export function clearHomeProductsCache(): void {
   cache.clear();
+  loading.clear();
 }
 
 /**
@@ -36,6 +41,9 @@ export function clearHomeProductsCache(): void {
  */
 async function queryProducts(filter: Prisma.Sql, order: Prisma.Sql): Promise<ProductRow[]> {
   return prisma.$queryRaw<ProductRow[]>(Prisma.sql`
+    WITH candidates AS (
+      SELECT id FROM products ORDER BY popularity DESC LIMIT ${CANDIDATES}
+    )
     SELECT t.productId, t.productName, t.brandName, t.imageUrl, t.storeName, t.minPrice, t.avgPrice
     FROM (
       SELECT
@@ -51,6 +59,7 @@ async function queryProducts(filter: Prisma.Sql, order: Prisma.Sql): Promise<Pro
         ROW_NUMBER() OVER (PARTITION BY v.productId ORDER BY pr.price ASC) AS position
       FROM prices pr
       JOIN product_variants v ON v.id = pr.productVariantId
+      JOIN candidates c ON c.id = v.productId
       JOIN products p ON p.id = v.productId
       LEFT JOIN brands b ON b.id = p.brandId
       JOIN store_branches sb ON sb.id = pr.storeBranchId
@@ -78,13 +87,35 @@ function toHomeProduct(row: ProductRow): HomeProduct {
   };
 }
 
-/** Guarda el resultado de una consulta 30 minutos. */
+/** Calcula una tira y la guarda; si ya se está calculando, espera a esa misma. */
+function refresh(key: string, load: () => Promise<ProductRow[]>): Promise<HomeProduct[]> {
+  const running = loading.get(key);
+  if (running) return running;
+  const promise = load()
+    .then((rows) => {
+      const value = rows.map(toHomeProduct);
+      cache.set(key, { at: Date.now(), value });
+      return value;
+    })
+    .finally(() => loading.delete(key));
+  loading.set(key, promise);
+  return promise;
+}
+
+/**
+ * Devuelve la tira guardada al instante. Si ya venció se muestra igual la anterior y se
+ * recalcula de fondo: nadie espera la consulta salvo la primera vez después de arrancar.
+ */
 async function cached(key: string, load: () => Promise<ProductRow[]>): Promise<HomeProduct[]> {
   const hit = cache.get(key);
-  if (hit && Date.now() - hit.at < CACHE_TTL_MS) return hit.value;
-  const value = (await load()).map(toHomeProduct);
-  cache.set(key, { at: Date.now(), value });
-  return value;
+  if (!hit) return refresh(key, load);
+  if (Date.now() - hit.at >= CACHE_TTL_MS) void refresh(key, load).catch((error) => console.error("home: no se pudo refrescar", key, error));
+  return hit.value;
+}
+
+/** Calienta las dos tiras al arrancar el servidor, antes de que entre la primera persona. */
+export async function warmHomeProducts(): Promise<void> {
+  await Promise.all([loadCheapProducts(), loadPopularProducts()]);
 }
 
 /** "Barato hoy": productos cuyo precio más bajo está bien por debajo del promedio, los más ahorro primero. */

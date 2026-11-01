@@ -136,6 +136,8 @@ tipado en [`packages/api-client`](../../packages/api-client/src).
 | `POST /api/auth/me` | 🔒 | — (devuelve el usuario) | 401 |
 | `PUT /api/auth/me` | 🔒 | `updateProfileRequestSchema` — displayName?, marketingOptIn? | 400, 401 |
 | `DELETE /api/auth/account` | 🔒 | — (borra la cuenta y revoca las sesiones) | 401 |
+| `POST /api/auth/email/send-code` | 🔒 | — (manda o reenvía el código de 8 dígitos para confirmar el mail) | 401, 429, 502, 503 |
+| `POST /api/auth/email/verify` | 🔒 | `verifyEmailRequestSchema` — código de 8 dígitos (devuelve el usuario) | 400, 401, 429 |
 | `POST /api/auth/forgot-password` | 🌐 | `forgotPasswordRequestSchema` — email | 400, 429, 503 |
 | `POST /api/auth/verify-reset-code` | 🌐 | `verifyResetCodeRequestSchema` — email, código de 8 dígitos | 400, 429 |
 | `POST /api/auth/reset-password` | 🌐 | `resetPasswordRequestSchema` — token o código + nueva contraseña | 400, 429 |

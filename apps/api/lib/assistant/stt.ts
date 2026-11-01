@@ -1,3 +1,4 @@
+import { sttApiKey } from "../env";
 /**
  * Voz a texto con un servicio compatible con la API de OpenAI (`/audio/transcriptions`):
  * Groq (Whisper, tiene capa gratis), OpenAI, etc.
@@ -31,7 +32,7 @@ export function buildVocabularyHint(brands: string[] = []): string {
 }
 
 export function isSttConfigured(): boolean {
-  return Boolean(process.env.STT_API_KEY?.trim());
+  return Boolean(sttApiKey());
 }
 
 /**
@@ -54,7 +55,7 @@ export type TranscribeResult =
   | { ok: false; reason: "failed"; detail: TranscribeFailureDetail };
 
 export async function transcribeAudio(file: Blob, filename: string, vocabularyHint?: string): Promise<TranscribeResult> {
-  const apiKey = process.env.STT_API_KEY?.trim();
+  const apiKey = sttApiKey();
   if (!apiKey) return { ok: false, reason: "not_configured" };
 
   const baseUrl = (process.env.STT_BASE_URL?.trim() || DEFAULT_BASE_URL).replace(/\/+$/, "");

@@ -111,6 +111,10 @@ export const authUserResponseSchema = z.object({
   /** Ver enum `Role` — USER, MERCHANT (comercio aprobado por un admin) y ADMIN (docs/development/DECISIONS.md). */
   role: z.enum(["USER", "MERCHANT", "ADMIN"]),
   createdAt: z.string(),
+  /** `true` si ya confirmó su mail (las cuentas viejas y las de login social lo están). */
+  emailVerified: z.boolean().default(true),
+  /** `true` si falta confirmar el mail y el servidor puede mandar mails: la app muestra la pantalla del código. */
+  emailVerificationRequired: z.boolean().default(false),
 });
 export type AuthUserResponse = z.infer<typeof authUserResponseSchema>;
 
@@ -130,3 +134,9 @@ export type AuthResponse = z.infer<typeof authResponseSchema>;
 /** Canje de refresh token por un par nuevo de tokens. */
 export const refreshRequestSchema = z.object({ refreshToken: z.string().min(10) });
 export type RefreshRequest = z.infer<typeof refreshRequestSchema>;
+
+/** Código de 8 dígitos para confirmar el mail de una cuenta nueva. */
+export const verifyEmailRequestSchema = z.object({
+  code: z.string().regex(/^\d{8}$/),
+});
+export type VerifyEmailRequest = z.infer<typeof verifyEmailRequestSchema>;

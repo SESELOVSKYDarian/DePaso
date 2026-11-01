@@ -8,6 +8,8 @@ import { setSessionCookie } from "@/lib/auth/cookies";
 import { exchangeCodeForProfile } from "@/lib/auth/oauthProviders";
 import { checkRateLimit } from "@/lib/auth/rateLimit";
 import { getClientIp } from "@/lib/auth/request";
+import { ensureAdminRole } from "@/lib/auth/adminEmails";
+import { toUserPayload } from "@/lib/auth/userPayload";
 
 const authProvider = createPrismaAuthProvider();
 
@@ -78,6 +80,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
           email,
           passwordHash,
           displayName: profile.name?.slice(0, 80) ?? null,
+          emailVerifiedAt: new Date(),
           profile: { create: { ageConfirmed18Plus: true, marketingOptIn } },
         },
         include: { profile: true },
@@ -94,17 +97,15 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
     created = true;
   }
 
+  // si entró por un proveedor que verificó el mail, la cuenta queda confirmada
+  if (!user.emailVerifiedAt) {
+    user = await prisma.user.update({ where: { id: user.id }, data: { emailVerifiedAt: new Date() }, include: { profile: true } });
+  }
+  const role = await ensureAdminRole(user);
   const session = await authProvider.createSession(user.id);
   const response = NextResponse.json(
     {
-      user: {
-        id: user.id,
-        email: user.email,
-        displayName: user.displayName,
-        marketingOptIn: user.profile?.marketingOptIn ?? false,
-        role: user.role,
-        createdAt: user.createdAt.toISOString(),
-      },
+      user: toUserPayload(user, user.profile?.marketingOptIn ?? false, role),
       token: session.token,
       expiresAt: session.expiresAt,
       refreshToken: session.refreshToken,

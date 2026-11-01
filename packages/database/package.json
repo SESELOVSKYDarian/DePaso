@@ -12,6 +12,7 @@
     "migrate:dev": "prisma migrate dev",
     "seed": "tsx prisma/seed.ts",
     "db:brand-logos": "tsx scripts/seed-brand-logos.ts",
+    "db:test-accounts": "tsx scripts/seed-test-accounts.ts",
     "migrate:deploy": "prisma migrate deploy",
     "migrate:from-postgres": "tsx scripts/postgres-to-mysql.ts"
   },

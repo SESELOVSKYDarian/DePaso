@@ -52,6 +52,8 @@ Nunca subas valores reales a Git (`.env*` está ignorado).
 | `DISCORD_CLIENT_ID` + `DISCORD_CLIENT_SECRET` | Login con Discord | Ídem |
 | `LLM_API_KEY`, `LLM_BASE_URL`, `LLM_MODEL` | Asistente de compras con IA (Enigma: `https://llm.enigma-it.com.ar/v1`, modelo `enigma-27b`) | "Modo básico": corta el texto por comas |
 | `STT_API_KEY`, `STT_BASE_URL`, `STT_MODEL` | Micrófono del asistente (Groq: `https://api.groq.com/openai/v1`, modelo `whisper-large-v3`) | El micrófono avisa y se puede escribir |
+| `ADMIN_EMAILS` | Quién es administrador: mails separados por coma. La cuenta tiene que existir y haber confirmado su mail | Nadie es admin (se asigna a mano con `promote-admin.mjs`) |
+| `TEST_ACCOUNTS_PASSWORD` | Crea al arrancar un comercio y dos usuarios de prueba, con lugares, rutas, listas y precios (`pnpm --filter @depaso/database run db:test-accounts`) | No se crea ninguno |
 | `CORS_ALLOWED_ORIGINS` | Dominios desde donde se abre la **web** de la app, separados por coma | Solo acepta pedidos del navegador desde `localhost` |
 | `PHOTON_URL` | Servidor del buscador de lugares (por defecto el público de OpenStreetMap, gratuito y con uso moderado) | Usa el servidor público |
 | `INTERNAL_CRON` | `off` apaga las tareas automáticas (fotos, promos, popularidad) que corre la propia API | Corren solas en producción |

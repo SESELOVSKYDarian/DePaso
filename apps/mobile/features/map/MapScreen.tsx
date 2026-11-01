@@ -19,7 +19,7 @@ import { NearbyStoresList, SelectedStoreCard } from "./components/NearbyStores";
 import { NoRouteCard } from "./components/NoRouteCard";
 import { PlanCard } from "./components/PlanCard";
 import { PlanCta } from "./components/PlanCta";
-import { PlanTabs } from "./components/PlanTabs";
+import { PlanSummary } from "./components/PlanSummary";
 import { RouteStops } from "./components/RouteStops";
 import { SearchResultCard } from "./components/SearchResultCard";
 import { sameBase } from "./helpers";
@@ -132,7 +132,18 @@ export default function MapScreen() {
       }
     : null;
 
-  const sheetHeader = (
+  const sheetHeader =
+    hasRoute && plan ? (
+      <PlanSummary
+        plan={plan}
+        plans={planIsCurrent ? routePlans : []}
+        onSelectPlan={(option) => {
+          setSelectedId(null);
+          setRoutePlan(option);
+        }}
+        onSeeAll={() => setExpandSignal((n) => n + 1)}
+      />
+    ) : (
     <View style={s.sheetHeader}>
       <View style={s.sheetTitleBlock}>
         <Text accessibilityRole="header" style={s.sheetTitle}>
@@ -147,7 +158,7 @@ export default function MapScreen() {
         </AnimatedPressable>
       ) : null}
     </View>
-  );
+    );
 
   return (
     <View style={s.container} onLayout={(event) => setContainerHeight(event.nativeEvent.layout.height)}>
@@ -197,26 +208,16 @@ export default function MapScreen() {
         {hasRoute && selected && !selectedStop ? <SelectedStoreCard store={selected} /> : null}
 
         {hasRoute ? (
-          <NearbyStoresList stores={stores} selectedId={selectedId} isLoading={isLoadingRoute} hasMap={Boolean(mapboxToken)} onSelect={setSelectedId} />
-        ) : null}
-
-        {hasRoute && routePlans.length > 1 && planIsCurrent ? (
-          <PlanTabs
-            plans={routePlans}
-            selectedLabel={routePlan?.label}
-            onSelect={(option) => {
-              setSelectedId(null);
-              setRoutePlan(option);
-            }}
-          />
-        ) : null}
-
-        {hasRoute ? (
           plan ? (
-            <PlanCard plan={plan} stops={planStops} selectedId={selectedId} hasPlanLine={Boolean(planPolyline)} onSelectStop={setSelectedId} />
+            <PlanCard stops={planStops} selectedId={selectedId} hasPlanLine={Boolean(planPolyline)} onSelectStop={setSelectedId} />
           ) : (
             <PlanCta hasOldPlan={routePlan !== null} />
           )
+        ) : null}
+
+        {hasRoute && plan ? <Text style={s.sheetSection}>Comercios de paso</Text> : null}
+        {hasRoute ? (
+          <NearbyStoresList stores={stores} selectedId={selectedId} isLoading={isLoadingRoute} hasMap={Boolean(mapboxToken)} onSelect={setSelectedId} />
         ) : null}
 
         {waypoints.length > 0 ? <RouteStops waypoints={waypoints} /> : null}
@@ -235,6 +236,7 @@ const useStyles = makeStyles((colors) =>
     sheetTitleBlock: { flex: 1, gap: 2 },
     sheetTitle: { fontFamily: typography.screenTitle.fontFamily, fontSize: 20, color: colors.text.primary },
     sheetHint: { fontFamily: typography.body.fontFamily, fontSize: 13, color: colors.text.secondary },
+    sheetSection: { fontFamily: typography.itemTitle.fontFamily, fontSize: 16, color: colors.text.primary, marginTop: spacing.sm },
     seeAll: { fontFamily: typography.itemTitle.fontFamily, fontSize: 14, color: colors.brand.route },
   }),
 );

@@ -1,7 +1,9 @@
 import type { NextRequest } from "next/server";
 import { prisma } from "@depaso/database";
 import type { AuthUserResponse } from "@depaso/validation";
+import { ensureAdminRole } from "./adminEmails";
 import { getTokenFromRequest } from "./request";
+import { toUserPayload } from "./userPayload";
 import { verifySession } from "./session";
 
 export interface CurrentUser {
@@ -32,12 +34,6 @@ export async function toAuthUserResponse(userId: string): Promise<AuthUserRespon
   });
   if (!user || user.deletedAt) return null;
 
-  return {
-    id: user.id,
-    email: user.email,
-    displayName: user.displayName,
-    marketingOptIn: user.profile?.marketingOptIn ?? false,
-    role: user.role,
-    createdAt: user.createdAt.toISOString(),
-  };
+  const role = await ensureAdminRole(user);
+  return toUserPayload(user, user.profile?.marketingOptIn ?? false, role);
 }

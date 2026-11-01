@@ -5,7 +5,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { createPrismaAuthProvider } from "@/lib/auth/authProvider";
 import { setSessionCookie } from "@/lib/auth/cookies";
 import { getClientIp } from "@/lib/auth/request";
+import { createEmailCode } from "@/lib/auth/emailVerification";
 import { checkRateLimit } from "@/lib/auth/rateLimit";
+import { toUserPayload } from "@/lib/auth/userPayload";
+import { sendVerifyEmail } from "@/lib/auth/verifyEmailMail";
+import { isEmailConfigured } from "@/lib/integrations/email";
 
 const authProvider = createPrismaAuthProvider();
 
@@ -73,16 +77,14 @@ export async function POST(request: NextRequest) {
 
   const session = await authProvider.createSession(user.id);
 
+  // código para confirmar el mail; si el servidor no tiene SMTP, la cuenta queda usable igual
+  if (isEmailConfigured()) {
+    void sendVerifyEmail({ to: user.email, displayName: user.displayName, code: createEmailCode(user.id, user.email) });
+  }
+
   const response = NextResponse.json(
     {
-      user: {
-        id: user.id,
-        email: user.email,
-        displayName: user.displayName,
-        marketingOptIn,
-        role: user.role,
-        createdAt: user.createdAt.toISOString(),
-      },
+      user: toUserPayload(user, marketingOptIn),
       token: session.token,
       expiresAt: session.expiresAt,
       refreshToken: session.refreshToken,

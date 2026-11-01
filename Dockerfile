@@ -23,4 +23,4 @@ ENV PORT=3000
 EXPOSE 3000
 
 # Al arrancar aplica las migraciones, carga los logos de las cadenas en la base y levanta el servidor.
-CMD ["sh", "-c", "pnpm --filter @depaso/database run migrate:deploy && (pnpm --filter @depaso/database run db:brand-logos || echo 'logos: no se pudieron cargar') && pnpm --filter @depaso/api run start"]
+CMD ["sh", "-c", "pnpm --filter @depaso/database run migrate:deploy && (pnpm --filter @depaso/database run db:brand-logos || echo 'logos: no se pudieron cargar') && (pnpm --filter @depaso/database run db:test-accounts || echo 'cuentas de prueba: no se cargaron') && pnpm --filter @depaso/api run start"]

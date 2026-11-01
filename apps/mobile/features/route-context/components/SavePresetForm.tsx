@@ -5,6 +5,8 @@ import { useStyles } from "../styles";
 
 interface SavePresetFormProps {
   stopCount: number;
+  /** nombre con el que esta misma ruta ya está guardada; si existe, no se ofrece guardarla otra vez */
+  savedName?: string | null;
   /** `null` = el formulario está cerrado; texto = está abierto con ese nombre */
   name: string | null;
   isSaving: boolean;
@@ -17,7 +19,7 @@ interface SavePresetFormProps {
 /** Botón para guardar la ruta con un nombre; al tocarlo se abre el campo de nombre. */
 export function SavePresetForm(props: SavePresetFormProps) {
   const styles = useStyles();
-  if (props.stopCount < 2) return null;
+  if (props.stopCount < 2 || props.savedName) return null;
 
   if (props.name === null) {
     return <Button label="Guardar esta ruta con un nombre" variant="ghost" onPress={props.onOpen} style={styles.savePresetTrigger} />;

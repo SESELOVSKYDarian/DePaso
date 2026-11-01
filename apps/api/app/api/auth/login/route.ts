@@ -4,6 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createPrismaAuthProvider } from "@/lib/auth/authProvider";
 import { setSessionCookie } from "@/lib/auth/cookies";
 import { getClientIp } from "@/lib/auth/request";
+import { ensureAdminRole } from "@/lib/auth/adminEmails";
+import { toUserPayload } from "@/lib/auth/userPayload";
 import { checkRateLimit } from "@/lib/auth/rateLimit";
 
 const authProvider = createPrismaAuthProvider();
@@ -42,17 +44,11 @@ export async function POST(request: NextRequest) {
   const passwordOk = await authProvider.verifyPassword(password, user?.passwordHash ?? DUMMY_HASH);
   if (!user || user.deletedAt || !passwordOk) return invalidCredentials();
 
+  const role = await ensureAdminRole(user);
   const session = await authProvider.createSession(user.id);
 
   const response = NextResponse.json({
-    user: {
-      id: user.id,
-      email: user.email,
-      displayName: user.displayName,
-      marketingOptIn: user.profile?.marketingOptIn ?? false,
-      role: user.role,
-      createdAt: user.createdAt.toISOString(),
-    },
+    user: toUserPayload(user, user.profile?.marketingOptIn ?? false, role),
     token: session.token,
     expiresAt: session.expiresAt,
     refreshToken: session.refreshToken,

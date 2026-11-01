@@ -13,6 +13,7 @@ import { usePlaces } from "@/lib/places/PlacesContext";
 import { usePurchase } from "@/lib/purchase/PurchaseContext";
 import { useTodayRoute } from "@/lib/routeContext/TodayRouteContext";
 import { useColors, useTheme } from "@/lib/theme";
+import { findMatchingPreset } from "@/lib/routeContext/routeMatches";
 import { SavePresetForm } from "../route-context/components/SavePresetForm";
 import { SavedRoutesRow } from "../route-context/components/SavedRoutesRow";
 import { useSavedRoutes } from "../route-context/useSavedRoutes";
@@ -134,6 +135,7 @@ export default function HomeScreen() {
         <SavedRoutesRow presets={saved.presets} onApply={saved.apply} onDelete={(preset) => void saved.remove(preset)} />
         <SavePresetForm
           stopCount={waypoints.length}
+          savedName={findMatchingPreset(saved.presets, waypoints)?.name ?? null}
           name={saved.savingName}
           isSaving={saved.isSaving}
           onOpen={() => saved.setSavingName("")}

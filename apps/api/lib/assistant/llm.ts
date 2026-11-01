@@ -1,3 +1,4 @@
+import { llmApiKey } from "../env";
 /**
  * Cliente mínimo para un LLM con API compatible con OpenAI (`/v1/chat/completions`).
  *
@@ -15,12 +16,12 @@ export interface ChatMessage {
 }
 
 export function isLlmConfigured(): boolean {
-  return Boolean(process.env.LLM_API_KEY?.trim());
+  return Boolean(llmApiKey());
 }
 
 /** Pide una respuesta de chat (sin streaming) y devuelve el texto, o `null` si falló. */
 export async function chatCompletion(messages: ChatMessage[], options: { maxTokens?: number } = {}): Promise<string | null> {
-  const apiKey = process.env.LLM_API_KEY?.trim();
+  const apiKey = llmApiKey();
   if (!apiKey) return null;
 
   const baseUrl = (process.env.LLM_BASE_URL?.trim() || DEFAULT_BASE_URL).replace(/\/+$/, "");

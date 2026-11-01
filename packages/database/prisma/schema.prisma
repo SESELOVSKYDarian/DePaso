@@ -164,6 +164,9 @@ model User {
   updatedAt    DateTime  @updatedAt
   /// Borrado lógico — retención según docs/legal-functional/LEGAL.md (p.15).
   deletedAt    DateTime?
+  /// Cuándo confirmó su mail con el código que le mandamos al registrarse (null = sin confirmar).
+  /// Las cuentas de login social nacen confirmadas: el proveedor ya verificó el mail.
+  emailVerifiedAt DateTime?
 
   profile             UserProfile?
   consents            UserConsent[]
@@ -381,6 +384,7 @@ model Product {
   @@index([normalizedName])
   @@index([productType])
   @@index([productType, popularity(sort: Desc)])
+  @@index([popularity(sort: Desc)])
   @@map("products")
   planMisses OptimizationPlanMissingProduct[]
 }

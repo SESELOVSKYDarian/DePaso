@@ -4,13 +4,14 @@ import { ScrollView, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
 import { Dialog } from "@/components/common/Dialog";
+import { findMatchingPreset } from "@/lib/routeContext/routeMatches";
 import { useColors } from "@/lib/theme";
 import { AddTodaySheet } from "./components/AddTodaySheet";
 import { MapPickerModal } from "./components/MapPickerModal";
 import { PlacesList } from "./components/PlacesList";
 import { RouteFooter } from "./components/RouteFooter";
 import { SavedRoutesRow } from "./components/SavedRoutesRow";
-import { SavePresetForm } from "./components/SavePresetForm";
+import { RouteNameCard } from "./components/RouteNameCard";
 import { TodayRouteList } from "./components/TodayRouteList";
 import { useStyles } from "./styles";
 import { useRouteBuilder } from "./useRouteBuilder";
@@ -44,6 +45,14 @@ export default function RouteBuilderScreen() {
           <Text style={styles.mapBannerText}>Seleccioná los lugares que vas a visitar y armamos la mejor ruta.</Text>
         </View>
 
+        <RouteNameCard
+          stopCount={waypoints.length}
+          savedName={findMatchingPreset(saved.presets, waypoints)?.name ?? null}
+          name={saved.savingName}
+          isSaving={saved.isSaving}
+          onChangeName={saved.setSavingName}
+          onSave={() => void saved.save()}
+        />
         <SavedRoutesRow presets={saved.presets} onApply={saved.apply} onDelete={(preset) => void saved.remove(preset)} />
         <PlacesList
           places={builder.places}
@@ -55,15 +64,6 @@ export default function RouteBuilderScreen() {
           onAddToday={temporary.open}
         />
         <TodayRouteList waypoints={waypoints} onRemove={builder.removeWaypoint} />
-        <SavePresetForm
-          stopCount={waypoints.length}
-          name={saved.savingName}
-          isSaving={saved.isSaving}
-          onOpen={() => saved.setSavingName("")}
-          onChangeName={saved.setSavingName}
-          onCancel={() => saved.setSavingName(null)}
-          onSave={() => void saved.save()}
-        />
       </ScrollView>
 
       <RouteFooter waypoints={waypoints} onDone={builder.done} />
