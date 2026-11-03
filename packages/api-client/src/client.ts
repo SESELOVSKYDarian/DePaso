@@ -34,7 +34,10 @@ export function createApiClient(options: DepasoApiClientOptions) {
   async function send(method: HttpMethod, path: string, body: unknown, token: string | null | undefined) {
     return fetch(`${options.baseUrl}${path}`, {
       method,
-      credentials: "include", // permite que la cookie de sesión (web) viaje aunque baseUrl sea otro origin en dev
+      // Sin cookies entre sitios: la sesión viaja en el header Authorization (la API no acepta
+      // credenciales de otros orígenes, ver CORS en apps/api/middleware.ts). Con `include` el
+      // navegador bloqueaba todas las llamadas de la web.
+      credentials: "same-origin",
       headers: {
         "Content-Type": "application/json",
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
