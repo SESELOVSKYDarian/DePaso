@@ -11,7 +11,7 @@ export function itemKey(stop: PlanStop, item: PlanItem): string {
 
 /** De dónde sale el precio, qué tan confiable es y de cuándo es: "Fuente oficial (SEPA) · hace 1 día". */
 export function priceMeta(item: PlanItem): string {
-  const parts = [sourceTypeLabel(item.sourceType), confidenceLabel(item.confidence), formatRecency(item.reportedAt)].filter(
+  const parts = [sourceTypeLabel(item.sourceType), item.confidence === "HIGH" ? null : confidenceLabel(item.confidence), formatRecency(item.reportedAt)].filter(
     (part): part is string => part !== null,
   );
   return parts.join(" · ");

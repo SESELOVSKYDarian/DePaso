@@ -8,6 +8,7 @@ import { Dialog } from "@/components/common/Dialog";
 import { findMatchingPreset } from "@/lib/routeContext/routeMatches";
 import { useColors } from "@/lib/theme";
 import { AddTodaySheet } from "./components/AddTodaySheet";
+import { DeleteRouteDialog } from "./components/DeleteRouteDialog";
 import { MapPickerModal } from "./components/MapPickerModal";
 import { PlacesList } from "./components/PlacesList";
 import { RouteFooter } from "./components/RouteFooter";
@@ -54,7 +55,7 @@ export default function RouteBuilderScreen() {
           onChangeName={saved.setSavingName}
           onSave={() => void saved.save()}
         />
-        <SavedRoutesRow presets={saved.presets} onApply={saved.apply} onDelete={(preset) => void saved.remove(preset)} />
+        <SavedRoutesRow presets={saved.presets} onApply={saved.apply} onDelete={saved.requestRemove} />
         <PlacesList
           places={builder.places}
           selectedPlaceIds={builder.selectedPlaceIds}
@@ -68,6 +69,8 @@ export default function RouteBuilderScreen() {
       </BackToTopScrollView>
 
       <RouteFooter waypoints={waypoints} onDone={builder.done} />
+
+      <DeleteRouteDialog route={saved.toDelete} onConfirm={() => void saved.confirmRemove()} onCancel={saved.cancelRemove} />
 
       <AddTodaySheet
         visible={temporary.visible}

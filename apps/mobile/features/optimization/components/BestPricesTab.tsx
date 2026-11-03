@@ -36,12 +36,12 @@ export function BestPricesTab({ bestPrices, ranking }: BestPricesTabProps) {
           ) : (
             entry.offers.map((offer, index) => (
               <View key={offer.storeBranchId} style={styles.offerRow}>
-                <View style={[styles.badge, index === 0 ? styles.badgeBest : null]}>
-                  <Text style={[styles.badgeText, index === 0 ? styles.badgeTextBest : null]}>{index === 0 ? "Más barato" : index + 1}</Text>
+                <View accessibilityLabel={index === 0 ? "El más barato" : `Opción ${index + 1}`} style={[styles.badge, index === 0 ? styles.badgeBest : null]}>
+                  <Text style={[styles.badgeText, index === 0 ? styles.badgeTextBest : null]}>{index + 1}</Text>
                 </View>
                 <StoreBadge storeName={offer.storeName} size={30} />
                 <View style={styles.flex}>
-                  <Text style={styles.offerStore} numberOfLines={1}>
+                  <Text style={styles.offerStore} numberOfLines={2}>
                     {offer.storeName} · {offer.branchName}
                   </Text>
                   <Text style={styles.meta} numberOfLines={1}>
@@ -98,7 +98,7 @@ const useStyles = makeStyles((colors) =>
     },
     priceHead: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: spacing.sm },
     offerRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm, minHeight: 44 },
-    badge: { minWidth: 28, paddingHorizontal: 8, paddingVertical: 4, borderRadius: radii.full, backgroundColor: colors.surface.input, alignItems: "center" },
+    badge: { width: 28, height: 28, borderRadius: radii.full, justifyContent: "center", backgroundColor: colors.surface.input, alignItems: "center" },
     badgeBest: { backgroundColor: colors.saving.lime },
     badgeText: { fontFamily: typography.caption.fontFamily, fontSize: 11, color: colors.text.secondary },
     badgeTextBest: { color: colors.text.onLime },

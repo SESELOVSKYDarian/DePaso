@@ -65,7 +65,7 @@ export default function ProfileScreen() {
           <GroupedRow icon="contrast-outline" label="Apariencia" value={THEME_LABEL[mode]} onPress={() => router.push("/appearance")} />
           <GroupedRow
             icon="notifications-outline"
-            label="Notificaciones"
+            label="Historial de avisos"
             {...(unreadCount > 0 ? { value: `${unreadCount} sin leer` } : {})}
             onPress={() => router.push("/notifications")}
           />

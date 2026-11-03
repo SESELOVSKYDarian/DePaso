@@ -2,7 +2,7 @@ import { ApiError } from "@depaso/api-client";
 import type { OAuthLoginRequest, OAuthProviderId, OAuthProvidersResponse } from "@depaso/validation";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { spacing } from "@depaso/design-tokens";
 import { authClient } from "@/lib/apiClient";
 import { useAuth } from "@/lib/auth/AuthContext";
@@ -24,6 +24,8 @@ interface SocialAuthButtonsProps {
   only?: OAuthProviderId;
   /** Se llama cuando falta el consentimiento, para que la pantalla lo resalte. */
   onConsentMissing?: () => void;
+  /** Dibuja el separador "o" arriba, solo si hay al menos un botón para mostrar. */
+  withDivider?: boolean;
 }
 
 function errorMessage(error: unknown, label: string): string {
@@ -38,7 +40,7 @@ function errorMessage(error: unknown, label: string): string {
 }
 
 /** Google, Meta y Discord. La misma lógica sirve para iniciar sesión y para crear la cuenta. */
-export function SocialAuthButtons({ mode, consent, onConsentMissing, onSelect, only }: SocialAuthButtonsProps) {
+export function SocialAuthButtons({ mode, consent, onConsentMissing, onSelect, only, withDivider = false }: SocialAuthButtonsProps) {
   const styles = useStyles();
   const { loginWithOAuth } = useAuth();
   const { show: showToast } = useToast();
@@ -118,9 +120,21 @@ export function SocialAuthButtons({ mode, consent, onConsentMissing, onSelect, o
     }
   };
 
+  // Solo se muestran los proveedores que el servidor tiene activados: un botón que solo avisa
+  // "todavía no está activado" no sirve para nada. Mientras carga la lista no se muestra ninguno.
+  const visible = ORDER.filter((id) => (!only || id === only) && providers?.[id]?.configured);
+  if (visible.length === 0) return null;
+
   return (
     <View style={styles.group}>
-      {ORDER.filter((id) => !only || id === only).map((id) => (
+      {withDivider ? (
+        <View style={styles.divider}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerLabel}>o</Text>
+          <View style={styles.dividerLine} />
+        </View>
+      ) : null}
+      {visible.map((id) => (
         <SocialButton
           key={id}
           provider={id}
@@ -138,4 +152,7 @@ const styles = StyleSheet.create({
   group: {
     gap: spacing.sm,
   },
+  divider: { flexDirection: "row", alignItems: "center", gap: spacing.sm, marginVertical: spacing.lg },
+  dividerLine: { flex: 1, height: 1, backgroundColor: "rgba(128,128,128,0.35)" },
+  dividerLabel: { fontSize: 13, color: "#8a8f9a" },
 });

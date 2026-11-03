@@ -18,7 +18,7 @@ export function PlanTabs({ plans, selectedLabel, onSelect }: PlanTabsProps) {
     <View accessibilityRole="tablist" style={s.planTabs}>
       {plans.map((option) => {
         const selected = selectedLabel === option.label;
-        const title = TITLES[option.label] ?? "Hipereconómico";
+        const title = TITLES[option.label] ?? "Económico";
         return (
           <Pressable
             key={option.label}

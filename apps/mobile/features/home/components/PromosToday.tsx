@@ -21,7 +21,7 @@ export function PromosToday({ promos }: { promos: HomePromo[] }) {
               <Text style={styles.rowTitle} numberOfLines={1}>
                 {promo.retailer}
               </Text>
-              <Text style={styles.rowMeta} numberOfLines={1}>
+              <Text style={styles.rowMeta} numberOfLines={2}>
                 {promo.label}
               </Text>
             </View>

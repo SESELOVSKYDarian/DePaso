@@ -31,7 +31,7 @@ export function ListCard({ list }: { list: ShoppingListSummary }) {
         <Ionicons name={productIcon(list.name)} size={30} color={colors.brand.accentDark} />
       </View>
       <View style={styles.text}>
-        <Text style={styles.title} numberOfLines={1}>
+        <Text style={styles.title} numberOfLines={2}>
           {list.name}
         </Text>
         <Text style={styles.meta} numberOfLines={1}>

@@ -19,6 +19,7 @@ import { findMatchingPreset } from "@/lib/routeContext/routeMatches";
 import { SavePresetForm } from "../route-context/components/SavePresetForm";
 import { SavedRoutesRow } from "../route-context/components/SavedRoutesRow";
 import { useSavedRoutes } from "../route-context/useSavedRoutes";
+import { DeleteRouteDialog } from "../route-context/components/DeleteRouteDialog";
 import { AddToListSheet } from "./components/AddToListSheet";
 import { StartRouteCard } from "./components/StartRouteCard";
 import { ListSummaryCard } from "./components/ListSummaryCard";
@@ -150,7 +151,7 @@ export default function HomeScreen() {
           />
         )}
 
-        <SavedRoutesRow presets={saved.presets} onApply={saved.apply} onDelete={(preset) => void saved.remove(preset)} />
+        <SavedRoutesRow presets={saved.presets} onApply={saved.apply} onDelete={saved.requestRemove} />
         <SavePresetForm
           stopCount={waypoints.length}
           savedName={findMatchingPreset(saved.presets, waypoints)?.name ?? null}
@@ -179,6 +180,7 @@ export default function HomeScreen() {
         />
       </BackToTopScrollView>
 
+      <DeleteRouteDialog route={saved.toDelete} onConfirm={() => void saved.confirmRemove()} onCancel={saved.cancelRemove} />
       <AddToListSheet
         product={pending}
         lists={activeLists}

@@ -7,6 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
 import { Button } from "@/components/common/Button";
+import { Dialog } from "@/components/common/Dialog";
 import { PriceDisclosureBanner } from "@/components/lists/PriceDisclosureBanner";
 import { usePurchase } from "@/lib/purchase/PurchaseContext";
 import { makeStyles, useColors } from "@/lib/theme";
@@ -24,6 +25,7 @@ export default function PurchaseScreen() {
   const styles = useStyles();
   const { plan, checked, toggle, finish } = usePurchase();
   const [storeIndex, setStoreIndex] = useState(0);
+  const [confirmFinish, setConfirmFinish] = useState(false);
 
   // sin compra activa, se invita a calcular una
   if (!plan) {
@@ -44,6 +46,10 @@ export default function PurchaseScreen() {
   const doneAmount = allItems.reduce((sum, { entry, item }) => sum + (checked[itemKey(entry, item)] ? item.unitPrice * item.quantity : 0), 0);
   const doneCounts = stops.map((entry) => entry.items.filter((item) => checked[itemKey(entry, item)]).length);
   const isLastStore = storeIndex >= stops.length - 1;
+  const endPurchase = () => {
+    finish();
+    router.replace("/(tabs)");
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -80,10 +86,20 @@ export default function PurchaseScreen() {
         allDone={completed === allItems.length}
         isLastStore={isLastStore}
         onNextStore={() => setStoreIndex((index) => index + 1)}
-        onFinish={() => {
-          finish();
-          router.replace("/(tabs)");
+        onFinish={() => (completed < allItems.length ? setConfirmFinish(true) : endPurchase())}
+      />
+
+      <Dialog
+        visible={confirmFinish}
+        title="¿Terminar la compra?"
+        description={`Quedaron ${allItems.length - completed} ${allItems.length - completed === 1 ? "producto" : "productos"} sin tildar. Podés terminar igual o seguir comprando.`}
+        confirmLabel="Terminar igual"
+        cancelLabel="Seguir comprando"
+        onConfirm={() => {
+          setConfirmFinish(false);
+          endPurchase();
         }}
+        onCancel={() => setConfirmFinish(false)}
       />
     </SafeAreaView>
   );

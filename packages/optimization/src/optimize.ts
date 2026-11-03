@@ -221,7 +221,8 @@ export async function optimizeWithRanking(
 
     const estimatedTravelCost = Math.round((deviation.additionalDistanceMeters / 1000) * PLACEHOLDER_TRAVEL_COST_PER_KM);
     const estimatedSavings = Math.max(0, Math.round((referenceCost.get(tier) ?? 0) - resolved.totalProductCost));
-    const storeNames = combo.map((c) => `${c.storeName} ${c.branchName}`);
+    // si el nombre de la sucursal ya empieza con el del comercio no se repite
+    const storeNames = combo.map((c) => (c.branchName.toLowerCase().startsWith(c.storeName.toLowerCase()) ? c.branchName : `${c.storeName} ${c.branchName}`));
 
     plans.push({
       label: tier,

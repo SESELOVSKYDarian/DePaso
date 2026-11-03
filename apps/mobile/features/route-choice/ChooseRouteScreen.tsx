@@ -1,3 +1,4 @@
+import { DeleteRouteDialog } from "../route-context/components/DeleteRouteDialog";
 import { Ionicons } from "@expo/vector-icons";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { router } from "expo-router";
@@ -105,10 +106,7 @@ export default function ChooseRouteScreen() {
             emoji={preset.stops?.[0]?.emoji ?? "📍"}
             selected={selected === preset.id}
             onSelect={() => setSelected(preset.id)}
-            onDelete={() => {
-              if (selected === preset.id) setSelected(null);
-              void saved.remove(preset);
-            }}
+            onDelete={() => saved.requestRemove(preset)}
           />
         ))}
 
@@ -127,6 +125,12 @@ export default function ChooseRouteScreen() {
         <Button label="Ver en el mapa" variant="secondary" onPress={viewOnMap} disabled={!canGo} style={styles.footerButton} />
         <Button label="Iniciar recorrido" onPress={start} disabled={!canGo} style={styles.footerButton} />
       </View>
+
+      <DeleteRouteDialog
+        route={saved.toDelete}
+        onConfirm={() => void saved.confirmRemove((removed) => setSelected((current) => (current === removed.id ? null : current)))}
+        onCancel={saved.cancelRemove}
+      />
     </SafeAreaView>
   );
 }

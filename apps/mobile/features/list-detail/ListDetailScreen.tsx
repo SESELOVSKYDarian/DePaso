@@ -54,6 +54,7 @@ export default function ListDetailScreen() {
     <View style={styles.container}>
       <Stack.Screen
         options={{
+          title: list.name,
           headerRight: () => (
             <View style={styles.headerActions}>
               <Pressable
@@ -121,7 +122,7 @@ export default function ListDetailScreen() {
         />
       )}
 
-      <ListFooter listId={id} />
+      <ListFooter listId={id} canOptimize={list.items.length > 0} />
 
       <Dialog
         visible={confirmDelete}

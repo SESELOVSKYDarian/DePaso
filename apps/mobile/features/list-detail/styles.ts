@@ -222,6 +222,21 @@ export const useStyles = makeStyles((colors) => StyleSheet.create({
     fontSize: 15,
     color: colors.text.primary,
   },
+  findButton: {
+    flexDirection: "row",
+    gap: spacing.xs,
+    backgroundColor: colors.brand.navy,
+    borderRadius: radii.full,
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 52,
+    marginBottom: spacing.sm,
+  },
+  addLabelSmall: {
+    fontFamily: typography.title.fontFamily,
+    fontSize: 15,
+    color: colors.text.onNavy,
+  },
   addButton: {
     flexDirection: "row",
     gap: spacing.xs,

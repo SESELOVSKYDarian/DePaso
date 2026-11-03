@@ -85,13 +85,7 @@ export default function LoginScreen() {
             style={styles.pillButton}
           />
 
-          <View style={styles.divider}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerLabel}>o</Text>
-            <View style={styles.dividerLine} />
-          </View>
-
-          <SocialAuthButtons mode="login" />
+          <SocialAuthButtons mode="login" withDivider />
 
           <Link href="/(auth)/register" style={styles.link}>
             ¿No tenés cuenta? Registrate

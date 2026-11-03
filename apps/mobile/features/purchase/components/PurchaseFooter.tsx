@@ -33,7 +33,6 @@ export function PurchaseFooter({ completed, total, doneAmount, allDone, isLastSt
       <Button
         label={finishing ? "Finalizar compra" : "Siguiente comercio"}
         variant="lime"
-        disabled={finishing && !allDone}
         onPress={finishing ? onFinish : onNextStore}
         icon={finishing ? undefined : <Ionicons name="arrow-forward" size={18} color={colors.text.onLime} />}
         style={styles.button}

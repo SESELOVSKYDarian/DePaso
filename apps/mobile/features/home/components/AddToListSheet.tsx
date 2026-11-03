@@ -98,6 +98,9 @@ export function AddToListSheet({ product, lists, defaultListId, isSaving, onConf
         </Pressable>
       </View>
 
+      <Pressable accessibilityRole="button" accessibilityLabel="Cancelar" hitSlop={8} onPress={onClose} style={styles.cancel}>
+        <Text style={styles.cancelText}>Cancelar</Text>
+      </Pressable>
       <Button
         label={isSaving ? "Sumando…" : quantity > 1 ? `Sumar ${quantity} unidades` : "Sumar a la lista"}
         onPress={() => listId && onConfirm(listId, quantity)}
@@ -137,6 +140,8 @@ const useStyles = makeStyles((colors) =>
       justifyContent: "center",
       backgroundColor: colors.surface.input,
     },
+    cancel: { alignSelf: "center", paddingVertical: spacing.xs },
+    cancelText: { fontFamily: typography.body.fontFamily, fontSize: 14, color: colors.text.secondary },
     stepDisabled: { opacity: 0.4 },
     quantity: { minWidth: 56, textAlign: "center", fontFamily: typography.heroTitle.fontFamily, fontSize: 30, color: colors.text.primary },
   }),

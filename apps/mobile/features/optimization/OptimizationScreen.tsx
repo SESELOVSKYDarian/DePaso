@@ -1,5 +1,7 @@
-import { useState } from "react";
-import { StyleSheet } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { router, useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
+import { Pressable, StyleSheet } from "react-native";
 import { BackToTopScrollView } from "@/components/common/BackToTop";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { spacing } from "@depaso/design-tokens";
@@ -23,9 +25,17 @@ export default function OptimizationScreen() {
   const [selectedListId, setSelectedListId] = useState<string | null>(null);
   const [tab, setTab] = useState<ResultsTab>("options");
   const optimization = useOptimizationRun(selectedListId);
+  const { listId: requestedListId } = useLocalSearchParams<{ listId?: string }>();
 
   // solo sirven las listas con al menos un producto
   const usableLists = lists.filter((list) => !list.archivedAt && list.itemCount > 0);
+
+  // la lista ya viene elegida: la que se pidió desde el detalle o, si no, la primera
+  useEffect(() => {
+    if (selectedListId || usableLists.length === 0) return;
+    const asked = usableLists.find((list) => list.id === requestedListId);
+    setSelectedListId((asked ?? usableLists[0])!.id);
+  }, [selectedListId, usableLists, requestedListId]);
 
   // con resultados: cabecera con pestañas y el contenido de la pestaña elegida
   if (optimization.plans) {
@@ -53,6 +63,9 @@ export default function OptimizationScreen() {
   // sin resultados todavía: elegir lista y recorrido
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
+      <Pressable accessibilityRole="button" accessibilityLabel="Volver" hitSlop={12} onPress={() => router.back()} style={styles.back}>
+        <Ionicons name="arrow-back" size={24} color="#9aa1b0" />
+      </Pressable>
       <BackToTopScrollView contentContainerStyle={styles.content}>
         <SetupView
           lists={usableLists}
@@ -74,5 +87,6 @@ const useStyles = makeStyles((colors) =>
   StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.surface.base },
     content: { padding: spacing.lg, paddingBottom: spacing.xxl, gap: spacing.md },
+    back: { alignSelf: "flex-start", paddingHorizontal: spacing.lg, paddingTop: spacing.sm },
   }),
 );

@@ -21,6 +21,8 @@ export function useSavedRoutes(
   /** `null` = formulario de guardado cerrado */
   const [savingName, setSavingName] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  /** ruta que está esperando la confirmación de borrado */
+  const [toDelete, setToDelete] = useState<RouteContextResponse | null>(null);
 
   // se vuelve a pedir cada vez que la pantalla se muestra: puede haberse guardado una en otra
   useFocusEffect(
@@ -77,5 +79,14 @@ export function useSavedRoutes(
     }
   };
 
-  return { presets, savingName, setSavingName, isSaving, apply, save, remove };
+  /** Confirma el borrado de la ruta que se pidió; `onDone` se llama con la ruta borrada. */
+  const confirmRemove = async (onDone?: (removed: RouteContextResponse) => void) => {
+    const target = toDelete;
+    setToDelete(null);
+    if (!target) return;
+    await remove(target);
+    onDone?.(target);
+  };
+
+  return { presets, savingName, setSavingName, isSaving, apply, save, toDelete, requestRemove: setToDelete, cancelRemove: () => setToDelete(null), confirmRemove };
 }

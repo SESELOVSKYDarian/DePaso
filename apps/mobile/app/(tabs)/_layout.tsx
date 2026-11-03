@@ -28,10 +28,14 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: colors.surface.primary,
           borderTopColor: colors.border.subtle,
+          height: 62,
+          paddingTop: 6,
+          paddingBottom: 6,
         },
         tabBarLabelStyle: {
           fontFamily: typography.body.fontFamily,
           fontSize: 11,
+          lineHeight: 15,
         },
       }}
     >

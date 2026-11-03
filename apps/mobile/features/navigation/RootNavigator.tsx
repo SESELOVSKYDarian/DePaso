@@ -91,7 +91,7 @@ export function RootNavigator() {
           name="notifications"
           options={{
             headerShown: true,
-            title: "Notificaciones",
+            title: "Historial de avisos",
             headerRight: () => (
               <Pressable accessibilityLabel="Ajustes de avisos del celular" hitSlop={12} onPress={() => router.push("/notification-settings")}>
                 <Ionicons name="settings-outline" size={22} color={colors.text.primary} />

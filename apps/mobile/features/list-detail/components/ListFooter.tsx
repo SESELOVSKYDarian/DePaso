@@ -8,7 +8,7 @@ import { useColors } from "@/lib/theme";
 import { useStyles } from "../styles";
 
 /** Pie de la lista: botones para sumar un producto a mano o armar la lista con IA. */
-export function ListFooter({ listId }: { listId: string }) {
+export function ListFooter({ listId, canOptimize }: { listId: string; canOptimize: boolean }) {
   const colors = useColors();
   const styles = useStyles();
   // Desde Android 15 la app se dibuja bajo la barra de navegación: sin este margen el pie
@@ -17,6 +17,16 @@ export function ListFooter({ listId }: { listId: string }) {
 
   return (
     <View style={[styles.footer, { paddingBottom: Math.max(spacing.lg, insets.bottom + spacing.sm) }]}>
+      {canOptimize ? (
+        <AnimatedPressable
+          accessibilityLabel="Ver dónde conviene comprar esta lista"
+          onPress={() => router.push({ pathname: "/optimization", params: { listId } })}
+          style={styles.findButton}
+        >
+          <Ionicons name="navigate" size={18} color={colors.text.onNavy} />
+          <Text style={styles.addLabel}>Ver dónde conviene comprar</Text>
+        </AnimatedPressable>
+      ) : null}
       <View style={styles.addRow}>
         <AnimatedPressable
           accessibilityLabel="Sumar un producto"
@@ -24,7 +34,7 @@ export function ListFooter({ listId }: { listId: string }) {
           style={[styles.addButton, styles.addButtonGrow]}
         >
           <Ionicons name="add" size={20} color={colors.text.onNavy} />
-          <Text style={styles.addLabel}>Sumar producto</Text>
+          <Text numberOfLines={1} style={styles.addLabelSmall}>Sumar producto</Text>
         </AnimatedPressable>
         <AnimatedPressable
           accessibilityLabel="Armar la lista con IA"
@@ -32,7 +42,7 @@ export function ListFooter({ listId }: { listId: string }) {
           style={[styles.aiButton, styles.addButtonGrow]}
         >
           <Ionicons name="sparkles" size={18} color={colors.text.primary} />
-          <Text style={styles.aiLabel}>Armar con IA</Text>
+          <Text numberOfLines={1} style={styles.aiLabel}>Con IA</Text>
         </AnimatedPressable>
       </View>
     </View>
