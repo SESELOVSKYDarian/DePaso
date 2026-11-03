@@ -186,6 +186,8 @@ model User {
   announcements        Announcement[]
   paymentMethods       UserPaymentMethod[]
   pushTokens           PushToken[]
+  adRequests           AdRequest[]
+  reviewedAdRequests   AdRequest[] @relation("AdRequestReviewer")
   notificationSettings NotificationSettings?
 
   @@map("users")
@@ -1011,4 +1013,51 @@ model NotificationSettings {
   updatedAt        DateTime  @updatedAt
 
   @@map("user_notification_settings")
+}
+
+enum AdKind {
+  /// Un producto del comercio aparece en "Destacados" de Inicio.
+  FEATURED_PRODUCT
+  /// Una tarjeta con el mensaje del comercio en Inicio.
+  BANNER
+}
+
+enum AdStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+/// Pedido de publicidad de un comercio. El comercio ofrece un monto y una duración; el administrador
+/// lo aprueba (con el monto acordado, que puede ser distinto), lo rechaza o lo deja pendiente.
+/// El cobro se arregla fuera de la app: acá solo queda registrado lo acordado.
+model AdRequest {
+  id            String    @id @default(uuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storeBranchId String
+  kind          AdKind
+  title         String    @db.VarChar(80)
+  message       String?   @db.VarChar(280)
+  /// Solo para FEATURED_PRODUCT: el producto que se destaca.
+  productId     String?
+  /// Lo que el comercio está dispuesto a pagar (ARS) y por cuántos días.
+  offeredAmount Decimal   @db.Decimal(12, 2)
+  durationDays  Int
+  status        AdStatus  @default(PENDING)
+  /// Monto y días finalmente acordados al aprobar.
+  agreedAmount  Decimal?  @db.Decimal(12, 2)
+  adminNote     String?   @db.VarChar(300)
+  reviewedById  String?
+  reviewedBy    User?     @relation("AdRequestReviewer", fields: [reviewedById], references: [id])
+  reviewedAt    DateTime?
+  startsAt      DateTime?
+  endsAt        DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([status, endsAt])
+  @@map("ad_requests")
 }

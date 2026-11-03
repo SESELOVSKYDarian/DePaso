@@ -106,8 +106,10 @@ export function RootNavigator() {
         {/* comercio y administración */}
         <Stack.Screen name="merchant/request" options={{ headerShown: true, title: "Quiero ser comercio" }} />
         <Stack.Screen name="merchant/index" options={{ headerShown: true, title: "Mi comercio" }} />
+        <Stack.Screen name="merchant/ads" options={{ headerShown: true, title: "Publicidad" }} />
         <Stack.Screen name="merchant/price-form" options={{ headerShown: true, title: "Producto y precio", presentation: "modal" }} />
         <Stack.Screen name="admin/announcements" options={{ headerShown: true, title: "Novedades" }} />
+        <Stack.Screen name="admin/ads" options={{ headerShown: true, title: "Publicidad de comercios" }} />
         <Stack.Screen name="admin/merchant-requests" options={{ headerShown: true, title: "Solicitudes de comercio" }} />
       </Stack.Protected>
 

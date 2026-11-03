@@ -52,6 +52,7 @@ export function toMerchantPriceResponse(
 ): MerchantPriceResponse {
   return {
     id: price.id,
+    productId: price.productVariant.productId,
     productName: prettifyProductName(price.productVariant.product.name),
     productVariantId: price.productVariantId,
     productVariantName: price.productVariant.name,

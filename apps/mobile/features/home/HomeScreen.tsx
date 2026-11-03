@@ -21,6 +21,7 @@ import { SavedRoutesRow } from "../route-context/components/SavedRoutesRow";
 import { useSavedRoutes } from "../route-context/useSavedRoutes";
 import { DeleteRouteDialog } from "../route-context/components/DeleteRouteDialog";
 import { AddToListSheet } from "./components/AddToListSheet";
+import { AdBanners } from "./components/AdBanners";
 import { StartRouteCard } from "./components/StartRouteCard";
 import { ListSummaryCard } from "./components/ListSummaryCard";
 import { PriceChanges } from "./components/PriceChanges";
@@ -163,6 +164,10 @@ export default function HomeScreen() {
           onSave={() => void saved.save()}
         />
 
+        <AdBanners banners={feed?.banners ?? []} />
+        {feed && feed.featured.length > 0 ? (
+          <ProductStrip title="Destacados" subtitle="Publicidad de comercios de tu zona." products={feed.featured} onAdd={addSuggested} />
+        ) : null}
         <ProductStrip
           title="Barato hoy"
           subtitle="Productos con el precio más bajo comparado con el resto."

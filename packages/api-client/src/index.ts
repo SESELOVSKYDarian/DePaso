@@ -21,3 +21,4 @@ export * from "./payments";
 export * from "./home";
 export * from "./activity";
 export * from "./notifications";
+export * from "./ads";

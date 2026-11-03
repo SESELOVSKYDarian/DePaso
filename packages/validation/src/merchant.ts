@@ -120,6 +120,8 @@ export type MerchantProductInput = z.infer<typeof merchantProductInputSchema>;
 
 export const merchantPriceResponseSchema = z.object({
   id: z.string(),
+  /** Producto del catálogo (sirve, por ejemplo, para pedir destacarlo en publicidad). */
+  productId: z.string().default(""),
   productName: z.string(),
   productVariantId: z.string(),
   productVariantName: z.string(),

@@ -6,6 +6,7 @@ import { listAccessWhere } from "../lists/lists";
 import { argentinaWeekday } from "../promos/applyPromos";
 import { promoAppliesOnDay, promoAppliesToUser } from "../promos/paymentPromos";
 import { prettifyProductName } from "../catalog/productNames";
+import { loadActiveAds } from "../ads/ads";
 import { loadCheapProducts, loadPopularProducts } from "./homeProducts";
 import { loadPriceChanges } from "./priceChanges";
 import { buildListSummary } from "./listSummary";
@@ -27,7 +28,7 @@ const BIG_PROMO_PERCENT = 25;
  * quede vacío.
  */
 export async function buildHomeFeed(userId: string, now: Date = new Date()): Promise<HomeFeedResponse> {
-  const [items, methods, promos, listSummary, cheapToday, popular] = await Promise.all([
+  const [items, methods, promos, listSummary, cheapToday, popular, ads] = await Promise.all([
     prisma.shoppingListItem.findMany({
       where: { shoppingList: { archivedAt: null, ...listAccessWhere(userId) } },
       select: { productId: true },
@@ -39,6 +40,7 @@ export async function buildHomeFeed(userId: string, now: Date = new Date()): Pro
     buildListSummary(userId),
     loadCheapProducts(),
     loadPopularProducts(),
+    loadActiveAds(now),
   ]);
 
   const productIds = items.map((item: (typeof items)[number]) => item.productId);
@@ -65,5 +67,5 @@ export async function buildHomeFeed(userId: string, now: Date = new Date()): Pro
     .sort((a, b) => Number(b.mine) - Number(a.mine) || b.discountPercent - a.discountPercent)
     .slice(0, MAX_PROMOS);
 
-  return { priceChanges, promos: homePromos, listSummary, cheapToday, popular, watchedProducts: productIds.length };
+  return { priceChanges, promos: homePromos, listSummary, cheapToday, popular, featured: ads.featured, banners: ads.banners, watchedProducts: productIds.length };
 }
