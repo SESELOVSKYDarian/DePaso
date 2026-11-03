@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { BackToTopScrollView } from "@/components/common/BackToTop";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
@@ -58,7 +59,7 @@ export default function PurchaseScreen() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <BackToTopScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <StoreTabs stops={stops} selectedIndex={storeIndex} doneCounts={doneCounts} onSelect={setStoreIndex} />
         <PriceDisclosureBanner />
 
@@ -70,7 +71,7 @@ export default function PurchaseScreen() {
             <PurchaseItemRow key={itemKey(stop, item)} stop={stop} item={item} checked={!!checked[itemKey(stop, item)]} onToggle={() => toggle(itemKey(stop, item))} />
           ))}
         </View>
-      </ScrollView>
+      </BackToTopScrollView>
 
       <PurchaseFooter
         completed={completed}

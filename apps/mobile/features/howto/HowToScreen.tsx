@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { Text, View } from "react-native";
+import { BackToTopScrollView } from "@/components/common/BackToTop";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
 import { useColors } from "@/lib/theme";
 import { downloadManual } from "./downloadManual";
@@ -20,7 +21,7 @@ export default function HowToScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <BackToTopScrollView contentContainerStyle={styles.container}>
       <Text style={styles.intro}>Así se usa DePaso. Para el paso a paso con todas las pantallas, bajate el manual.</Text>
 
       <View style={styles.card}>
@@ -44,6 +45,6 @@ export default function HowToScreen() {
         <Text style={styles.downloadLabel}>Descargar manual (PDF)</Text>
       </AnimatedPressable>
       {failed ? <Text style={styles.error}>No pudimos abrir la descarga. Probá de nuevo en un rato.</Text> : null}
-    </ScrollView>
+    </BackToTopScrollView>
   );
 }

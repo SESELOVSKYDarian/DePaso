@@ -1,5 +1,6 @@
 import { router } from "expo-router";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { BackToTopFlatList } from "@/components/common/BackToTop";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles } from "@/lib/theme";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
@@ -59,7 +60,7 @@ export default function PlacesListScreen() {
           description="Guardá Casa, Trabajo u otros lugares que visitás seguido para armar tu recorrido más rápido."
         />
       ) : (
-        <FlatList
+        <BackToTopFlatList
           {...LIST_PERFORMANCE}
           data={places}
           keyExtractor={(item) => item.id}

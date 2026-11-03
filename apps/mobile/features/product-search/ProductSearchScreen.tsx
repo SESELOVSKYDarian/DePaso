@@ -1,6 +1,7 @@
 import { router, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { FlatList, ScrollView, Text, TextInput, View } from "react-native";
+import { Text, TextInput, View } from "react-native";
+import { BackToTopScrollView, BackToTopFlatList } from "@/components/common/BackToTop";
 import { radii } from "@depaso/design-tokens";
 import type { ProductSearchResult } from "@depaso/validation";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
@@ -80,10 +81,10 @@ export default function ProductSearchScreen() {
       />
 
       {!search.hasCriteria ? (
-        <ScrollView contentContainerStyle={styles.browse} keyboardShouldPersistTaps="handled">
+        <BackToTopScrollView contentContainerStyle={styles.browse} keyboardShouldPersistTaps="handled">
           {group ? filters : null}
           <BrowseBoxes group={group} onPickGroup={search.setGroupId} onPickType={search.pickType} />
-        </ScrollView>
+        </BackToTopScrollView>
       ) : (
         <>
           {filters}
@@ -111,7 +112,7 @@ export default function ProductSearchScreen() {
               description={typeId || brand ? "Probá con otra marca o sacando el filtro." : "Probá con otra palabra o con la marca."}
             />
           ) : (
-            <FlatList
+            <BackToTopFlatList
           {...LIST_PERFORMANCE}
               data={results}
               keyExtractor={(item) => item.id}

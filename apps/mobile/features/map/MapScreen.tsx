@@ -48,7 +48,6 @@ export default function MapScreen() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [containerHeight, setContainerHeight] = useState(0);
   const [expandSignal, setExpandSignal] = useState(0);
-  const [satellite, setSatellite] = useState(false);
 
   const hasRoute = waypoints.length >= 2;
   const search = useMapSearch();
@@ -81,7 +80,7 @@ export default function MapScreen() {
     const buyIds = new Set(planStops.map((stop) => stop.storeBranchId));
     const buy = planStops
       .filter((stop) => stop.latitude !== undefined && stop.longitude !== undefined)
-      .map((stop) => ({ id: stop.storeBranchId, name: stop.storeName, latitude: stop.latitude!, longitude: stop.longitude!, buy: true, logo: logoOf(stop.storeName) }));
+      .map((stop) => ({ order: planStops.indexOf(stop) + 1, id: stop.storeBranchId, name: stop.storeName, latitude: stop.latitude!, longitude: stop.longitude!, buy: true, logo: logoOf(stop.storeName) }));
     const others = stores
       .filter((store) => !buyIds.has(store.branchId))
       .map((store) => ({ id: store.branchId, name: store.storeName, latitude: store.latitude, longitude: store.longitude, logo: logoOf(store.storeName) }));
@@ -127,7 +126,6 @@ export default function MapScreen() {
         focus: search.focus,
         userLocation: search.userLocation,
         searchPin,
-        satellite,
         fitPadding: { top: insets.top + TOP_OVERLAY + 24, bottom: PEEK_VISIBLE + 24 },
       }
     : null;
@@ -141,7 +139,6 @@ export default function MapScreen() {
           setSelectedId(null);
           setRoutePlan(option);
         }}
-        onSeeAll={() => setExpandSignal((n) => n + 1)}
       />
     ) : (
     <View style={s.sheetHeader}>
@@ -186,8 +183,6 @@ export default function MapScreen() {
       <View style={[s.controlsLayer, { top: insets.top + TOP_OVERLAY }]}>
         <MapControls
           onLocated={search.showUser}
-          satellite={satellite}
-          onToggleSatellite={() => setSatellite((value) => !value)}
           onEditRoute={hasRoute ? () => router.push("/route-builder") : undefined}
         />
       </View>

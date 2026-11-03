@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { BackToTopScrollView } from "@/components/common/BackToTop";
 import { spacing, typography } from "@depaso/design-tokens";
 import { makeStyles } from "@/lib/theme";
 
@@ -7,9 +8,9 @@ import { makeStyles } from "@/lib/theme";
 export function LegalScreen({ children }: { children: ReactNode }) {
   const styles = useStyles();
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <BackToTopScrollView style={styles.container} contentContainerStyle={styles.content}>
       {children}
-    </ScrollView>
+    </BackToTopScrollView>
   );
 }
 

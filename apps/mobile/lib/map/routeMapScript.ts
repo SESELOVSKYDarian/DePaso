@@ -100,6 +100,13 @@ ${buildMapCommandsScript(pinColor)}
       label.className = "label";
       label.textContent = store.name;
       el.appendChild(bubble);
+      // número de la parada de compra, en el orden del recorrido
+      if (store.order) {
+        const num = document.createElement("div");
+        num.className = "num";
+        num.textContent = String(store.order);
+        el.appendChild(num);
+      }
       el.appendChild(label);
       el.addEventListener("click", (event) => { event.stopPropagation(); window.selectStore(store.id, true); });
       new mapboxgl.Marker({ element: el, anchor: "top" }).setLngLat([store.lng, store.lat]).addTo(map);

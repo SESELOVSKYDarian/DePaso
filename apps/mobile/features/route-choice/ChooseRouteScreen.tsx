@@ -2,7 +2,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { BackToTopScrollView } from "@/components/common/BackToTop";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
 import { Button } from "@/components/common/Button";
@@ -74,7 +75,7 @@ export default function ChooseRouteScreen() {
         </Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <BackToTopScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <AnimatedPressable
           accessibilityLabel="Armar una ruta desde mi ubicación actual"
           haptic={false}
@@ -120,7 +121,7 @@ export default function ChooseRouteScreen() {
 
         <Button label="Armar una ruta nueva" variant="secondary" onPress={() => router.push("/route-builder")} />
         <AddDestinationSection places={places} />
-      </ScrollView>
+      </BackToTopScrollView>
 
       <View style={styles.footer}>
         <Button label="Ver en el mapa" variant="secondary" onPress={viewOnMap} disabled={!canGo} style={styles.footerButton} />

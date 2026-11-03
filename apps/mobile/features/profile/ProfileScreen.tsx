@@ -1,5 +1,6 @@
 import { router } from "expo-router";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { BackToTopScrollView } from "@/components/common/BackToTop";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { spacing, typography } from "@depaso/design-tokens";
 import { GroupedList, GroupedRow } from "@/components/common/GroupedList";
@@ -29,7 +30,7 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <BackToTopScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Text accessibilityRole="header" style={styles.title}>
           Mi perfil
         </Text>
@@ -85,7 +86,7 @@ export default function ProfileScreen() {
             }}
           />
         </GroupedList>
-      </ScrollView>
+      </BackToTopScrollView>
     </SafeAreaView>
   );
 }

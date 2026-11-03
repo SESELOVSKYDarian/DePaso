@@ -1,4 +1,5 @@
-import { ScrollView, StyleSheet, Text } from "react-native";
+import { StyleSheet, Text } from "react-native";
+import { BackToTopScrollView } from "@/components/common/BackToTop";
 import { spacing, typography } from "@depaso/design-tokens";
 import { Button } from "@/components/common/Button";
 import { FormField } from "@/components/common/FormField";
@@ -18,7 +19,7 @@ export default function MerchantPriceFormScreen() {
   const { catalog, fresh } = form;
 
   return (
-    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+    <BackToTopScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
       {form.isEditing ? (
         <>
           <Text style={styles.title}>{form.editingName}</Text>
@@ -66,7 +67,7 @@ export default function MerchantPriceFormScreen() {
 
       <Button label={form.isSubmitting ? "Guardando..." : "Guardar"} onPress={() => void form.save()} loading={form.isSubmitting} />
       {form.isEditing ? <Button label="Dar de baja" variant="danger" onPress={() => void form.remove()} disabled={form.isSubmitting} /> : null}
-    </ScrollView>
+    </BackToTopScrollView>
   );
 }
 

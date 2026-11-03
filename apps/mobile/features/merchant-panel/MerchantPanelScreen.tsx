@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { ActivityIndicator, FlatList, Text, View } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
+import { BackToTopFlatList } from "@/components/common/BackToTop";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
 import { EmptyState } from "@/components/common/EmptyState";
 import { useColors } from "@/lib/theme";
@@ -62,7 +63,7 @@ export default function MerchantHomeScreen() {
 
   return (
     <View style={styles.container}>
-      <FlatList
+      <BackToTopFlatList
           {...LIST_PERFORMANCE}
         data={data.prices}
         keyExtractor={(item) => item.id}

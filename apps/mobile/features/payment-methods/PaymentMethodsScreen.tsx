@@ -4,7 +4,8 @@ import { makeStyles, useColors } from "@/lib/theme";
 import { SelectionMark } from "@/components/common/SelectionMark";
 import { router } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { BackToTopScrollView } from "@/components/common/BackToTop";
 import { Button } from "@/components/common/Button";
 import { GroupedList, GroupedRow } from "@/components/common/GroupedList";
 import { useToast } from "@/components/common/Toast";
@@ -57,7 +58,7 @@ export default function PaymentMethodsScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <BackToTopScrollView contentContainerStyle={styles.container}>
       <Text style={styles.intro}>
         Elegí con qué pagás y descontamos esas promos en tu Top 3, según el comercio y el día.
       </Text>
@@ -85,7 +86,7 @@ export default function PaymentMethodsScreen() {
       </Text>
 
       <Button label={isSaving ? "Guardando..." : "Guardar"} onPress={() => void handleSave()} loading={isSaving} />
-    </ScrollView>
+    </BackToTopScrollView>
   );
 }
 

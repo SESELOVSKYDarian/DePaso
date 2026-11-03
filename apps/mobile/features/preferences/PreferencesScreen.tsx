@@ -3,7 +3,8 @@ import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles } from "@/lib/theme";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { BackToTopScrollView } from "@/components/common/BackToTop";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
 import { EmptyState } from "@/components/common/EmptyState";
 import { useToast } from "@/components/common/Toast";
@@ -78,7 +79,7 @@ export default function PreferencesScreen() {
   };
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <BackToTopScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.sectionTitle}>Marcas de producto</Text>
       <Text style={styles.sectionHint}>
         El motor de optimización respeta esto antes de rankear (sección 87): "marca exacta" nunca se
@@ -150,7 +151,7 @@ export default function PreferencesScreen() {
       >
         <Text style={styles.addLabel}>+ Agregar preferencia de comercio</Text>
       </AnimatedPressable>
-    </ScrollView>
+    </BackToTopScrollView>
   );
 }
 

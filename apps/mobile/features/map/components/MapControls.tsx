@@ -8,27 +8,17 @@ import { makeStyles, useColors } from "@/lib/theme";
 
 interface MapControlsProps {
   onLocated: (point: MapPoint) => void;
-  satellite: boolean;
-  onToggleSatellite: () => void;
   /** Sin recorrido no hay nada que editar: el botón no se muestra. */
   onEditRoute?: () => void;
 }
 
-/** Botones redondos que flotan sobre el mapa: dónde estoy, tipo de mapa y editar el recorrido. */
-export function MapControls({ onLocated, satellite, onToggleSatellite, onEditRoute }: MapControlsProps) {
+/** Botones redondos que flotan sobre el mapa: dónde estoy y editar el recorrido. */
+export function MapControls({ onLocated, onEditRoute }: MapControlsProps) {
   const styles = useStyles();
   const colors = useColors();
   return (
     <View style={styles.column}>
       <LocateButton onLocated={onLocated} />
-      <AnimatedPressable
-        accessibilityLabel={satellite ? "Volver al mapa común" : "Ver el mapa en satélite"}
-        haptic={false}
-        onPress={onToggleSatellite}
-        style={[styles.button, satellite ? styles.buttonActive : null]}
-      >
-        <Ionicons name="layers-outline" size={22} color={colors.text.primary} />
-      </AnimatedPressable>
       {onEditRoute ? (
         <AnimatedPressable accessibilityLabel="Editar recorrido" haptic={false} onPress={onEditRoute} style={styles.button}>
           <Ionicons name="create-outline" size={22} color={colors.text.primary} />
@@ -51,6 +41,5 @@ const useStyles = makeStyles((colors) =>
       borderWidth: 1,
       borderColor: colors.border.subtle,
     },
-    buttonActive: { borderColor: colors.brand.route },
   }),
 );

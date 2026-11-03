@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { ScrollView, Text, View } from "react-native";
+import { Text, View } from "react-native";
+import { BackToTopScrollView } from "@/components/common/BackToTop";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
 import { Dialog } from "@/components/common/Dialog";
@@ -39,7 +40,7 @@ export default function RouteBuilderScreen() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content}>
+      <BackToTopScrollView contentContainerStyle={styles.content}>
         <View style={styles.mapBanner}>
           <Ionicons name="map-outline" size={28} color={colors.brand.route} />
           <Text style={styles.mapBannerText}>Seleccioná los lugares que vas a visitar y armamos la mejor ruta.</Text>
@@ -64,7 +65,7 @@ export default function RouteBuilderScreen() {
           onAddToday={temporary.open}
         />
         <TodayRouteList waypoints={waypoints} onRemove={builder.removeWaypoint} />
-      </ScrollView>
+      </BackToTopScrollView>
 
       <RouteFooter waypoints={waypoints} onDone={builder.done} />
 

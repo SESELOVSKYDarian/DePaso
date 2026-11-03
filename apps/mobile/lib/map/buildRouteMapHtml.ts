@@ -37,6 +37,8 @@ export interface RouteMapStore {
   longitude: number;
   /** Parada de compra del plan: se dibuja más grande y de color de marca. */
   buy?: boolean;
+  /** Número de la parada de compra en el orden del recorrido (1, 2, 3…). */
+  order?: number;
   /** Logo de la cadena (`data:image/png;base64,...`): si está, el pin es el logo. */
   logo?: string;
 }
@@ -65,7 +67,7 @@ export function buildRouteMapHtml({ waypoints, polyline, mapboxToken, colors, is
   const polylineJson = JSON.stringify(polyline);
   const basePolylineJson = JSON.stringify(basePolyline);
   // `<` escapado: un nombre de comercio no puede cerrar el <script> del HTML.
-  const storesJson = JSON.stringify(stores.map((s) => ({ id: s.id, name: s.name, lat: s.latitude, lng: s.longitude, buy: Boolean(s.buy), logo: s.logo ?? null }))).replace(/</g, "\\u003c");
+  const storesJson = JSON.stringify(stores.map((s) => ({ id: s.id, name: s.name, lat: s.latitude, lng: s.longitude, buy: Boolean(s.buy), order: s.order ?? null, logo: s.logo ?? null }))).replace(/</g, "\\u003c");
 
   return `<!DOCTYPE html>
 <html>

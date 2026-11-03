@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { ScrollView, StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
+import { BackToTopScrollView } from "@/components/common/BackToTop";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { spacing } from "@depaso/design-tokens";
 import { useLists } from "@/lib/lists/ListsContext";
@@ -38,13 +39,13 @@ export default function OptimizationScreen() {
             setTab("options");
           }}
         />
-        <ScrollView contentContainerStyle={styles.content}>
+        <BackToTopScrollView contentContainerStyle={styles.content}>
           {tab === "options" ? (
             <OptionsTab plans={optimization.plans} hasPaymentMethods={optimization.hasPaymentMethods} />
           ) : (
             <BestPricesTab bestPrices={optimization.bestPrices} ranking={optimization.ranking} />
           )}
-        </ScrollView>
+        </BackToTopScrollView>
       </SafeAreaView>
     );
   }
@@ -52,7 +53,7 @@ export default function OptimizationScreen() {
   // sin resultados todavía: elegir lista y recorrido
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <BackToTopScrollView contentContainerStyle={styles.content}>
         <SetupView
           lists={usableLists}
           loadingLists={loadingLists}
@@ -64,7 +65,7 @@ export default function OptimizationScreen() {
           canRun={optimization.canRun}
           onRun={() => void optimization.run()}
         />
-      </ScrollView>
+      </BackToTopScrollView>
     </SafeAreaView>
   );
 }

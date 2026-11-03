@@ -1,6 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useEffect } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { BackToTopScrollView } from "@/components/common/BackToTop";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
 import { EmptyState } from "@/components/common/EmptyState";
@@ -33,7 +34,7 @@ export default function NotificationsScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <BackToTopScrollView contentContainerStyle={styles.container}>
       <View style={styles.card}>
         {items.map((item, index) => {
           const tint =
@@ -69,7 +70,7 @@ export default function NotificationsScreen() {
       <AnimatedPressable accessibilityLabel="Borrar todas las notificaciones" haptic={false} onPress={clear} style={styles.clear}>
         <Text style={styles.clearLabel}>Borrar todo</Text>
       </AnimatedPressable>
-    </ScrollView>
+    </BackToTopScrollView>
   );
 }
 

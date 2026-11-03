@@ -1,6 +1,7 @@
 import type { ClaimableBranch, MerchantRequestResponse } from "@depaso/validation";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
+import { BackToTopScrollView } from "@/components/common/BackToTop";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
 import { useToast } from "@/components/common/Toast";
 import { geocodeClient, merchantClient } from "@/lib/apiClient";
@@ -111,7 +112,7 @@ export default function MerchantRequestScreen() {
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+    <BackToTopScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
       {current?.status === "REJECTED" ? (
         <View style={styles.statusCard}>
           <Text style={styles.statusTitle}>Tu solicitud anterior fue rechazada</Text>
@@ -131,13 +132,13 @@ export default function MerchantRequestScreen() {
         {(["claim", "new"] as const).map((value) => (
           <AnimatedPressable
             key={value}
-            accessibilityLabel={value === "claim" ? "Mi comercio ya aparece en DePaso" : "Es un comercio nuevo"}
+            accessibilityLabel={value === "claim" ? "Mi comercio ya está en DePaso" : "Es un comercio nuevo"}
             haptic={false}
             onPress={() => setMode(value)}
             style={[styles.tab, mode === value ? styles.tabSelected : null]}
           >
-            <Text style={[styles.tabLabel, mode === value ? styles.tabLabelSelected : null]}>
-              {value === "claim" ? "Ya aparece en DePaso" : "Es nuevo"}
+            <Text numberOfLines={1} adjustsFontSizeToFit style={[styles.tabLabel, mode === value ? styles.tabLabelSelected : null]}>
+              {value === "claim" ? "Ya está en DePaso" : "Es nuevo"}
             </Text>
           </AnimatedPressable>
         ))}
@@ -148,6 +149,6 @@ export default function MerchantRequestScreen() {
       ) : (
         <NewBusinessForm contact={contact} isSubmitting={isSubmitting} addressError={addressError} onSubmit={submitNew} />
       )}
-    </ScrollView>
+    </BackToTopScrollView>
   );
 }

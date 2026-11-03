@@ -1,4 +1,5 @@
-import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, RefreshControl, StyleSheet, Text, View } from "react-native";
+import { BackToTopFlatList } from "@/components/common/BackToTop";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { EmptyState } from "@/components/common/EmptyState";
@@ -45,7 +46,7 @@ export default function ActivityScreen() {
           />
         )
       ) : tab === "news" ? (
-        <FlatList
+        <BackToTopFlatList
           {...LIST_PERFORMANCE}
           data={news.items}
           keyExtractor={(item) => item.id}
@@ -55,7 +56,7 @@ export default function ActivityScreen() {
           refreshControl={refreshControl}
         />
       ) : (
-        <FlatList
+        <BackToTopFlatList
           {...LIST_PERFORMANCE}
           data={mine.items}
           keyExtractor={(item) => item.id}

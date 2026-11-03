@@ -35,5 +35,11 @@ export function routeMapCss(routeColor: string): string {
   .depaso-store.selected .bubble { transform: scale(1.25); border-color: ${routeColor}; }
   .depaso-store.selected { z-index: 5; }
   .depaso-store.buy .bubble { width: 42px; height: 42px; border-color: ${routeColor}; }
+  .depaso-store { position: relative; }
+  .depaso-store .num {
+    position: absolute; top: -9px; left: -9px; z-index: 2; width: 22px; height: 22px; border-radius: 999px;
+    display: flex; align-items: center; justify-content: center; font-family: sans-serif; font-size: 12px; font-weight: 800;
+    background: ${routeColor}; color: #FFFFFF; border: 2px solid #FFFFFF; box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  }
 `;
 }

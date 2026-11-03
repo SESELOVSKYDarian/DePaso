@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { BackToTopScrollView } from "@/components/common/BackToTop";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
 import { Button } from "@/components/common/Button";
@@ -15,7 +16,7 @@ export default function AnnouncementsScreen() {
   const data = useAnnouncements();
 
   return (
-    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
+    <BackToTopScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
       <Text style={styles.intro}>Lo que publiques acá aparece en Actividad › Novedades de todos los usuarios.</Text>
 
       <FormField label="Título" value={data.title} onChangeText={data.setTitle} placeholder="Ej.: Nueva función de rutas guardadas" maxLength={120} />
@@ -44,7 +45,7 @@ export default function AnnouncementsScreen() {
           </View>
         </View>
       ))}
-    </ScrollView>
+    </BackToTopScrollView>
   );
 }
 

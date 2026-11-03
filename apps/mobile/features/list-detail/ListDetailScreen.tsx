@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router, Stack, useLocalSearchParams } from "expo-router";
 import { useState } from "react";
-import { FlatList, Pressable, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
+import { BackToTopFlatList } from "@/components/common/BackToTop";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
 import { Dialog } from "@/components/common/Dialog";
 import { EmptyState } from "@/components/common/EmptyState";
@@ -104,7 +105,7 @@ export default function ListDetailScreen() {
           }
         />
       ) : (
-        <FlatList
+        <BackToTopFlatList
           {...LIST_PERFORMANCE}
           data={list.items}
           keyExtractor={(item) => item.id}

@@ -16,7 +16,7 @@ export function BestPricesTab({ bestPrices, ranking }: BestPricesTabProps) {
 
   return (
     <>
-      <Text style={styles.intro}>Dónde está más barato cada cosa de tu lista. Precio por unidad, sin promos.</Text>
+      <Text style={styles.intro}>Dónde está más barato cada cosa de tu lista, entre los comercios que te quedan de paso. El precio es por unidad y sin promos.</Text>
 
       {bestPrices.map((entry) => (
         <View key={entry.productId} style={styles.priceCard}>
@@ -24,7 +24,11 @@ export function BestPricesTab({ bestPrices, ranking }: BestPricesTabProps) {
             <Text style={styles.name} numberOfLines={2}>
               {entry.productName}
             </Text>
-            {entry.quantity > 1 ? <Text style={styles.meta}>x{entry.quantity}</Text> : null}
+            {entry.quantity > 1 ? (
+              <View style={styles.qtyChip}>
+                <Text style={styles.qtyChipText}>x{entry.quantity}</Text>
+              </View>
+            ) : null}
           </View>
 
           {entry.offers.length === 0 ? (
@@ -44,7 +48,10 @@ export function BestPricesTab({ bestPrices, ranking }: BestPricesTabProps) {
                     {blocksFromRoute(offer.distanceFromRouteMeters)}
                   </Text>
                 </View>
-                <Text style={styles.offerPrice}>{money(offer.price)}</Text>
+                <View style={styles.priceBlock}>
+                  <Text style={styles.offerPrice}>{money(offer.price)}</Text>
+                  {entry.quantity > 1 ? <Text style={styles.totalText}>{`x${entry.quantity} = ${money(offer.price * entry.quantity)}`}</Text> : null}
+                </View>
               </View>
             ))
           )}
@@ -96,6 +103,10 @@ const useStyles = makeStyles((colors) =>
     badgeText: { fontFamily: typography.caption.fontFamily, fontSize: 11, color: colors.text.secondary },
     badgeTextBest: { color: colors.text.onLime },
     offerStore: { fontFamily: typography.body.fontFamily, fontSize: 14, color: colors.text.primary },
+    priceBlock: { alignItems: "flex-end" },
+    totalText: { fontFamily: typography.itemTitle.fontFamily, fontSize: 12, color: colors.brand.accentDark },
+    qtyChip: { paddingHorizontal: spacing.sm, paddingVertical: 3, borderRadius: radii.full, backgroundColor: colors.saving.lime },
+    qtyChipText: { fontFamily: typography.itemTitle.fontFamily, fontSize: 12, color: colors.text.onLime },
     offerPrice: { fontFamily: typography.itemTitle.fontFamily, fontSize: 15, color: colors.text.primary },
     section: { gap: spacing.sm, marginTop: spacing.sm },
     sectionTitle: { fontFamily: typography.itemTitle.fontFamily, fontSize: 16, color: colors.text.primary },

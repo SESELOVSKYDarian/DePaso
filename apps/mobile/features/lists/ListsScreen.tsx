@@ -2,7 +2,8 @@ import { Ionicons } from "@expo/vector-icons";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { router } from "expo-router";
 import { useState } from "react";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { BackToTopFlatList } from "@/components/common/BackToTop";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
 import { EmptyState } from "@/components/common/EmptyState";
@@ -74,7 +75,7 @@ export default function ListsScreen() {
       ) : visible.length === 0 ? (
         <EmptyState emoji="🔎" title="No encontramos listas" description="Probá con otro nombre o cambiá el filtro." />
       ) : (
-        <FlatList
+        <BackToTopFlatList
           {...LIST_PERFORMANCE}
           data={visible}
           keyExtractor={(item) => item.id}

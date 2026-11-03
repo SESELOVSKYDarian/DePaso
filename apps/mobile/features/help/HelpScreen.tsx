@@ -1,7 +1,8 @@
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { BackToTopScrollView } from "@/components/common/BackToTop";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
 import { GroupedList, GroupedRow } from "@/components/common/GroupedList";
@@ -46,7 +47,7 @@ export default function HelpScreen() {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <BackToTopScrollView contentContainerStyle={styles.container}>
       <Text style={styles.intro}>Lo que más nos preguntan. Si no está acá, probablemente lo veas en Privacidad y datos.</Text>
 
       <GroupedList title="Guía">
@@ -78,7 +79,7 @@ export default function HelpScreen() {
         <GroupedRow icon="shield-checkmark-outline" label="Política de Privacidad" onPress={() => router.push("/legal/privacy")} />
         <GroupedRow icon="people-outline" label="Normas de la comunidad" onPress={() => router.push("/legal/community")} />
       </GroupedList>
-    </ScrollView>
+    </BackToTopScrollView>
   );
 }
 

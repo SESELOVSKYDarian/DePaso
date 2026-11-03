@@ -12,8 +12,6 @@ interface PlanSummaryProps {
   plan: OptimizationPlanResponse;
   plans: OptimizationPlanResponse[];
   onSelectPlan: (plan: OptimizationPlanResponse) => void;
-  /** abre la hoja del todo para ver las paradas y los comercios */
-  onSeeAll: () => void;
 }
 
 /**
@@ -21,19 +19,14 @@ interface PlanSummaryProps {
  * Las tres opciones (sin desvíos, intermedio, económico), cuánto cuesta, cuánto se ahorra,
  * cuánto se desvía y el botón para empezar.
  */
-export function PlanSummary({ plan, plans, onSelectPlan, onSeeAll }: PlanSummaryProps) {
+export function PlanSummary({ plan, plans, onSelectPlan }: PlanSummaryProps) {
   const s = useStyles();
   const { start } = usePurchase();
   const minutes = Math.max(1, Math.ceil(plan.additionalTimeSeconds / 60));
 
   return (
     <View style={s.box}>
-      <View style={s.topRow}>
-        <Text style={s.eyebrow}>TU COMPRA DE PASO</Text>
-        <AnimatedPressable accessibilityLabel="Ver todo el detalle de la compra" haptic={false} onPress={onSeeAll}>
-          <Text style={s.link}>Ver detalle</Text>
-        </AnimatedPressable>
-      </View>
+      <Text style={s.eyebrow}>TU COMPRA DE PASO</Text>
 
       {plans.length > 1 ? <PlanTabs plans={plans} selectedLabel={plan.label} onSelect={onSelectPlan} /> : null}
 
@@ -66,9 +59,7 @@ export function PlanSummary({ plan, plans, onSelectPlan, onSeeAll }: PlanSummary
 const useStyles = makeStyles((colors) =>
   StyleSheet.create({
     box: { gap: spacing.sm, paddingHorizontal: spacing.lg, paddingBottom: spacing.sm },
-    topRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
     eyebrow: { fontFamily: typography.caption.fontFamily, fontSize: 12, letterSpacing: 1.2, color: colors.brand.accentDark },
-    link: { fontFamily: typography.itemTitle.fontFamily, fontSize: 14, color: colors.brand.route },
     priceRow: { flexDirection: "row", alignItems: "center", gap: spacing.sm, flexWrap: "wrap" },
     price: { fontFamily: typography.heroTitle.fontFamily, fontSize: 30, lineHeight: 36, color: colors.text.primary },
     saving: { paddingHorizontal: spacing.sm, paddingVertical: 5, borderRadius: radii.full, backgroundColor: colors.saving.lime },

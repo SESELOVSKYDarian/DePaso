@@ -26,9 +26,18 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   const product = await prisma.product.findUnique({ where: { id: parsed.data.productId } });
   if (!product) return NextResponse.json({ error: "PRODUCT_NOT_FOUND" }, { status: 400 });
 
-  await prisma.shoppingListItem.create({
-    data: { shoppingListId: id, productId: parsed.data.productId, quantity: parsed.data.quantity, note: parsed.data.note },
-  });
+  // si el producto ya está en la lista se suma la cantidad (hasta 99) en vez de repetir el renglón
+  const existing = await prisma.shoppingListItem.findFirst({ where: { shoppingListId: id, productId: parsed.data.productId } });
+  if (existing) {
+    await prisma.shoppingListItem.update({
+      where: { id: existing.id },
+      data: { quantity: Math.min(99, existing.quantity + parsed.data.quantity) },
+    });
+  } else {
+    await prisma.shoppingListItem.create({
+      data: { shoppingListId: id, productId: parsed.data.productId, quantity: parsed.data.quantity, note: parsed.data.note },
+    });
+  }
   await prisma.shoppingList.update({ where: { id }, data: { updatedAt: new Date() } });
 
   const updated = await prisma.shoppingList.findUniqueOrThrow({ where: { id }, include: listInclude });

@@ -3,7 +3,8 @@ import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles, useColors } from "@/lib/theme";
 import { useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, FlatList, Linking, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Linking, StyleSheet, Text, View } from "react-native";
+import { BackToTopFlatList } from "@/components/common/BackToTop";
 import { Button } from "@/components/common/Button";
 import { Checkbox } from "@/components/common/Checkbox";
 import { EmptyState } from "@/components/common/EmptyState";
@@ -73,7 +74,7 @@ export default function AdminMerchantRequestsScreen() {
   }
 
   return (
-    <FlatList
+    <BackToTopFlatList
           {...LIST_PERFORMANCE}
       data={requests}
       keyExtractor={(item) => item.id}

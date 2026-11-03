@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { ActivityIndicator, ScrollView, Share, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Share, StyleSheet, Text, View } from "react-native";
+import { BackToTopScrollView } from "@/components/common/BackToTop";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
 import { Dialog } from "@/components/common/Dialog";
@@ -89,7 +90,7 @@ export default function PrivacyScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      <ScrollView contentContainerStyle={styles.content}>
+      <BackToTopScrollView contentContainerStyle={styles.content}>
         <Text style={styles.title}>Privacidad y datos</Text>
         <Text style={styles.intro}>
           Estos son tus derechos sobre tu información en DePaso. Podés ejercerlos acá directamente o
@@ -145,7 +146,7 @@ export default function PrivacyScreen() {
           loading={isDeletingAccount}
           destructive
         />
-      </ScrollView>
+      </BackToTopScrollView>
 
       <Dialog
         visible={confirmClearPlaces}

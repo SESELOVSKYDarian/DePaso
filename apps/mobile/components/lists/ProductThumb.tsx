@@ -15,13 +15,14 @@ interface ProductThumbProps {
 
 /**
  * Miniatura de producto. Las fotos (Open Food Facts) vienen sobre fondo blanco, así que van
- * en un recuadro blanco también en modo oscuro; sin foto (o si falla la carga) queda un ícono
- * según el tipo de producto (leche, carne, limpieza…).
+ * en un recuadro blanco también en modo oscuro. Mientras la foto carga (o si no hay, o si falla)
+ * se ve un ícono según el tipo de producto (leche, carne, limpieza…): nunca un recuadro en blanco.
  */
 export function ProductThumb({ imageUrl, name, size = 52 }: ProductThumbProps) {
   const colors = useColors();
   const [failed, setFailed] = useState(false);
-  const showImage = Boolean(imageUrl) && !failed;
+  const [loaded, setLoaded] = useState(false);
+  const hasImage = Boolean(imageUrl) && !failed;
 
   return (
     <View
@@ -32,24 +33,25 @@ export function ProductThumb({ imageUrl, name, size = 52 }: ProductThumbProps) {
         {
           width: size,
           height: size,
-          backgroundColor: showImage ? "#FFFFFF" : colors.surface.input,
+          // el fondo blanco recién aparece cuando la foto ya está; antes se ve el ícono
+          backgroundColor: hasImage && loaded ? "#FFFFFF" : colors.surface.input,
           borderColor: colors.border.subtle,
         },
       ]}
     >
-      {showImage ? (
+      {!(hasImage && loaded) ? <Ionicons name={productIcon(name)} size={Math.round(size * 0.42)} color={colors.text.tertiary} /> : null}
+      {hasImage ? (
         <Image
           source={{ uri: imageUrl as string }}
-          style={{ width: size - 8, height: size - 8 }}
+          style={[styles.image, { width: size - 8, height: size - 8, opacity: loaded ? 1 : 0 }]}
           contentFit="contain"
           cachePolicy="memory-disk"
-          transition={120}
+          transition={150}
           recyclingKey={imageUrl as string}
+          onLoad={() => setLoaded(true)}
           onError={() => setFailed(true)}
         />
-      ) : (
-        <Ionicons name={productIcon(name)} size={Math.round(size * 0.42)} color={colors.text.tertiary} />
-      )}
+      ) : null}
     </View>
   );
 }
@@ -62,4 +64,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     overflow: "hidden",
   },
+  // la foto se superpone al ícono, centrada
+  image: { position: "absolute" },
 });

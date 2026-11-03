@@ -37,6 +37,9 @@ export function PlanCard({ stops, selectedId, hasPlanLine, onSelectStop }: PlanC
             style={[s.buyStop, stop.storeBranchId === selectedId ? s.storeRowSelected : null]}
           >
             <View style={s.buyHead}>
+              <View style={s.orderBadge}>
+                <Text style={s.orderBadgeText}>{index + 1}</Text>
+              </View>
               <StoreBadge storeName={stop.storeName} size={40} />
               <View style={s.storeText}>
                 <Text style={s.storeName}>{stop.storeName}</Text>

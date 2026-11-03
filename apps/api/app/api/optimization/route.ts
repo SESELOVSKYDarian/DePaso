@@ -1,7 +1,8 @@
 import { prisma } from "@depaso/database";
-import { distanceToPathMeters, optimizeWithRanking, type StoreCandidateInput } from "@depaso/optimization";
+import { INTERMEDIATE_MAX_METERS, distanceToPathMeters, optimizeWithRanking, type StoreCandidateInput } from "@depaso/optimization";
 import { optimizationRunRequestSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
+import { mergeDuplicateItems } from "@/lib/optimization/mergeItems";
 import { runInBackground } from "@/lib/http/background";
 import { getCurrentUser } from "@/lib/auth/currentUser";
 import { loadCommunityObservations, observationIfDifferent } from "@/lib/optimization/communityPrices";
@@ -39,7 +40,9 @@ export async function POST(request: NextRequest) {
   if (!list) return NextResponse.json({ error: "LIST_NOT_FOUND" }, { status: 404 });
   if (list.items.length === 0) return NextResponse.json({ error: "EMPTY_LIST" }, { status: 422 });
 
-  const productIds = [...new Set(list.items.map((item: (typeof list.items)[number]) => item.productId))];
+  // el mismo producto repetido cuenta una sola vez, con la cantidad total
+  const listItems = mergeDuplicateItems(list.items);
+  const productIds = [...new Set(listItems.map((item) => item.productId))];
   const [products, productPreferences, storePreferences, prices] = await Promise.all([
     prisma.product.findMany({ where: { id: { in: productIds } }, select: { id: true, name: true } }),
     prisma.productPreference.findMany({ where: { userId: current.userId, productId: { in: productIds } } }),
@@ -104,7 +107,7 @@ export async function POST(request: NextRequest) {
     const { plans, ranking } = await optimizeWithRanking(
       {
         shoppingList: {
-          items: list.items.map((item: (typeof list.items)[number]) => ({
+          items: listItems.map((item) => ({
             productId: item.productId,
             productName: names.get(item.productId)!,
             quantity: item.quantity,
@@ -165,8 +168,11 @@ export async function POST(request: NextRequest) {
     // Para cada producto de la lista: las sucursales donde está más barato (precio por unidad,
     // sin promos) y qué tan lejos quedan del recorrido. Es la pestaña "Mejores precios".
     const routePath = parsed.data.routeContext.waypoints;
-    const bestPrices = list.items.map((item: (typeof list.items)[number]) => {
-      const offers = [...candidateMap.values()]
+    // Solo cuentan los comercios que quedan de paso (dentro del desvío intermedio); si ninguno
+    // llega, se muestran los más cercanos al recorrido para no dejar el producto sin opciones.
+    const reachMeters = parsed.data.tierLimitsMeters?.intermediate ?? INTERMEDIATE_MAX_METERS;
+    const bestPrices = listItems.map((item) => {
+      const allOffers = [...candidateMap.values()]
         .flatMap((store) =>
           store.offers
             .filter((offer) => offer.productId === item.productId)
@@ -179,8 +185,12 @@ export async function POST(request: NextRequest) {
               distanceFromRouteMeters: Math.round(distanceToPathMeters(store.location, routePath)),
             })),
         )
-        .sort((a, b) => a.price - b.price || a.distanceFromRouteMeters - b.distanceFromRouteMeters)
-        .slice(0, 3);
+        .sort((a, b) => a.price - b.price || a.distanceFromRouteMeters - b.distanceFromRouteMeters);
+      const nearOffers = allOffers.filter((offer) => offer.distanceFromRouteMeters <= reachMeters);
+      const offers = (nearOffers.length > 0
+        ? nearOffers
+        : [...allOffers].sort((a, b) => a.distanceFromRouteMeters - b.distanceFromRouteMeters || a.price - b.price)
+      ).slice(0, 3);
       return { productId: item.productId, productName: names.get(item.productId) ?? "Producto", quantity: item.quantity, offers };
     });
 
