@@ -16,13 +16,16 @@ interface AnnouncementCardProps {
   onClose?: () => void;
   /** Más chica, para la vista previa del administrador. */
   compact?: boolean;
+  /** Dibuja la cruz y el botón como en la ventana real, pero sin acción (vista previa). */
+  preview?: boolean;
 }
 
 /**
  * Tarjeta de un anuncio: imagen o emoji grande arriba, título, mensaje y botón. Es la misma para
  * la ventana que ven todos al abrir la app y para la vista previa del administrador.
  */
-export function AnnouncementCard({ title, body, emoji, imageUri, onClose, compact = false }: AnnouncementCardProps) {
+export function AnnouncementCard({ title, body, emoji, imageUri, onClose, compact = false, preview = false }: AnnouncementCardProps) {
+  const close = onClose ?? (preview ? () => undefined : undefined);
   const styles = useStyles();
   const colors = useColors();
   const hasImage = Boolean(imageUri);
@@ -30,8 +33,8 @@ export function AnnouncementCard({ title, body, emoji, imageUri, onClose, compac
 
   return (
     <View style={[styles.card, compact ? styles.cardCompact : null]}>
-      {onClose ? (
-        <AnimatedPressable accessibilityLabel="Cerrar anuncio" haptic={false} onPress={onClose} style={styles.close}>
+      {close ? (
+        <AnimatedPressable accessibilityLabel="Cerrar anuncio" haptic={false} onPress={close} style={styles.close}>
           <Ionicons name="close" size={20} color={colors.text.primary} />
         </AnimatedPressable>
       ) : null}
@@ -53,7 +56,7 @@ export function AnnouncementCard({ title, body, emoji, imageUri, onClose, compac
         <ScrollView style={compact ? styles.bodyScrollCompact : styles.bodyScroll} showsVerticalScrollIndicator={false}>
           <Text style={styles.body}>{body.trim() || "Acá va el mensaje que van a leer todos."}</Text>
         </ScrollView>
-        {onClose ? <Button label="Entendido" onPress={onClose} style={{ borderRadius: radii.full }} /> : null}
+        {close ? <Button label="Entendido" onPress={close} style={{ borderRadius: radii.full }} /> : null}
       </View>
     </View>
   );

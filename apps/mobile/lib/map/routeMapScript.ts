@@ -56,21 +56,18 @@ ${buildMapCommandsScript(pinColor)}
     waypoints.forEach((w, i) => {
       const el = document.createElement("div");
       const isLast = i === waypoints.length - 1 && waypoints.length > 1;
-      if (isLast) {
-        el.className = "depaso-end";
-        if (w.name) {
-          const tag = document.createElement("div");
-          tag.className = "tag";
-          tag.textContent = w.name;
-          el.appendChild(tag);
-        }
-        const dot = document.createElement("div");
-        dot.className = "dot";
-        el.appendChild(dot);
-      } else {
-        el.className = "depaso-pin" + (i === 0 ? "" : " mid");
+      // todas las paradas del recorrido llevan su nombre: salida, paradas del medio y destino
+      el.className = "depaso-end";
+      if (w.name) {
+        const tag = document.createElement("div");
+        tag.className = "tag";
+        tag.textContent = w.name;
+        el.appendChild(tag);
       }
-      new mapboxgl.Marker({ element: el }).setLngLat([w.lng, w.lat]).addTo(map);
+      const dot = document.createElement("div");
+      dot.className = "dot" + (isLast ? "" : i === 0 ? " start" : " midpt");
+      el.appendChild(dot);
+      new mapboxgl.Marker({ element: el, anchor: "bottom" }).setLngLat([w.lng, w.lat]).addTo(map);
       bounds.extend([w.lng, w.lat]);
     });
 

@@ -34,7 +34,7 @@ export function FormField({
       <View style={styles.inputRow}>
         <TextInput
           ref={inputRef}
-          style={[styles.input, isPassword ? styles.inputWithIcon : null, error ? styles.inputError : null, style]}
+          style={[styles.input, isPassword ? styles.inputWithIcon : null, inputProps.multiline ? styles.inputMultiline : null, error ? styles.inputError : null, style]}
           placeholderTextColor={colors.text.muted}
           autoCapitalize="none"
           autoCorrect={false}
@@ -71,6 +71,7 @@ const useStyles = makeStyles((colors) => StyleSheet.create({
     position: "relative",
     justifyContent: "center",
   },
+  inputMultiline: { minHeight: 112, textAlignVertical: "top", paddingTop: spacing.sm },
   input: {
     minHeight: 48,
     borderRadius: radii.md,

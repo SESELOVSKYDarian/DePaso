@@ -70,7 +70,7 @@ const useStyles = makeStyles((colors) =>
     observed: { fontFamily: typography.itemTitle.fontFamily, fontSize: 11, color: colors.state.warning },
     priceColumn: { alignItems: "flex-end", gap: 2 },
     price: { fontFamily: typography.itemTitle.fontFamily, fontSize: 14, color: colors.text.primary },
-    report: { minHeight: 28, justifyContent: "center" },
+    report: { minHeight: 44, minWidth: 64, alignItems: "flex-end", justifyContent: "center" },
     reportText: { fontFamily: typography.caption.fontFamily, fontSize: 11, color: colors.text.secondary, textDecorationLine: "underline" },
   }),
 );

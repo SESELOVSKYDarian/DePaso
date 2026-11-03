@@ -23,6 +23,14 @@ export function OptionsTab({ plans, hasPaymentMethods }: OptionsTabProps) {
   const noPromos = plans.every((plan) => plan.appliedPromos.length === 0);
   const missingLabels = PLAN_ORDER.filter((label) => !plans.some((plan) => plan.label === label));
 
+  // Si varias opciones dan lo mismo (mismos comercios y mismo costo) se muestra una sola vez.
+  const planKey = (plan: OptimizationPlanResponse) =>
+    `${Math.round(plan.totalProductCost)}|${plan.stops.map((stop) => stop.storeBranchId).sort().join(",")}`;
+  const groups = new Map<string, OptimizationPlanResponse[]>();
+  for (const plan of plans) groups.set(planKey(plan), [...(groups.get(planKey(plan)) ?? []), plan]);
+  const shown = [...groups.values()].map((group) => group.find((plan) => plan.label === "BALANCED") ?? group[0]!);
+  const merged = plans.length - shown.length;
+
   return (
     <>
       <Text style={styles.intro}>
@@ -48,7 +56,15 @@ export function OptionsTab({ plans, hasPaymentMethods }: OptionsTabProps) {
         <Text style={styles.meta}>Hoy no encontramos promos de tus medios de pago en estos comercios, así que los precios van sin descuento.</Text>
       ) : null}
 
-      {plans.map((plan) => (
+      {merged > 0 ? (
+        <Text style={styles.meta}>
+          {shown.length === 1
+            ? `Hoy las ${plans.length} opciones dan lo mismo: el mismo comercio es el más barato y el más cercano.`
+            : "Algunas opciones coinciden y se muestran una sola vez."}
+        </Text>
+      ) : null}
+
+      {shown.map((plan) => (
         <PlanOptionCard
           key={plan.label}
           plan={plan}

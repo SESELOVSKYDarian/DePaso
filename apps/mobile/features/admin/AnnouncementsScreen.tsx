@@ -84,7 +84,7 @@ export default function AnnouncementsScreen() {
 
       <Text style={styles.label}>Así lo van a ver</Text>
       <View style={styles.previewBox}>
-        <AnnouncementCard title={data.title} body={data.body} emoji={data.emoji} imageUri={data.image?.imageData ?? null} compact />
+        <AnnouncementCard title={data.title} body={data.body} emoji={data.emoji} imageUri={data.image?.imageData ?? null} compact preview />
       </View>
 
       <Button label={data.publishing ? "Publicando…" : "Publicar anuncio"} onPress={() => void data.publish()} loading={data.publishing} />

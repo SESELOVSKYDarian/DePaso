@@ -109,8 +109,8 @@ const useStyles = makeStyles((colors) =>
     },
     savingChipText: { fontFamily: typography.itemTitle.fontFamily, fontSize: 12, color: colors.state.successStrong },
     add: {
-      width: 34,
-      height: 34,
+      width: 44,
+      height: 44,
       borderRadius: radii.full,
       alignItems: "center",
       justifyContent: "center",

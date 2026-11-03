@@ -130,8 +130,8 @@ export const useStyles = makeStyles((colors) => StyleSheet.create({
     gap: spacing.xs,
   },
   stepperButton: {
-    width: 28,
-    height: 28,
+    width: 38,
+    height: 38,
     borderRadius: radii.full,
     borderWidth: 1,
     borderColor: colors.border.subtle,
@@ -153,8 +153,8 @@ export const useStyles = makeStyles((colors) => StyleSheet.create({
     textAlign: "center",
   },
   removeButton: {
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
     alignItems: "center",
     justifyContent: "center",
   },

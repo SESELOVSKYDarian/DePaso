@@ -18,6 +18,9 @@ export function routeMapCss(routeColor: string): string {
     font-family: sans-serif; font-size: 12px; font-weight: 700; background: #fff; color: #111; box-shadow: 0 2px 8px rgba(0,0,0,0.4);
   }
   .depaso-end .dot { width: 14px; height: 14px; border-radius: 999px; background: #fff; border: 4px solid ${routeColor}; }
+  .depaso-end .dot.start { background: ${routeColor}; border: 3px solid #fff; width: 16px; height: 16px; box-shadow: 0 0 0 5px rgba(91,176,255,0.28); }
+  .depaso-end .dot.midpt { width: 10px; height: 10px; border-width: 3px; }
+  .depaso-end .tag { font-weight: 700; }
   /* comercios: el logo de la cadena en un cuadrado blanco redondeado */
   .depaso-store { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
   .depaso-store .bubble {

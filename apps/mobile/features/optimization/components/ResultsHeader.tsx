@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
@@ -25,7 +26,10 @@ export function ResultsHeader({ tab, onChangeTab, onReset }: ResultsHeaderProps)
   return (
     <View style={styles.top}>
       <View style={styles.head}>
-        <View>
+        <AnimatedPressable accessibilityLabel="Volver" haptic={false} onPress={() => router.back()} style={styles.reset}>
+          <Ionicons name="arrow-back" size={20} color={colors.text.primary} accessible={false} />
+        </AnimatedPressable>
+        <View style={{ flex: 1 }}>
           <Text style={styles.eyebrow}>TU COMPRA</Text>
           <Text style={styles.title}>Comprá mejor, de paso</Text>
         </View>
