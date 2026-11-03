@@ -69,6 +69,7 @@ export default function ProfileScreen() {
             {...(unreadCount > 0 ? { value: `${unreadCount} sin leer` } : {})}
             onPress={() => router.push("/notifications")}
           />
+          <GroupedRow icon="phone-portrait-outline" label="Avisos del celular" onPress={() => router.push("/notification-settings")} />
           <GroupedRow icon="lock-closed-outline" label="Privacidad y datos" onPress={() => router.push("/privacy")} />
           <GroupedRow icon="book-outline" label="Cómo usar DePaso" onPress={() => router.push("/how-to")} />
           <GroupedRow icon="help-circle-outline" label="Ayuda" onPress={() => router.push("/help")} />

@@ -1,5 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+import { StartupExtras } from "@/features/announcement-popup/StartupExtras";
 import { typography } from "@depaso/design-tokens";
 import { useColors } from "@/lib/theme";
 
@@ -11,6 +12,8 @@ import { useColors } from "@/lib/theme";
 export default function TabsLayout() {
   const colors = useColors();
   return (
+    <>
+    <StartupExtras />
     <Tabs
       screenOptions={{
         headerShown: false,
@@ -68,5 +71,6 @@ export default function TabsLayout() {
         }}
       />
     </Tabs>
+    </>
   );
 }

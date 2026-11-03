@@ -1,5 +1,6 @@
 import {
   activityFeedResponseSchema,
+  announcementPopupResponseSchema,
   announcementSchema,
   announcementsResponseSchema,
   type AnnouncementInput,
@@ -15,6 +16,8 @@ export function createActivityClient(client: DepasoApiClient) {
   return {
     /** Novedades que publica el equipo (solo las activas). */
     announcements: () => client.post("/api/announcements/list", {}, announcementsResponseSchema),
+    /** El anuncio vigente para mostrar como ventana emergente al abrir la app (o `null`). */
+    popup: () => client.post("/api/announcements/popup", {}, announcementPopupResponseSchema),
     /** Avisos para este usuario: listas compartidas, bajas de precio y ofertas cerca. */
     feed: () => client.post("/api/activity/feed", {}, activityFeedResponseSchema),
     /** Para administradores: todas las novedades y su gestión. */

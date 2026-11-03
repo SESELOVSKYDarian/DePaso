@@ -1,6 +1,7 @@
 import { refreshProductPopularity } from "../catalog/catalogMaintenance";
 import { prefillProductImages } from "../catalog/productImages";
 import { syncPaymentPromos } from "../promos/syncPromos";
+import { sendOffersPush } from "../push/offersJob";
 import type { ScheduledJob } from "./internalSchedule";
 
 const MINUTE = 60 * 1000;
@@ -17,5 +18,6 @@ const IMAGES_PER_RUN = 40;
 export const MAINTENANCE_JOBS: ScheduledJob[] = [
   { name: "fotos de productos", everyMs: HOUR, firstDelayMs: 2 * MINUTE, run: () => prefillProductImages(IMAGES_PER_RUN) },
   { name: "promos de bancos", everyMs: 24 * HOUR, firstDelayMs: MINUTE, run: syncPaymentPromos },
+  { name: "avisos de ofertas al celular", everyMs: 6 * HOUR, firstDelayMs: 10 * MINUTE, run: () => sendOffersPush() },
   { name: "popularidad de productos", everyMs: 24 * HOUR, firstDelayMs: 5 * MINUTE, run: refreshProductPopularity },
 ];

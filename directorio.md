@@ -100,6 +100,7 @@ Todas las pantallas viven en `features/`, agrupadas por área:
 | `.env.example` | Variables de entorno (sin valores reales). |
 | `docs/GUIA-DE-INSTALACION.md` | Cómo instalar y configurar backend, base de datos y app. |
 | `docs/MANUAL-DE-USUARIO.md` | Cómo usar la app (con capturas). |
+| `docs/development/NOTIFICATIONS.md` | Avisos del celular, anuncios con ventana e imagen, y qué configurar en Firebase para Android. |
 | `docs/manual/` | Capturas (`img/`) y `build-pdf.mjs`, que genera `DePaso-Manual-de-usuario.pdf` desde el manual. |
 | `promo-video/` | Videos con Remotion: presentación horizontal (`npm run render`) y reel publicitario vertical (`npm run reel`), solo música. |
 | `promo-video/hyperframes/` | Escena "realista" del reel (noche, lluvia, precios) hecha en HyperFrames; `npm run reel` la renderiza primero. |

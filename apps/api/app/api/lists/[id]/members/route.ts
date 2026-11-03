@@ -3,7 +3,9 @@ import { shoppingListShareInputSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/currentUser";
 import { checkRateLimit } from "@/lib/auth/rateLimit";
+import { runInBackground } from "@/lib/http/background";
 import { listInclude, toListResponse } from "@/lib/lists/lists";
+import { notifyUsers } from "@/lib/push/notify";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -33,11 +35,29 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   if (!invitee || invitee.deletedAt) return NextResponse.json({ error: "USER_NOT_FOUND" }, { status: 404 });
   if (invitee.id === current.userId) return NextResponse.json({ error: "CANNOT_SHARE_WITH_SELF" }, { status: 400 });
 
+  const alreadyMember = await prisma.shoppingListMember.findUnique({
+    where: { shoppingListId_userId: { shoppingListId: id, userId: invitee.id } },
+    select: { id: true },
+  });
   await prisma.shoppingListMember.upsert({
     where: { shoppingListId_userId: { shoppingListId: id, userId: invitee.id } },
     create: { shoppingListId: id, userId: invitee.id },
     update: {},
   });
+
+  // si es la primera vez que se la comparten, le llega una notificación al celular
+  if (!alreadyMember) {
+    const owner = await prisma.user.findUnique({ where: { id: current.userId }, select: { displayName: true } });
+    runInBackground(() =>
+      notifyUsers({
+        category: "lists",
+        userIds: [invitee.id],
+        title: `${owner?.displayName ?? "Alguien"} compartió una lista con vos`,
+        body: `"${list.name}": abrila para ver qué falta comprar.`,
+        data: { type: "list", id },
+      }),
+    );
+  }
 
   const updated = await prisma.shoppingList.findUniqueOrThrow({ where: { id }, include: listInclude });
   return NextResponse.json(await toListResponse(updated, current.userId), { status: 201 });

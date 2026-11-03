@@ -39,7 +39,19 @@
           "microphonePermission": "DePaso usa el micrófono para que le digas de corrido lo que te falta comprar. El audio se manda para pasarlo a texto y no se guarda."
         }
       ],
-      "expo-image"
+      "expo-image",
+      [
+        "expo-notifications",
+        {
+          "color": "#7CB0FF"
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "DePaso usa tus fotos para que, si sos administrador, puedas subir la imagen de un anuncio."
+        }
+      ]
     ],
     "ios": {
       "supportsTablet": false,

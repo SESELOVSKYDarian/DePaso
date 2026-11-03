@@ -20,3 +20,4 @@ export * from "./merchant";
 export * from "./payments";
 export * from "./home";
 export * from "./activity";
+export * from "./notifications";

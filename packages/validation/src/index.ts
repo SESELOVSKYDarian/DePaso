@@ -20,3 +20,4 @@ export * from "./payments";
 export * from "./brandLogos";
 export * from "./home";
 export * from "./activity";
+export * from "./notifications";

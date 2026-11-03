@@ -216,7 +216,9 @@ La pestaña **Actividad** tiene dos vistas:
 
 ![Actividad](manual/img/activity.png)
 
-- **Novedades**: anuncios del equipo de DePaso (nuevos comercios, promos, mejoras).
+- **Novedades**: anuncios del equipo de DePaso (nuevos comercios, promos, mejoras), con su ícono o imagen.
+  Los más importantes también se abren como una **ventana al entrar a la app**: se cierran con la
+  cruz o con *Entendido* y no vuelven a aparecer.
 - **Para vos**: avisos personales:
   - alguien te **compartió una lista**;
   - **bajó el precio** de un producto de tus listas;
@@ -237,6 +239,7 @@ Tirá hacia abajo para actualizar.
 | **Métodos de pago** | Marcás billeteras y tarjetas (Cuenta DNI, Mercado Pago, MODO…) para descontar sus promos |
 | **Apariencia** | Claro, oscuro o automático según tu celular |
 | **Notificaciones** | Historial de los avisos que te mostró la app |
+| **Avisos del celular** | Elegís qué notificaciones del celular querés recibir: novedades, ofertas y bajas de precio, listas compartidas y el aviso al empezar tu recorrido |
 | **Privacidad y datos** | Descargar tus datos, borrar tus lugares o eliminar la cuenta |
 | **Ayuda** | Preguntas frecuentes y textos legales |
 | **Cerrar sesión** | Sale de tu cuenta en este celular |
@@ -266,7 +269,9 @@ Tirá hacia abajo para actualizar.
 
 En **Perfil → Administración** ves las **solicitudes de comercio** pendientes (con el contador),
 podés **actualizar las promos** de bancos y billeteras y **Publicar novedades** que le aparecen a
-todos en **Actividad → Novedades**. El panel web de administración ofrece, además, el ABM de
+todos en **Actividad → Novedades**. Cada anuncio puede llevar un **emoji** o una **imagen** (que subís
+desde la galería del celular o desde tus archivos en la web), mostrarse como **ventana al abrir la app**
+y mandarse como **notificación al celular**; mientras lo escribís ves cómo lo van a ver. El panel web de administración ofrece, además, el ABM de
 comercios, sucursales y precios, y la moderación de reportes.
 
 ---
@@ -285,5 +290,7 @@ podés corregir cantidades y marcas antes de agregar.
 
 **¿Por qué mi recorrido de hoy desapareció?** El recorrido de hoy se reinicia a las 00:00. Si lo
 guardaste con un nombre, lo tenés en tus rutas guardadas.
+
+**¿Cómo activo las notificaciones del celular?** La primera vez la app te pregunta. También podés hacerlo en *Perfil → Avisos del celular*. Si las bloqueaste desde el sistema, ahí mismo hay un botón que abre los ajustes del celular.
 
 **¿Cómo borro mi cuenta?** *Perfil → Privacidad y datos → Eliminar cuenta*. No se puede deshacer.

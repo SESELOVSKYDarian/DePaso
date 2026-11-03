@@ -147,3 +147,20 @@ export async function getStoredDetourBlocks(): Promise<StoredDetourBlocks | null
 export async function setStoredDetourBlocks(blocks: StoredDetourBlocks): Promise<void> {
   await store.setItem(DETOUR_KEY, JSON.stringify(blocks));
 }
+
+/** Valor suelto guardado en el celular (por ejemplo, el último anuncio visto). */
+export async function getStoredValue(key: string): Promise<string | null> {
+  try {
+    return await store.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+export async function setStoredValue(key: string, value: string): Promise<void> {
+  try {
+    await store.setItem(key, value);
+  } catch {
+    // si no se puede guardar, la preferencia simplemente no persiste
+  }
+}

@@ -185,6 +185,8 @@ model User {
   listMemberships      ShoppingListMember[]
   announcements        Announcement[]
   paymentMethods       UserPaymentMethod[]
+  pushTokens           PushToken[]
+  notificationSettings NotificationSettings?
 
   @@map("users")
 }
@@ -779,6 +781,16 @@ model Announcement {
   author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
   /// Se puede ocultar sin borrarla.
   active    Boolean  @default(true)
+  /// Emoji o ícono corto que acompaña al anuncio (alternativa a la imagen).
+  emoji     String?  @db.VarChar(16)
+  /// Imagen subida por el admin, ya comprimida, como data URI (vive en la base, como los logos).
+  imageData String?  @db.MediumText
+  /// Miniatura chica de la imagen para las listas (la grande solo viaja en la ventana emergente).
+  thumbData String?  @db.Text
+  /// Si es true se muestra como ventana emergente al abrir la app (una vez por persona).
+  showPopup Boolean  @default(false)
+  /// Cuándo se mandó como notificación al celular (null = no se mandó).
+  pushedAt  DateTime?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -965,4 +977,38 @@ model OptimizationPlanMissingProduct {
   @@id([optimizationPlanId, productId])
   @@index([productId])
   @@map("optimization_plan_missing_products")
+}
+
+/// Token de notificaciones del celular (Expo Push). Un usuario puede tener varios (celular y tablet).
+/// El token es único: si otra cuenta entra en el mismo celular, el token pasa a esa cuenta.
+model PushToken {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique @db.VarChar(255)
+  platform  String   @db.VarChar(16)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@map("push_tokens")
+}
+
+/// Qué avisos quiere recibir cada persona en el celular. Sin fila se usan los valores por defecto (todos activos).
+model NotificationSettings {
+  userId           String    @id
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  /// Novedades y anuncios del equipo de DePaso.
+  news             Boolean   @default(true)
+  /// Ofertas y bajas de precio de lo que hay en tus listas.
+  offers           Boolean   @default(true)
+  /// Alguien compartió una lista con vos.
+  lists            Boolean   @default(true)
+  /// Avisos al empezar tu recorrido (los programa la app en el celular).
+  routes           Boolean   @default(true)
+  /// Última vez que se mandó el aviso de ofertas: como mucho uno por día.
+  offersLastPushAt DateTime?
+  updatedAt        DateTime  @updatedAt
+
+  @@map("user_notification_settings")
 }

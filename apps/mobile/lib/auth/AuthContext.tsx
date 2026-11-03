@@ -1,3 +1,4 @@
+import { unregisterPushToken } from "@/lib/notifications/push";
 import type {
   AuthUserResponse,
   LoginRequest,
@@ -110,6 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = useCallback(async () => {
     try {
+      await unregisterPushToken();
       await authClient.logout();
     } finally {
       await clearStoredToken();

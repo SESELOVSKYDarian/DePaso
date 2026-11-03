@@ -1,6 +1,6 @@
 import { prisma } from "@depaso/database";
 import { NextRequest, NextResponse } from "next/server";
-import { toAnnouncementResponse } from "@/lib/activity/announcements";
+import { ANNOUNCEMENT_LIST_SELECT, toAnnouncementResponse } from "@/lib/activity/announcements";
 import { requireAdmin } from "@/lib/auth/requireAdmin";
 import { postAsQuery } from "@/lib/http/postAdapter";
 
@@ -11,7 +11,7 @@ async function handle(request: NextRequest) {
   const admin = await requireAdmin(request);
   if (!admin) return NextResponse.json({ error: "FORBIDDEN" }, { status: 403 });
 
-  const rows = await prisma.announcement.findMany({ orderBy: { createdAt: "desc" }, take: 100 });
+  const rows = await prisma.announcement.findMany({ orderBy: { createdAt: "desc" }, take: 100, select: ANNOUNCEMENT_LIST_SELECT });
   return NextResponse.json({ announcements: rows.map(toAnnouncementResponse) });
 }
 

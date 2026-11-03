@@ -1,5 +1,6 @@
-import { Stack } from "expo-router";
-import { Platform } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { Stack, router } from "expo-router";
+import { Platform, Pressable } from "react-native";
 import { typography } from "@depaso/design-tokens";
 import { SplashScreen } from "@/components/common/SplashScreen";
 import { useAuth } from "@/lib/auth/AuthContext";
@@ -86,7 +87,19 @@ export function RootNavigator() {
         <Stack.Screen name="detour" options={{ headerShown: true, title: "Cuánto me desvío", ...sheet([0.5]) }} />
         <Stack.Screen name="payment-methods" options={{ headerShown: true, title: "Métodos de pago", ...sheet([0.75, 1]) }} />
         <Stack.Screen name="appearance" options={{ headerShown: true, title: "Apariencia", ...sheet([0.42]) }} />
-        <Stack.Screen name="notifications" options={{ headerShown: true, title: "Notificaciones" }} />
+        <Stack.Screen
+          name="notifications"
+          options={{
+            headerShown: true,
+            title: "Notificaciones",
+            headerRight: () => (
+              <Pressable accessibilityLabel="Ajustes de avisos del celular" hitSlop={12} onPress={() => router.push("/notification-settings")}>
+                <Ionicons name="settings-outline" size={22} color={colors.text.primary} />
+              </Pressable>
+            ),
+          }}
+        />
+        <Stack.Screen name="notification-settings" options={{ headerShown: true, title: "Avisos del celular" }} />
         <Stack.Screen name="help" options={{ headerShown: true, title: "Ayuda" }} />
         <Stack.Screen name="privacy/index" options={{ headerShown: true, title: "Privacidad y datos" }} />
 

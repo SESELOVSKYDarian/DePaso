@@ -8,6 +8,7 @@ import {
   createGeocodeClient,
   createHomeClient,
   createActivityClient,
+  createNotificationsClient,
   createListsClient,
   createOptimizationClient,
   createPaymentsClient,
@@ -90,5 +91,6 @@ export const merchantClient = createMerchantClient(client);
 export const adminMerchantClient = createAdminMerchantClient(client);
 export const paymentsClient = createPaymentsClient(client);
 export const activityClient = createActivityClient(client);
+export const notificationsClient = createNotificationsClient(client);
 export const assistantClient = createAssistantClient(client);
 export const homeClient = createHomeClient(client);
