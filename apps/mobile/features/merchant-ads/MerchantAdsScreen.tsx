@@ -1,4 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
+import { AD_PRICE_PER_DAY, MAX_ACTIVE_ADS } from "@depaso/validation";
+import { Image } from "expo-image";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { BackToTopScrollView } from "@/components/common/BackToTop";
 import { radii, spacing, typography } from "@depaso/design-tokens";
@@ -22,21 +24,29 @@ export default function MerchantAdsScreen() {
 
   return (
     <BackToTopScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-      <Text style={styles.intro}>Mostrá tu comercio a más gente. Elegí qué querés publicitar y cuánto ofrecés; lo revisamos y te avisamos.</Text>
+      <Text style={styles.intro}>
+        Mostrá tu comercio a más gente. Elegí el formato, cuántos días y cuánto ofrecés (nunca menos del precio base por día); lo revisamos y te avisamos. Podés tener hasta {MAX_ACTIVE_ADS} publicidades a la vez.
+      </Text>
+      <Text style={[styles.slots, data.slotsLeft === 0 ? styles.slotsFull : null]}>
+        {data.slotsLeft === 0 ? `Ya usaste tus ${MAX_ACTIVE_ADS} lugares.` : `Te ${data.slotsLeft === 1 ? "queda 1 lugar" : `quedan ${data.slotsLeft} lugares`} de ${MAX_ACTIVE_ADS}.`}
+      </Text>
 
       <View style={styles.kinds}>
         {(
           [
-            ["FEATURED_PRODUCT", "star-outline", "Producto destacado", "Aparece en Destacados de Inicio"],
-            ["BANNER", "megaphone-outline", "Tarjeta de publicidad", "Un mensaje tuyo en Inicio"],
+            ["FEATURED_PRODUCT", "star-outline", "Producto destacado", "En Destacados de Inicio"],
+            ["BANNER", "megaphone-outline", "Banner abajo", "Un mensaje al pie de Inicio"],
+            ["IMAGE", "image-outline", "Imagen", "Una imagen entera en Inicio"],
+            ["VIDEO", "videocam-outline", "Video", "Un video en Inicio"],
           ] as const
         ).map(([value, icon, title, sub]) => {
           const selected = data.kind === value;
           return (
-            <AnimatedPressable key={value} accessibilityLabel={title} haptic={false} onPress={() => data.setKind(value)} style={[styles.kind, selected ? styles.kindSelected : null]}>
+            <AnimatedPressable key={value} accessibilityLabel={`${title}, ${pesos(AD_PRICE_PER_DAY[value])} por día`} haptic={false} onPress={() => data.chooseKind(value)} style={[styles.kind, selected ? styles.kindSelected : null]}>
               <Ionicons name={icon} size={22} color={selected ? colors.brand.navy : colors.text.secondary} />
               <Text style={styles.kindTitle}>{title}</Text>
               <Text style={styles.kindSub}>{sub}</Text>
+              <Text style={styles.kindPrice}>{pesos(AD_PRICE_PER_DAY[value])} por día</Text>
             </AnimatedPressable>
           );
         })}
@@ -74,8 +84,30 @@ export default function MerchantAdsScreen() {
         </>
       ) : null}
 
+      {data.kind === "IMAGE" ? (
+        <>
+          <Text style={styles.label}>Tu imagen</Text>
+          {data.imageData ? <Image source={{ uri: data.imageData }} accessibilityLabel="Vista previa de tu imagen" style={styles.preview} contentFit="cover" /> : null}
+          <View style={styles.row}>
+            <Button label={data.imageData ? "Cambiar imagen" : "Subir imagen"} variant="secondary" onPress={() => void data.pickImage()} style={{ flex: 1 }} />
+            {data.imageData ? <Button label="Quitar" variant="ghost" onPress={data.clearImage} style={{ flex: 1 }} /> : null}
+          </View>
+        </>
+      ) : null}
+
+      {data.kind === "VIDEO" ? (
+        <FormField label="Enlace del video" value={data.videoUrl} onChangeText={data.setVideoUrl} placeholder="https://…/mi-video.mp4" autoCapitalize="none" keyboardType="url" hint="Un enlace https directo a un archivo de video (.mp4)." />
+      ) : null}
+
       <Text style={styles.label}>Cuánto ofrecés</Text>
-      <FormField label="Monto en pesos" value={data.amount} onChangeText={data.setAmount} placeholder="Ej.: 15000" keyboardType="numeric" hint="Es lo que estás dispuesto a pagar por toda la publicidad. El equipo puede proponerte otro monto." />
+      <FormField
+        label="Monto en pesos"
+        value={data.amount}
+        onChangeText={data.setAmount}
+        placeholder={String(data.baseAmount)}
+        keyboardType="numeric"
+        hint={`Precio base: ${pesos(data.baseAmount)} por ${data.days} días. Si lo dejás vacío ofrecés eso; podés ofrecer más para que te aprueben antes. El equipo puede proponerte otro monto.`}
+      />
       <Text style={styles.label}>Por cuántos días</Text>
       <View style={styles.days}>
         {DURATIONS.map((value) => (
@@ -111,8 +143,13 @@ const useStyles = makeStyles((colors) =>
   StyleSheet.create({
     container: { flexGrow: 1, backgroundColor: colors.surface.base, padding: spacing.lg, gap: spacing.md },
     intro: { fontFamily: typography.subtitle.fontFamily, fontSize: 14, lineHeight: 20, color: colors.text.secondary },
-    kinds: { flexDirection: "row", gap: spacing.sm },
-    kind: { flex: 1, gap: 4, padding: spacing.md, borderRadius: radii.xl, backgroundColor: colors.surface.primary, borderWidth: 1, borderColor: colors.border.subtle },
+    slots: { fontFamily: typography.itemTitle.fontFamily, fontSize: 13, color: colors.text.secondary },
+    slotsFull: { color: colors.state.errorStrong },
+    kinds: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },
+    kindPrice: { fontFamily: typography.itemTitle.fontFamily, fontSize: 12, color: colors.brand.route, marginTop: 2 },
+    preview: { width: "100%", aspectRatio: 4 / 5, maxHeight: 360, borderRadius: radii.xl, backgroundColor: colors.surface.input },
+    row: { flexDirection: "row", gap: spacing.sm },
+    kind: { flexBasis: "47%", flexGrow: 1, gap: 4, padding: spacing.md, borderRadius: radii.xl, backgroundColor: colors.surface.primary, borderWidth: 1, borderColor: colors.border.subtle },
     kindSelected: { borderColor: colors.brand.navy, borderWidth: 2, backgroundColor: colors.tint.blue.bg },
     kindTitle: { fontFamily: typography.itemTitle.fontFamily, fontSize: 14, color: colors.text.primary },
     kindSub: { fontFamily: typography.caption.fontFamily, fontSize: 12, lineHeight: 16, color: colors.text.secondary },

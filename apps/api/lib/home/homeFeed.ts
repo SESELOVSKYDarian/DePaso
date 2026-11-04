@@ -67,5 +67,5 @@ export async function buildHomeFeed(userId: string, now: Date = new Date()): Pro
     .sort((a, b) => Number(b.mine) - Number(a.mine) || b.discountPercent - a.discountPercent)
     .slice(0, MAX_PROMOS);
 
-  return { priceChanges, promos: homePromos, listSummary, cheapToday, popular, featured: ads.featured, banners: ads.banners, watchedProducts: productIds.length };
+  return { priceChanges, promos: homePromos, listSummary, cheapToday, popular, featured: ads.featured, ads: ads.ads, watchedProducts: productIds.length };
 }

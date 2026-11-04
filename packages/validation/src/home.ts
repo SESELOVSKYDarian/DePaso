@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { homeBannerSchema } from "./ads";
+import { homeAdSchema } from "./ads";
 
 /** Cambio de precio reciente de un producto que está en alguna lista del usuario. */
 export const homePriceChangeSchema = z.object({
@@ -61,7 +61,7 @@ export const homeFeedResponseSchema = z.object({
   /** Productos destacados por comercios (publicidad aprobada y vigente). */
   featured: z.array(homeProductSchema).default([]),
   /** Tarjetas de publicidad aprobadas y vigentes. */
-  banners: z.array(homeBannerSchema).default([]),
+  ads: z.array(homeAdSchema).default([]),
   /** Los productos más buscados, con su mejor precio. */
   popular: z.array(homeProductSchema).default([]),
   /** Cuántos productos de las listas se miraron: 0 = todavía no hay nada que seguir. */

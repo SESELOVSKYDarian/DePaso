@@ -1,7 +1,31 @@
 import { z } from "zod";
 
-export const adKindSchema = z.enum(["FEATURED_PRODUCT", "BANNER"]);
+export const adKindSchema = z.enum(["FEATURED_PRODUCT", "BANNER", "IMAGE", "VIDEO"]);
 export type AdKind = z.infer<typeof adKindSchema>;
+
+/** Precio base por día (en pesos) de cada formato. El comercio puede ofrecer más, nunca menos. */
+export const AD_PRICE_PER_DAY: Record<AdKind, number> = {
+  FEATURED_PRODUCT: 500,
+  BANNER: 800,
+  IMAGE: 1500,
+  VIDEO: 2500,
+};
+
+/** Cuántas publicidades (pendientes o vigentes) puede tener un comercio a la vez. */
+export const MAX_ACTIVE_ADS = 3;
+
+/** Opciones de duración que ofrece la app. */
+export const AD_DURATIONS = [7, 15, 30];
+
+/** Monto mínimo para un formato y una cantidad de días. */
+export function minAdAmount(kind: AdKind, days: number): number {
+  return AD_PRICE_PER_DAY[kind] * days;
+}
+
+const imageDataUri = z
+  .string()
+  .max(700_000, "La imagen es muy pesada.")
+  .regex(/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/, "Imagen inválida.");
 
 export const adStatusSchema = z.enum(["PENDING", "APPROVED", "REJECTED", "CANCELLED"]);
 export type AdStatus = z.infer<typeof adStatusSchema>;
@@ -14,6 +38,10 @@ export const adRequestInputSchema = z
     message: z.string().trim().max(280).optional(),
     /** Solo para un producto destacado. */
     productId: z.string().min(1).optional(),
+    /** Solo para la publicidad con imagen (ya comprimida). */
+    imageData: imageDataUri.optional(),
+    /** Solo para la publicidad con video: enlace https a un archivo de video (.mp4). */
+    videoUrl: z.string().trim().url("Pegá un enlace válido.").max(500).optional(),
     /** Monto en pesos que el comercio está dispuesto a pagar. */
     offeredAmount: z.number().positive("Ofrecé un monto mayor a cero.").max(99_999_999),
     durationDays: z.number().int().min(1).max(90),
@@ -21,6 +49,15 @@ export const adRequestInputSchema = z
   .superRefine((value, ctx) => {
     if (value.kind === "FEATURED_PRODUCT" && !value.productId) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["productId"], message: "Elegí qué producto querés destacar." });
+    }
+    if (value.kind === "IMAGE" && !value.imageData) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["imageData"], message: "Subí la imagen de tu publicidad." });
+    }
+    if (value.kind === "VIDEO" && (!value.videoUrl || !/^https:\/\//i.test(value.videoUrl))) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["videoUrl"], message: "Pegá el enlace https de tu video." });
+    }
+    if (value.offeredAmount < minAdAmount(value.kind, value.durationDays)) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["offeredAmount"], message: "El monto no llega al precio base por día." });
     }
   });
 export type AdRequestInput = z.infer<typeof adRequestInputSchema>;
@@ -32,6 +69,8 @@ export const adResponseSchema = z.object({
   message: z.string().nullable(),
   productId: z.string().nullable(),
   productName: z.string().nullable(),
+  imageData: z.string().nullable().default(null),
+  videoUrl: z.string().nullable().default(null),
   offeredAmount: z.number(),
   agreedAmount: z.number().nullable(),
   durationDays: z.number(),
@@ -66,11 +105,14 @@ export const adDecisionSchema = z
   });
 export type AdDecision = z.infer<typeof adDecisionSchema>;
 
-/** Tarjeta de publicidad en Inicio. */
-export const homeBannerSchema = z.object({
+/** Publicidad (banner, imagen o video) que se muestra en Inicio. */
+export const homeAdSchema = z.object({
   id: z.string(),
+  kind: z.enum(["BANNER", "IMAGE", "VIDEO"]),
   title: z.string(),
   message: z.string().nullable(),
   storeName: z.string(),
+  imageData: z.string().nullable().default(null),
+  videoUrl: z.string().nullable().default(null),
 });
-export type HomeBanner = z.infer<typeof homeBannerSchema>;
+export type HomeAd = z.infer<typeof homeAdSchema>;

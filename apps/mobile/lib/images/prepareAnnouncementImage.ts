@@ -28,7 +28,7 @@ async function shrink(uri: string, sourceWidth: number, width: number, quality: 
  * y la prepara: una versión grande para la ventana y una miniatura para las listas. Devuelve
  * `null` si cancela. Falla con un mensaje claro si no se dio permiso o la imagen no se pudo achicar.
  */
-export async function pickAnnouncementImage(): Promise<PreparedImage | null> {
+export async function pickAnnouncementImage(aspect: [number, number] = [16, 10]): Promise<PreparedImage | null> {
   const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
   if (!permission.granted && permission.canAskAgain === false) {
     throw new Error("No tenemos permiso para ver tus fotos. Activalo desde los ajustes del celular.");
@@ -37,7 +37,7 @@ export async function pickAnnouncementImage(): Promise<PreparedImage | null> {
   const result = await ImagePicker.launchImageLibraryAsync({
     mediaTypes: ["images"],
     allowsEditing: true,
-    aspect: [16, 10],
+    aspect,
     quality: 1,
   });
   if (result.canceled || !result.assets[0]) return null;

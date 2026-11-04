@@ -49,9 +49,10 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "DePaso usa tus fotos para que, si sos administrador, puedas subir la imagen de un anuncio."
+          "photosPermission": "DePaso usa tus fotos para que puedas subir la imagen de un anuncio o de la publicidad de tu comercio."
         }
-      ]
+      ],
+      "expo-video"
     ],
     "ios": {
       "supportsTablet": false,

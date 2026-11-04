@@ -1,14 +1,16 @@
 import { Prisma, prisma } from "@depaso/database";
-import type { AdResponse, HomeBanner, HomeProduct } from "@depaso/validation";
+import type { AdKind, AdResponse, HomeAd, HomeProduct } from "@depaso/validation";
 import { prettifyProductName } from "../catalog/productNames";
 
 interface AdRow {
   id: string;
   userId: string;
-  kind: "FEATURED_PRODUCT" | "BANNER";
+  kind: AdKind;
   title: string;
   message: string | null;
   productId: string | null;
+  imageData: string | null;
+  videoUrl: string | null;
   offeredAmount: Prisma.Decimal;
   agreedAmount: Prisma.Decimal | null;
   durationDays: number;
@@ -39,6 +41,8 @@ export function toAdResponse(row: AdRow, extras: Extras, now: Date = new Date())
     message: row.message,
     productId: row.productId,
     productName: row.productId ? (extras.productNames.get(row.productId) ?? null) : null,
+    imageData: row.imageData,
+    videoUrl: row.videoUrl,
     offeredAmount: Number(row.offeredAmount),
     agreedAmount: row.agreedAmount === null ? null : Number(row.agreedAmount),
     durationDays: row.durationDays,
@@ -65,22 +69,28 @@ export async function loadProductNames(rows: Pick<AdRow, "productId">[]): Promis
  * La publicidad vigente para Inicio: los productos destacados (con su precio en el comercio que
  * pagó) y las tarjetas. Un destacado sin precio vigente en ese comercio no se muestra.
  */
-export async function loadActiveAds(now: Date = new Date()): Promise<{ featured: HomeProduct[]; banners: HomeBanner[] }> {
+export async function loadActiveAds(now: Date = new Date()): Promise<{ featured: HomeProduct[]; ads: HomeAd[] }> {
   const rows = await prisma.adRequest.findMany({
     where: { status: "APPROVED", startsAt: { lte: now }, endsAt: { gte: now } },
     orderBy: { startsAt: "desc" },
     take: 20,
   });
-  if (rows.length === 0) return { featured: [], banners: [] };
+  if (rows.length === 0) return { featured: [], ads: [] };
 
   const branchIds = [...new Set(rows.map((row: (typeof rows)[number]) => row.storeBranchId))];
   const branches = await prisma.storeBranch.findMany({ where: { id: { in: branchIds } }, select: { id: true, store: { select: { name: true } } } });
   const storeName = new Map(branches.map((branch: (typeof branches)[number]) => [branch.id, branch.store.name]));
 
-  const banners: HomeBanner[] = rows
-    .filter((row: (typeof rows)[number]) => row.kind === "BANNER")
-    .slice(0, 3)
-    .map((row: (typeof rows)[number]) => ({ id: row.id, title: row.title, message: row.message, storeName: storeName.get(row.storeBranchId) ?? "Comercio" }));
+  // banner, imagen y video: cada uno con lo suyo; el tope por tipo evita llenar Inicio
+  const ads: HomeAd[] = [];
+  for (const kind of ["IMAGE", "VIDEO", "BANNER"] as const) {
+    rows
+      .filter((row: (typeof rows)[number]) => row.kind === kind)
+      .slice(0, 3)
+      .forEach((row: (typeof rows)[number]) =>
+        ads.push({ id: row.id, kind, title: row.title, message: row.message, storeName: storeName.get(row.storeBranchId) ?? "Comercio", imageData: row.imageData, videoUrl: row.videoUrl }),
+      );
+  }
 
   const featured: HomeProduct[] = [];
   for (const row of rows) {
@@ -104,5 +114,5 @@ export async function loadActiveAds(now: Date = new Date()): Promise<{ featured:
     });
     if (featured.length >= 8) break;
   }
-  return { featured, banners };
+  return { featured, ads };
 }

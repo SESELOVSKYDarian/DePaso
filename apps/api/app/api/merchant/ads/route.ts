@@ -1,5 +1,5 @@
 import { prisma } from "@depaso/database";
-import { adRequestInputSchema } from "@depaso/validation";
+import { adRequestInputSchema, MAX_ACTIVE_ADS } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
 import { loadProductNames, toAdResponse } from "@/lib/ads/ads";
 import { checkRateLimit } from "@/lib/auth/rateLimit";
@@ -16,7 +16,13 @@ export async function POST(request: NextRequest) {
 
   const parsed = adRequestInputSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "INVALID_REQUEST", issues: parsed.error.issues }, { status: 400 });
-  const { productId, message, ...rest } = parsed.data;
+  const { productId, message, imageData, videoUrl, ...rest } = parsed.data;
+
+  // tope de publicidades a la vez: las que esperan respuesta más las que siguen vigentes
+  const inUse = await prisma.adRequest.count({
+    where: { userId: merchant.userId, OR: [{ status: "PENDING" }, { status: "APPROVED", endsAt: { gte: new Date() } }] },
+  });
+  if (inUse >= MAX_ACTIVE_ADS) return NextResponse.json({ error: "AD_LIMIT_REACHED", max: MAX_ACTIVE_ADS }, { status: 422 });
 
   // un producto destacado tiene que ser uno que el comercio vende (con precio en su sucursal)
   if (rest.kind === "FEATURED_PRODUCT") {
@@ -32,6 +38,8 @@ export async function POST(request: NextRequest) {
       ...rest,
       message: message || null,
       productId: rest.kind === "FEATURED_PRODUCT" ? (productId ?? null) : null,
+      imageData: rest.kind === "IMAGE" ? (imageData ?? null) : null,
+      videoUrl: rest.kind === "VIDEO" ? (videoUrl ?? null) : null,
       userId: merchant.userId,
       storeBranchId: merchant.branchId,
     },

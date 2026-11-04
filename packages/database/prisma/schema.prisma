@@ -1018,8 +1018,12 @@ model NotificationSettings {
 enum AdKind {
   /// Un producto del comercio aparece en "Destacados" de Inicio.
   FEATURED_PRODUCT
-  /// Una tarjeta con el mensaje del comercio en Inicio.
+  /// Un banner con el mensaje del comercio al pie de Inicio.
   BANNER
+  /// Una imagen entera del comercio en Inicio.
+  IMAGE
+  /// Un video del comercio en Inicio.
+  VIDEO
 }
 
 enum AdStatus {
@@ -1042,6 +1046,9 @@ model AdRequest {
   message       String?   @db.VarChar(280)
   /// Solo para FEATURED_PRODUCT: el producto que se destaca.
   productId     String?
+  /// IMAGE: la imagen ya comprimida (data URI). VIDEO: enlace https al archivo de video.
+  imageData     String?   @db.MediumText
+  videoUrl      String?   @db.VarChar(500)
   /// Lo que el comercio está dispuesto a pagar (ARS) y por cuántos días.
   offeredAmount Decimal   @db.Decimal(12, 2)
   durationDays  Int
