@@ -1,5 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useActivitySummary } from "@/lib/activity/useActivitySummary";
 import { StartupExtras } from "@/features/announcement-popup/StartupExtras";
 import { typography } from "@depaso/design-tokens";
 import { useColors } from "@/lib/theme";
@@ -11,6 +13,8 @@ import { useColors } from "@/lib/theme";
  */
 export default function TabsLayout() {
   const colors = useColors();
+  const insets = useSafeAreaInsets();
+  const { summary } = useActivitySummary();
   return (
     <>
     <StartupExtras />
@@ -28,9 +32,10 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: colors.surface.primary,
           borderTopColor: colors.border.subtle,
-          height: 62,
+          // alto fijo + la barra del sistema (botones o gestos de Android): sin esto la tapa
+          height: 62 + insets.bottom,
           paddingTop: 6,
-          paddingBottom: 6,
+          paddingBottom: 6 + insets.bottom,
         },
         tabBarLabelStyle: {
           fontFamily: typography.body.fontFamily,
@@ -64,6 +69,8 @@ export default function TabsLayout() {
         name="activity"
         options={{
           title: "Actividad",
+          // numerito con lo que espera una respuesta (pedidos del admin, contraofertas del comercio)
+          ...(summary.badge > 0 ? { tabBarBadge: summary.badge > 99 ? "99+" : summary.badge } : {}),
           tabBarIcon: ({ color, size }) => <Ionicons name="time" color={color as string} size={size} />,
         }}
       />

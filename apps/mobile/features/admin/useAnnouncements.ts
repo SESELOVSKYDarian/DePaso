@@ -15,6 +15,8 @@ export function useAnnouncements() {
   const [image, setImage] = useState<PreparedImage | null>(null);
   const [showPopup, setShowPopup] = useState(true);
   const [sendPush, setSendPush] = useState(false);
+  // cuántos días se muestra (null = no vence)
+  const [durationDays, setDurationDays] = useState<number | null>(null);
   const [error, setError] = useState<string | undefined>();
   const [publishing, setPublishing] = useState(false);
   const [pickingImage, setPickingImage] = useState(false);
@@ -59,6 +61,7 @@ export function useAnnouncements() {
         body,
         showPopup,
         sendPush,
+        ...(durationDays ? { durationDays } : {}),
         ...(emoji.trim() ? { emoji: emoji.trim() } : {}),
         ...(image ? { imageData: image.imageData, thumbData: image.thumbData } : {}),
       });
@@ -98,6 +101,6 @@ export function useAnnouncements() {
 
   return {
     items, loading, title, setTitle, body, setBody, emoji, setEmoji, image, setImage, pickImage, pickingImage,
-    showPopup, setShowPopup, sendPush, setSendPush, error, publishing, publish, toggle, remove,
+    showPopup, setShowPopup, sendPush, setSendPush, durationDays, setDurationDays, error, publishing, publish, toggle, remove,
   };
 }

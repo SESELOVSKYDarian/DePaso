@@ -82,8 +82,7 @@ export default function PreferencesScreen() {
     <BackToTopScrollView style={styles.container} contentContainerStyle={styles.content}>
       <Text style={styles.sectionTitle}>Marcas de producto</Text>
       <Text style={styles.sectionHint}>
-        El motor de optimización respeta esto antes de rankear (sección 87): "marca exacta" nunca se
-        reemplaza, "preferida" suma puntos, "cualquiera" no restringe.
+        "Marca exacta" nunca se reemplaza, "preferida" la priorizamos y "cualquiera" no restringe.
       </Text>
       {!isLoading && productPrefs.length === 0 ? (
         <EmptyState emoji="🏷️" title="Sin preferencias de marca" description="Elegí un producto y decile a DePaso si querés siempre la misma marca." />
@@ -117,8 +116,7 @@ export default function PreferencesScreen() {
 
       <Text style={[styles.sectionTitle, styles.sectionSpacing]}>Comercios por categoría</Text>
       <Text style={styles.sectionHint}>
-        "Obligatorio" fija el comercio antes del ranking; "preferido" suma puntos sin descartar otras
-        opciones (BUSINESS-RULES.md).
+        "Obligatorio" fija el comercio; "preferido" lo prioriza sin descartar otras opciones.
       </Text>
       {!isLoading && storePrefs.length === 0 ? (
         <EmptyState emoji="🏬" title="Sin preferencias de comercio" description="Ej.: siempre la carnicería de siempre, aunque haya otra más barata." />

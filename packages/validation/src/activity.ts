@@ -13,6 +13,8 @@ export const announcementSchema = z.object({
   thumbData: z.string().nullable().default(null),
   /** Si se muestra como ventana emergente al abrir la app. */
   showPopup: z.boolean().default(false),
+  /** Hasta cuándo se muestra (null = sin vencimiento). */
+  expiresAt: z.string().nullable().default(null),
   /** Cuándo se mandó como notificación al celular (null = no se mandó). */
   pushedAt: z.string().nullable().default(null),
   createdAt: z.string(),
@@ -46,12 +48,14 @@ export const announcementInputSchema = z.object({
   showPopup: z.boolean().default(false),
   /** Mandarla además como notificación al celular de todos. */
   sendPush: z.boolean().default(false),
+  /** Cuántos días se muestra; sin esto no vence. */
+  durationDays: z.number().int().min(1).max(365).optional(),
 });
 export type AnnouncementInput = z.input<typeof announcementInputSchema>;
 
 /** Cambios de una novedad: texto, imagen o mostrarla/ocultarla. */
 export const announcementUpdateSchema = announcementInputSchema
-  .omit({ sendPush: true, emoji: true, imageData: true, thumbData: true })
+  .omit({ sendPush: true, emoji: true, imageData: true, thumbData: true, durationDays: true })
   .partial()
   .extend({
     active: z.boolean().optional(),
@@ -75,7 +79,7 @@ export const announcementPopupResponseSchema = z.object({ announcement: announce
 export type AnnouncementPopupResponse = z.infer<typeof announcementPopupResponseSchema>;
 
 /** Tipos de aviso personal de la pestaña "Para vos". */
-export const activityItemTypeSchema = z.enum(["LIST_SHARED", "PRICE_DROP", "CHEAP_NEARBY"]);
+export const activityItemTypeSchema = z.enum(["LIST_SHARED", "PRICE_DROP", "CHEAP_NEARBY", "MERCHANT_REQUEST", "AD_REQUEST", "AD_COUNTER", "AD_RESULT", "LOGIN"]);
 export type ActivityItemType = z.infer<typeof activityItemTypeSchema>;
 
 export const activityItemSchema = z.object({
@@ -87,8 +91,21 @@ export const activityItemSchema = z.object({
   at: z.string().nullable(),
   /** Si es una lista compartida, a cuál abrir. */
   listId: z.string().nullable(),
+  /** Pantalla que se abre al tocarlo (por ejemplo, los pedidos de publicidad). */
+  route: z.string().nullable().default(null),
+  /** Algo que hay que resolver: cuenta para el numerito de Actividad. */
+  needsAction: z.boolean().default(false),
 });
 export type ActivityItem = z.infer<typeof activityItemSchema>;
 
 export const activityFeedResponseSchema = z.object({ items: z.array(activityItemSchema) });
 export type ActivityFeedResponse = z.infer<typeof activityFeedResponseSchema>;
+
+/// Los numeritos de la app: Actividad y, para el administrador, cada sección de Administración.
+export const activitySummarySchema = z.object({
+  /// Cosas que esperan una respuesta de esta persona.
+  badge: z.number(),
+  merchantRequests: z.number().default(0),
+  adRequests: z.number().default(0),
+});
+export type ActivitySummary = z.infer<typeof activitySummarySchema>;

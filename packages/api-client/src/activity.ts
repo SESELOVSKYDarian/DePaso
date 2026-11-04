@@ -1,5 +1,6 @@
 import {
   activityFeedResponseSchema,
+  activitySummarySchema,
   announcementPopupResponseSchema,
   announcementSchema,
   announcementsResponseSchema,
@@ -20,6 +21,8 @@ export function createActivityClient(client: DepasoApiClient) {
     popup: () => client.post("/api/announcements/popup", {}, announcementPopupResponseSchema),
     /** Avisos para este usuario: listas compartidas, bajas de precio y ofertas cerca. */
     feed: () => client.post("/api/activity/feed", {}, activityFeedResponseSchema),
+    /** Los numeritos de la app: lo que espera respuesta en Actividad y en Administración. */
+    summary: () => client.post("/api/activity/summary", {}, activitySummarySchema),
     /** Para administradores: todas las novedades y su gestión. */
     admin: {
       list: () => client.post("/api/admin/announcements/list", {}, announcementsResponseSchema),

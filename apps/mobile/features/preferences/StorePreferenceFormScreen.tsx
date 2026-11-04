@@ -6,17 +6,17 @@ import { useEffect, useState } from "react";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
 import { Button } from "@/components/common/Button";
-import { FormField } from "@/components/common/FormField";
+import { CategoryPicker } from "@/components/common/CategoryPicker";
 import { useToast } from "@/components/common/Toast";
 import { preferencesClient, storesClient } from "@/lib/apiClient";
 import { LIST_PERFORMANCE } from "@/lib/listPerformance";
 
 const TYPE_OPTIONS: { value: StorePreferenceInput["type"]; label: string; hint: string }[] = [
-  { value: "REQUIRED", label: "Obligatorio", hint: "Se fija este comercio antes de rankear (restricción obligatoria)." },
-  { value: "PREFERRED", label: "Preferido", hint: "Suma puntos, pero DePaso puede sugerir otro si conviene mucho más." },
+  { value: "REQUIRED", label: "Obligatorio", hint: "Siempre compramos en este comercio." },
+  { value: "PREFERRED", label: "Preferido", hint: "Lo elegimos primero, pero te sugerimos otro si conviene mucho más." },
 ];
 
-/** Elegir una categoría, un comercio/sucursal y qué tan estricta es la preferencia (Fase 10). */
+/** Elegir una categoría, un comercio/sucursal y qué tan estricta es la preferencia. */
 export default function StorePreferenceFormScreen() {
   const styles = useStyles();
   const { show: showToast } = useToast();
@@ -38,7 +38,7 @@ export default function StorePreferenceFormScreen() {
 
   const handleSave = async () => {
     if (!category.trim()) {
-      setCategoryError("Decinos para qué categoría es esta preferencia (ej. Carnicería).");
+      setCategoryError("Elegí una categoría.");
       return;
     }
     if (!selectedBranchId) return;
@@ -55,14 +55,12 @@ export default function StorePreferenceFormScreen() {
 
   return (
     <View style={styles.container}>
-      <FormField
-        label="Categoría"
+      <CategoryPicker
         value={category}
-        onChangeText={(text) => {
-          setCategory(text);
+        onChange={(picked) => {
+          setCategory(picked);
           setCategoryError(undefined);
         }}
-        placeholder="Carnicería, Verdulería, Almacén..."
         error={categoryError}
       />
 

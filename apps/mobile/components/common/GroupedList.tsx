@@ -43,6 +43,8 @@ interface GroupedRowProps {
   label: string;
   /** Texto secundario a la derecha (conteo, estado). */
   value?: string;
+  /** Numerito resaltado: cuántas cosas esperan ser atendidas (no se muestra si es 0). */
+  badge?: number;
   onPress?: () => void;
   /** `accent` para acciones de marca (ej. cerrar sesión). */
   tone?: "default" | "accent";
@@ -56,6 +58,7 @@ export function GroupedRow({
   icon,
   label,
   value,
+  badge,
   onPress,
   tone = "default",
   trailing,
@@ -85,6 +88,11 @@ export function GroupedRow({
         <Text style={styles.value} numberOfLines={1}>
           {value}
         </Text>
+      ) : null}
+      {badge && badge > 0 ? (
+        <View accessibilityLabel={`${badge} pendientes`} style={styles.badge}>
+          <Text style={styles.badgeText}>{badge > 99 ? "99+" : badge}</Text>
+        </View>
       ) : null}
       {trailing ?? <Ionicons name="chevron-forward" size={16} color={colors.text.tertiary} />}
     </Pressable>
@@ -140,6 +148,8 @@ const useStyles = makeStyles((colors) => StyleSheet.create({
     lineHeight: 20,
     color: colors.text.primary,
   },
+  badge: { minWidth: 24, height: 24, paddingHorizontal: 7, borderRadius: radii.full, alignItems: "center", justifyContent: "center", backgroundColor: colors.state.errorStrong },
+  badgeText: { fontFamily: typography.itemTitle.fontFamily, fontSize: 12, color: "#FFFFFF" },
   value: {
     fontFamily: typography.subtitle.fontFamily,
     fontSize: 13,

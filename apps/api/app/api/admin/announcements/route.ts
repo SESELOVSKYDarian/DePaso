@@ -19,9 +19,11 @@ export async function POST(request: NextRequest) {
   const parsed = announcementInputSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "INVALID_REQUEST", issues: parsed.error.issues }, { status: 400 });
 
-  const { sendPush, emoji, imageData, thumbData, ...rest } = parsed.data;
+  const { sendPush, emoji, imageData, thumbData, durationDays, ...rest } = parsed.data;
+  // con duración, el anuncio deja de verse pasados esos días
+  const expiresAt = durationDays ? new Date(Date.now() + durationDays * 24 * 60 * 60 * 1000) : null;
   let created = await prisma.announcement.create({
-    data: { ...rest, emoji: emoji || null, imageData: imageData ?? null, thumbData: thumbData ?? null, authorId: admin.userId },
+    data: { ...rest, emoji: emoji || null, imageData: imageData ?? null, thumbData: thumbData ?? null, expiresAt, authorId: admin.userId },
   });
 
   // como notificación al celular de todos los que tienen activas las novedades (después de responder)

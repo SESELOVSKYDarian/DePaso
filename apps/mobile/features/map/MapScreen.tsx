@@ -81,11 +81,12 @@ export default function MapScreen() {
     const buy = planStops
       .filter((stop) => stop.latitude !== undefined && stop.longitude !== undefined)
       .map((stop) => ({ order: planStops.indexOf(stop) + 1, id: stop.storeBranchId, name: stop.storeName, latitude: stop.latitude!, longitude: stop.longitude!, buy: true, logo: logoOf(stop.storeName) }));
+    // solo se marcan las paradas elegidas; otro comercio aparece únicamente si lo tocás en la lista
     const others = stores
-      .filter((store) => !buyIds.has(store.branchId))
+      .filter((store) => !buyIds.has(store.branchId) && store.branchId === selectedId)
       .map((store) => ({ id: store.branchId, name: store.storeName, latitude: store.latitude, longitude: store.longitude, logo: logoOf(store.storeName) }));
     return [...buy, ...others];
-  }, [stores, planStops, logos]);
+  }, [stores, planStops, logos, selectedId]);
 
   const selected = stores.find((store) => store.branchId === selectedId) ?? null;
   const selectedStop = planStops.find((stop) => stop.storeBranchId === selectedId) ?? null;

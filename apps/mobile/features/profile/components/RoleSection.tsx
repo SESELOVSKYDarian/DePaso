@@ -4,21 +4,23 @@ import { GroupedList, GroupedRow } from "@/components/common/GroupedList";
 interface RoleSectionProps {
   role: string | undefined;
   pendingMerchantRequests: number;
+  pendingAdRequests: number;
   onSyncPromos: () => void;
 }
 
 /** La sección del Perfil que cambia según el rol: administración, comercio o pedir ser comercio. */
-export function RoleSection({ role, pendingMerchantRequests, onSyncPromos }: RoleSectionProps) {
+export function RoleSection({ role, pendingMerchantRequests, pendingAdRequests, onSyncPromos }: RoleSectionProps) {
   if (role === "ADMIN") {
     return (
       <GroupedList title="Administración">
         <GroupedRow
           icon="storefront-outline"
           label="Solicitudes de comercio"
-          {...(pendingMerchantRequests > 0 ? { value: `${pendingMerchantRequests} pendientes` } : {})}
+          badge={pendingMerchantRequests}
           onPress={() => router.push("/admin/merchant-requests")}
         />
-        <GroupedRow icon="cash-outline" label="Publicidad de comercios" onPress={() => router.push("/admin/ads")} />
+        <GroupedRow icon="business-outline" label="Comercios habilitados" onPress={() => router.push("/admin/merchants")} />
+        <GroupedRow icon="cash-outline" label="Publicidad de comercios" badge={pendingAdRequests} onPress={() => router.push("/admin/ads")} />
         <GroupedRow icon="megaphone-outline" label="Publicar novedades" onPress={() => router.push("/admin/announcements")} />
         <GroupedRow icon="pricetags-outline" label="Actualizar promos de bancos y billeteras" onPress={onSyncPromos} />
       </GroupedList>

@@ -1,5 +1,6 @@
 import type { OptimizationPlanResponse } from "@depaso/validation";
 import { createContext, useContext, useMemo, useState, type ReactNode } from "react";
+import { startNearbyAlerts, stopNearbyAlerts } from "@/lib/notifications/nearby";
 import { isRouteNotificationEnabled, showLocalNotification } from "@/lib/notifications/push";
 import { useMidnightReset } from "@/lib/routeContext/useMidnightReset";
 
@@ -38,12 +39,12 @@ export function PurchaseProvider({ children }: { children: ReactNode }) {
   const [routePlans, setRoutePlans] = useState<OptimizationPlanResponse[]>([]);
   const [checked, setChecked] = useState<Record<string, boolean>>({});
   // a las 00:00 el recorrido de hoy se reinicia, y el plan armado sobre él también
-  useMidnightReset(() => { setPlan(null); setRoutePlan(null); setRoutePlans([]); setChecked({}); });
+  useMidnightReset(() => { setPlan(null); setRoutePlan(null); setRoutePlans([]); setChecked({}); void stopNearbyAlerts(); });
   const value = useMemo(() => ({
     plan, checked, routePlan, setRoutePlan, routePlans, setRoutePlans,
-    start: (next: OptimizationPlanResponse) => { setPlan(next); setRoutePlan(next); setChecked({}); void notifyRouteStarted(next); },
+    start: (next: OptimizationPlanResponse) => { setPlan(next); setRoutePlan(next); setChecked({}); void notifyRouteStarted(next); void startNearbyAlerts(next); },
     toggle: (key: string) => setChecked((previous) => ({ ...previous, [key]: !previous[key] })),
-    finish: () => { setPlan(null); setRoutePlan(null); setChecked({}); },
+    finish: () => { setPlan(null); setRoutePlan(null); setChecked({}); void stopNearbyAlerts(); },
   }), [plan, checked, routePlan, routePlans]);
   return <PurchaseContext.Provider value={value}>{children}</PurchaseContext.Provider>;
 }

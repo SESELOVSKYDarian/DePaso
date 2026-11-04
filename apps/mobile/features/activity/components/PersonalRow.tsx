@@ -11,13 +11,23 @@ const ICONS: Record<ActivityItemType, keyof typeof Ionicons.glyphMap> = {
   LIST_SHARED: "people-outline",
   PRICE_DROP: "trending-down-outline",
   CHEAP_NEARBY: "pricetag-outline",
+  MERCHANT_REQUEST: "storefront-outline",
+  AD_REQUEST: "cash-outline",
+  AD_COUNTER: "swap-horizontal-outline",
+  AD_RESULT: "megaphone-outline",
+  LOGIN: "shield-checkmark-outline",
 };
 
 /** Un aviso propio: lista compartida, precio que bajó u oferta cerca. Las listas se abren al tocarlas. */
 export function PersonalRow({ item }: { item: ActivityItem }) {
   const styles = useStyles();
   const colors = useColors();
-  const openList = item.listId ? () => router.push({ pathname: "/lists/[id]", params: { id: item.listId! } }) : undefined;
+  // las listas abren la lista; los avisos del admin y del comercio abren su pantalla
+  const openList = item.listId
+    ? () => router.push({ pathname: "/lists/[id]", params: { id: item.listId! } })
+    : item.route
+      ? () => router.push(item.route as never)
+      : undefined;
 
   return (
     <AnimatedPressable
@@ -26,7 +36,7 @@ export function PersonalRow({ item }: { item: ActivityItem }) {
       {...(openList ? { onPress: openList } : {})}
       style={styles.row}
     >
-      <View style={styles.icon}>
+      <View style={[styles.icon, item.needsAction ? styles.iconAction : null]}>
         <Ionicons name={ICONS[item.type]} size={20} color={colors.brand.accentDark} />
       </View>
       <View style={styles.text}>
@@ -43,6 +53,7 @@ const useStyles = makeStyles((colors) =>
   StyleSheet.create({
     row: { flexDirection: "row", alignItems: "center", gap: spacing.sm, padding: spacing.md },
     icon: { width: 40, height: 40, borderRadius: radii.full, alignItems: "center", justifyContent: "center", backgroundColor: colors.tint.green.bg },
+    iconAction: { backgroundColor: colors.tint.amber.bg },
     text: { flex: 1, gap: 2 },
     title: { fontFamily: typography.itemTitle.fontFamily, fontSize: 15, lineHeight: 20, color: colors.text.primary },
     detail: { fontFamily: typography.body.fontFamily, fontSize: 13, lineHeight: 19, color: colors.text.secondary },

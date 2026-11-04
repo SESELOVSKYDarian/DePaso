@@ -4,6 +4,7 @@ import { ActivityIndicator, StyleSheet, Switch, Text, View } from "react-native"
 import { BackToTopScrollView } from "@/components/common/BackToTop";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { Button } from "@/components/common/Button";
+import { NearbyAlertCard } from "./components/NearbyAlertCard";
 import { useNotificationSettings } from "@/lib/notifications/useNotificationSettings";
 import { makeStyles, useColors } from "@/lib/theme";
 
@@ -72,6 +73,9 @@ export default function NotificationSettingsScreen() {
           </View>
         ))}
       </View>
+
+      <Text style={styles.section}>Cuando estás cerca</Text>
+      <NearbyAlertCard />
 
       <Text style={styles.footnote}>
         Los avisos de adentro de la app (el historial) siguen apareciendo siempre. Esto es solo para las notificaciones del celular.

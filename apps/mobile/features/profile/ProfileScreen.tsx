@@ -1,8 +1,10 @@
 import { router } from "expo-router";
+import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { BackToTopScrollView } from "@/components/common/BackToTop";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { spacing, typography } from "@depaso/design-tokens";
+import { Dialog } from "@/components/common/Dialog";
 import { GroupedList, GroupedRow } from "@/components/common/GroupedList";
 import { useNotificationInbox } from "@/components/common/Toast";
 import { useAuth } from "@/lib/auth/AuthContext";
@@ -25,8 +27,9 @@ export default function ProfileScreen() {
   const { mode } = useTheme();
   const { places } = usePlaces();
   const { strictBlocks, intermediateBlocks } = useDetour();
-  const { unreadCount, clear: clearNotifications } = useNotificationInbox();
-  const { productPreferenceCount, pendingMerchantRequests, syncPromos } = useProfileData();
+  const { clear: clearNotifications } = useNotificationInbox();
+  const [confirmingLogout, setConfirmingLogout] = useState(false);
+  const { productPreferenceCount, pendingMerchantRequests, pendingAdRequests, syncPromos } = useProfileData();
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
@@ -59,19 +62,12 @@ export default function ProfileScreen() {
           <GroupedRow icon="card-outline" label="Métodos de pago" onPress={() => router.push("/payment-methods")} />
         </GroupedList>
 
-        <RoleSection role={user?.role} pendingMerchantRequests={pendingMerchantRequests} onSyncPromos={syncPromos} />
+        <RoleSection role={user?.role} pendingMerchantRequests={pendingMerchantRequests} pendingAdRequests={pendingAdRequests} onSyncPromos={syncPromos} />
 
         <GroupedList title="Configuración">
           <GroupedRow icon="contrast-outline" label="Apariencia" value={THEME_LABEL[mode]} onPress={() => router.push("/appearance")} />
-          <GroupedRow
-            icon="notifications-outline"
-            label="Historial de avisos"
-            {...(unreadCount > 0 ? { value: `${unreadCount} sin leer` } : {})}
-            onPress={() => router.push("/notifications")}
-          />
           <GroupedRow icon="phone-portrait-outline" label="Avisos del celular" onPress={() => router.push("/notification-settings")} />
           <GroupedRow icon="lock-closed-outline" label="Privacidad y datos" onPress={() => router.push("/privacy")} />
-          <GroupedRow icon="book-outline" label="Cómo usar DePaso" onPress={() => router.push("/how-to")} />
           <GroupedRow icon="help-circle-outline" label="Ayuda" onPress={() => router.push("/help")} />
         </GroupedList>
 
@@ -81,13 +77,24 @@ export default function ProfileScreen() {
             label="Cerrar sesión"
             tone="accent"
             trailing={<View />}
-            onPress={() => {
-              clearNotifications();
-              void logout();
-            }}
+            onPress={() => setConfirmingLogout(true)}
           />
         </GroupedList>
       </BackToTopScrollView>
+
+      <Dialog
+        visible={confirmingLogout}
+        title="¿Cerrar sesión?"
+        description="Vas a tener que volver a ingresar con tu cuenta para usar DePaso."
+        confirmLabel="Cerrar sesión"
+        cancelLabel="Cancelar"
+        onConfirm={() => {
+          setConfirmingLogout(false);
+          clearNotifications();
+          void logout();
+        }}
+        onCancel={() => setConfirmingLogout(false)}
+      />
     </SafeAreaView>
   );
 }

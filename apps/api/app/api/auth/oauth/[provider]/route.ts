@@ -3,6 +3,7 @@ import { Prisma, prisma } from "@depaso/database";
 import { LEGAL_DOCUMENT_VERSIONS } from "@depaso/domain";
 import { oauthLoginRequestSchema, oauthProviderIdSchema } from "@depaso/validation";
 import { NextRequest, NextResponse } from "next/server";
+import { recordLogin } from "@/lib/auth/recordLogin";
 import { createPrismaAuthProvider } from "@/lib/auth/authProvider";
 import { setSessionCookie } from "@/lib/auth/cookies";
 import { exchangeCodeForProfile } from "@/lib/auth/oauthProviders";
@@ -103,6 +104,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
   }
   const role = await ensureAdminRole(user);
   const session = await authProvider.createSession(user.id);
+  await recordLogin(request, user.id);
   const response = NextResponse.json(
     {
       user: toUserPayload(user, user.profile?.marketingOptIn ?? false, role),

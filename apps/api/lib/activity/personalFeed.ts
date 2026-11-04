@@ -41,6 +41,8 @@ async function sharedListItems(userId: string, now: Date): Promise<ActivityItem[
     detail: `"${member.shoppingList.name}": abrila para ver qué falta comprar.`,
     at: member.createdAt.toISOString(),
     listId: member.shoppingList.id,
+    route: null,
+    needsAction: false,
   }));
 }
 
@@ -56,6 +58,8 @@ async function priceDropItems(productIds: string[], now: Date): Promise<Activity
       detail: `${change.storeName}: ${pesos(change.previousPrice)} → ${pesos(change.currentPrice)} (${change.changePercent}%).`,
       at: null,
       listId: null,
+      route: null,
+      needsAction: false,
     }));
 }
 
@@ -105,6 +109,8 @@ async function cheapNearbyItems(userId: string, productIds: string[]): Promise<A
       detail: `${row.storeName} (${row.branchName}), a ${blocks} ${blocks === 1 ? "cuadra" : "cuadras"} de un lugar tuyo: ${pesos(row.price)}, ${percent}% menos que el promedio.`,
       at: null,
       listId: null,
+      route: null,
+      needsAction: false,
     });
     if (items.length >= 8) break;
   }

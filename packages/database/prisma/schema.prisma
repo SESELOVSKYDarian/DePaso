@@ -187,6 +187,7 @@ model User {
   paymentMethods       UserPaymentMethod[]
   pushTokens           PushToken[]
   adRequests           AdRequest[]
+  loginEvents          LoginEvent[]
   reviewedAdRequests   AdRequest[] @relation("AdRequestReviewer")
   notificationSettings NotificationSettings?
 
@@ -791,6 +792,8 @@ model Announcement {
   thumbData String?  @db.Text
   /// Si es true se muestra como ventana emergente al abrir la app (una vez por persona).
   showPopup Boolean  @default(false)
+  /// Hasta cuándo se muestra (null = sin vencimiento). Pasada esa fecha deja de verse.
+  expiresAt DateTime?
   /// Cuándo se mandó como notificación al celular (null = no se mandó).
   pushedAt  DateTime?
   createdAt DateTime @default(now())
@@ -1028,6 +1031,8 @@ enum AdKind {
 
 enum AdStatus {
   PENDING
+  /// El administrador propuso otro monto y espera la respuesta del comercio.
+  COUNTER
   APPROVED
   REJECTED
   CANCELLED
@@ -1056,6 +1061,8 @@ model AdRequest {
   /// Monto y días finalmente acordados al aprobar.
   agreedAmount  Decimal?  @db.Decimal(12, 2)
   adminNote     String?   @db.VarChar(300)
+  /// Monto que propone el administrador mientras el pedido está en COUNTER.
+  counterAmount Decimal?  @db.Decimal(12, 2)
   reviewedById  String?
   reviewedBy    User?     @relation("AdRequestReviewer", fields: [reviewedById], references: [id])
   reviewedAt    DateTime?
@@ -1067,4 +1074,26 @@ model AdRequest {
   @@index([userId])
   @@index([status, endsAt])
   @@map("ad_requests")
+}
+
+/// Precio base por día de cada formato de publicidad, que fija el administrador.
+model AdPrice {
+  kind        AdKind   @id
+  pricePerDay Int
+  updatedAt   DateTime @updatedAt
+
+  @@map("ad_prices")
+}
+
+/// Cada inicio de sesión: cuándo, desde qué dispositivo y desde qué IP. Se muestra en Actividad como aviso de seguridad.
+model LoginEvent {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ip        String?  @db.VarChar(64)
+  device    String?  @db.VarChar(120)
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt(sort: Desc)])
+  @@map("login_events")
 }

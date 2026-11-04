@@ -3,7 +3,7 @@ import * as Location from "expo-location";
 import { geocodeClient } from "@/lib/apiClient";
 
 export const GEOCODING_NOT_CONFIGURED_MESSAGE =
-  "La geocodificación real todavía no está configurada — ver docs/development/GEOCODING-SETUP.md.";
+  "No pudimos buscar esa dirección ahora. Probá de nuevo en un rato.";
 
 /**
  * Geocoding real vía `apps/api` (Fase 28) — no `Location.geocodeAsync` directo. Esa API

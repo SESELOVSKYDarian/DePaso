@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { AD_PRICE_PER_DAY, MAX_ACTIVE_ADS } from "@depaso/validation";
+import { MAX_ACTIVE_ADS, minAdAmount } from "@depaso/validation";
 import { Image } from "expo-image";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { BackToTopScrollView } from "@/components/common/BackToTop";
@@ -7,8 +7,10 @@ import { radii, spacing, typography } from "@depaso/design-tokens";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
 import { Button } from "@/components/common/Button";
 import { FormField } from "@/components/common/FormField";
+import { InfoButton } from "@/components/common/InfoButton";
 import { makeStyles, useColors } from "@/lib/theme";
 import { AdStatusCard, pesos } from "./AdStatusCard";
+import { CounterActions } from "./CounterActions";
 import { DURATIONS, useMerchantAds } from "./useMerchantAds";
 
 /**
@@ -24,12 +26,19 @@ export default function MerchantAdsScreen() {
 
   return (
     <BackToTopScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
-      <Text style={styles.intro}>
-        Mostrá tu comercio a más gente. Elegí el formato, cuántos días y cuánto ofrecés (nunca menos del precio base por día); lo revisamos y te avisamos. Podés tener hasta {MAX_ACTIVE_ADS} publicidades a la vez.
-      </Text>
-      <Text style={[styles.slots, data.slotsLeft === 0 ? styles.slotsFull : null]}>
-        {data.slotsLeft === 0 ? `Ya usaste tus ${MAX_ACTIVE_ADS} lugares.` : `Te ${data.slotsLeft === 1 ? "queda 1 lugar" : `quedan ${data.slotsLeft} lugares`} de ${MAX_ACTIVE_ADS}.`}
-      </Text>
+      <View style={styles.slotsRow}>
+        <Text style={[styles.slots, data.slotsLeft === 0 ? styles.slotsFull : null]}>
+          {data.slotsLeft === 0 ? `Ya usaste tus ${MAX_ACTIVE_ADS} lugares.` : `Te ${data.slotsLeft === 1 ? "queda 1 lugar" : `quedan ${data.slotsLeft} lugares`} de ${MAX_ACTIVE_ADS}.`}
+        </Text>
+        <InfoButton
+          title="Publicidad"
+          lines={[
+            "Mostrá tu comercio a más gente: elegí el formato, cuántos días y cuánto ofrecés (nunca menos del precio base por día).",
+            `Podés tener hasta ${MAX_ACTIVE_ADS} publicidades a la vez.`,
+            "Lo revisamos: puede aprobarse, rechazarse o proponerte otro monto para que lo aceptes o contrapropongas.",
+          ]}
+        />
+      </View>
 
       <View style={styles.kinds}>
         {(
@@ -42,18 +51,18 @@ export default function MerchantAdsScreen() {
         ).map(([value, icon, title, sub]) => {
           const selected = data.kind === value;
           return (
-            <AnimatedPressable key={value} accessibilityLabel={`${title}, ${pesos(AD_PRICE_PER_DAY[value])} por día`} haptic={false} onPress={() => data.chooseKind(value)} style={[styles.kind, selected ? styles.kindSelected : null]}>
+            <AnimatedPressable key={value} accessibilityLabel={`${title}, ${pesos(data.prices[value])} por día`} haptic={false} onPress={() => data.chooseKind(value)} style={[styles.kind, selected ? styles.kindSelected : null]}>
               <Ionicons name={icon} size={22} color={selected ? colors.brand.navy : colors.text.secondary} />
               <Text style={styles.kindTitle}>{title}</Text>
               <Text style={styles.kindSub}>{sub}</Text>
-              <Text style={styles.kindPrice}>{pesos(AD_PRICE_PER_DAY[value])} por día</Text>
+              <Text style={styles.kindPrice}>{pesos(data.prices[value])} por día</Text>
             </AnimatedPressable>
           );
         })}
       </View>
 
       <FormField label="Título" value={data.title} onChangeText={data.setTitle} placeholder={featured ? "Ej.: El alfajor más rico del barrio" : "Ej.: Hoy 2x1 en el kiosco"} maxLength={80} />
-      <FormField label="Mensaje (opcional)" value={data.message} onChangeText={data.setMessage} placeholder="Una o dos líneas para convencer" multiline maxLength={280} />
+      <FormField label="Texto de tu publicidad (opcional)" value={data.message} onChangeText={data.setMessage} placeholder="Ej.: 2x1 en alfajores hasta el sábado" multiline maxLength={280} hint="Aparece debajo del título, dentro de tu publicidad, y lo ven los usuarios. No es un mensaje para el equipo de DePaso." />
 
       {featured ? (
         <>
@@ -84,9 +93,9 @@ export default function MerchantAdsScreen() {
         </>
       ) : null}
 
-      {data.kind === "IMAGE" ? (
+      {data.kind === "IMAGE" || data.kind === "BANNER" ? (
         <>
-          <Text style={styles.label}>Tu imagen</Text>
+          <Text style={styles.label}>{data.kind === "BANNER" ? "Imagen del banner (opcional)" : "Tu imagen"}</Text>
           {data.imageData ? <Image source={{ uri: data.imageData }} accessibilityLabel="Vista previa de tu imagen" style={styles.preview} contentFit="cover" /> : null}
           <View style={styles.row}>
             <Button label={data.imageData ? "Cambiar imagen" : "Subir imagen"} variant="secondary" onPress={() => void data.pickImage()} style={{ flex: 1 }} />
@@ -128,6 +137,9 @@ export default function MerchantAdsScreen() {
       {!data.loading && data.ads.length === 0 ? <Text style={styles.empty}>Todavía no pediste publicidad.</Text> : null}
       {data.ads.map((ad) => (
         <AdStatusCard key={ad.id} ad={ad}>
+          {ad.status === "COUNTER" ? (
+            <CounterActions ad={ad} minimum={minAdAmount(ad.kind, ad.durationDays, data.prices)} onReply={(answer, amount) => data.reply(ad, answer, amount)} />
+          ) : null}
           {ad.status === "PENDING" ? (
             <AnimatedPressable accessibilityLabel="Cancelar el pedido" haptic={false} onPress={() => void data.cancel(ad)} style={styles.cancel}>
               <Text style={styles.cancelText}>Cancelar pedido</Text>
@@ -143,6 +155,7 @@ const useStyles = makeStyles((colors) =>
   StyleSheet.create({
     container: { flexGrow: 1, backgroundColor: colors.surface.base, padding: spacing.lg, gap: spacing.md },
     intro: { fontFamily: typography.subtitle.fontFamily, fontSize: 14, lineHeight: 20, color: colors.text.secondary },
+    slotsRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
     slots: { fontFamily: typography.itemTitle.fontFamily, fontSize: 13, color: colors.text.secondary },
     slotsFull: { color: colors.state.errorStrong },
     kinds: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm },

@@ -2,13 +2,15 @@ import type { AdminMerchantRequestResponse } from "@depaso/validation";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles, useColors } from "@/lib/theme";
 import { useFocusEffect } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ActivityIndicator, Linking, StyleSheet, Text, View } from "react-native";
 import { BackToTopFlatList } from "@/components/common/BackToTop";
 import { Button } from "@/components/common/Button";
 import { Checkbox } from "@/components/common/Checkbox";
 import { EmptyState } from "@/components/common/EmptyState";
 import { FormField } from "@/components/common/FormField";
+import { InfoButton } from "@/components/common/InfoButton";
+import { SearchField } from "@/components/common/SearchField";
 import { useToast } from "@/components/common/Toast";
 import { adminMerchantClient } from "@/lib/apiClient";
 import { LIST_PERFORMANCE } from "@/lib/listPerformance";
@@ -20,6 +22,7 @@ export default function AdminMerchantRequestsScreen() {
   const { show: showToast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [requests, setRequests] = useState<AdminMerchantRequestResponse[]>([]);
+  const [search, setSearch] = useState("");
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [reason, setReason] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -65,6 +68,13 @@ export default function AdminMerchantRequestsScreen() {
     }
   };
 
+  // buscador: por comercio, dirección o persona que lo pide
+  const needle = search.trim().toLowerCase();
+  const visible = useMemo(
+    () => (needle === "" ? requests : requests.filter((item) => [item.businessName, item.address, item.userDisplayName, item.userEmail].some((field) => field?.toLowerCase().includes(needle)))),
+    [requests, needle],
+  );
+
   if (isLoading) {
     return (
       <View style={styles.center}>
@@ -76,10 +86,25 @@ export default function AdminMerchantRequestsScreen() {
   return (
     <BackToTopFlatList
           {...LIST_PERFORMANCE}
-      data={requests}
+      data={visible}
       keyExtractor={(item) => item.id}
       style={styles.container}
       contentContainerStyle={styles.list}
+      keyboardShouldPersistTaps="handled"
+      ListHeaderComponent={
+        <View style={styles.searchRow}>
+          <View style={styles.searchBox}>
+            <SearchField value={search} onChangeText={setSearch} placeholder="Buscar por comercio, dirección o mail" />
+          </View>
+          <InfoButton
+            title="Solicitudes de comercio"
+            lines={[
+              "Usuarios que piden pasar a ser comercio. Antes de aprobar, comunicate por teléfono o mail para confirmar que trabajan ahí.",
+              "Si la sucursal ya existe en DePaso (importada), al aprobar pasa a administrarla; si es nueva, se crea su sucursal.",
+            ]}
+          />
+        </View>
+      }
       ListEmptyComponent={
         <EmptyState emoji="✅" title="Sin solicitudes pendientes" description="Cuando un usuario pida ser comercio va a aparecer acá." />
       }
@@ -87,11 +112,7 @@ export default function AdminMerchantRequestsScreen() {
         <View style={styles.card}>
           <Text style={styles.name}>{item.businessName}</Text>
           <Text style={styles.meta}>{item.address}</Text>
-          <Text style={styles.meta}>
-            {item.storeBranchId
-              ? "Pide administrar una sucursal que ya está en DePaso (importada)."
-              : "Comercio nuevo: al aprobar se crea su sucursal."}
-          </Text>
+          <Text style={styles.meta}>{item.storeBranchId ? "Sucursal existente (importada)" : "Comercio nuevo"}</Text>
           <Text style={styles.contactTitle}>Contacto para verificar</Text>
           {item.phone ? (
             <Button label={`Llamar · ${item.phone}`} variant="secondary" onPress={() => void Linking.openURL(`tel:${item.phone}`)} />
@@ -148,6 +169,8 @@ export default function AdminMerchantRequestsScreen() {
 
 const useStyles = makeStyles((colors) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.surface.base },
+  searchRow: { flexDirection: "row", alignItems: "center", gap: spacing.xs, marginBottom: spacing.sm },
+  searchBox: { flex: 1 },
   center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.surface.base },
   list: { padding: spacing.lg, gap: spacing.md },
   card: {

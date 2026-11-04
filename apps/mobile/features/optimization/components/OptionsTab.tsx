@@ -4,7 +4,8 @@ import { router } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
-import { PriceDisclosureBanner } from "@/components/lists/PriceDisclosureBanner";
+import { InfoButton } from "@/components/common/InfoButton";
+import { PRICE_DISCLOSURE_NOTICE } from "@/lib/priceDisclosure";
 import { usePurchase } from "@/lib/purchase/PurchaseContext";
 import { makeStyles, useColors } from "@/lib/theme";
 import { PLAN_LABELS, PLAN_ORDER, UNAVAILABLE_TEXT } from "../helpers";
@@ -31,12 +32,26 @@ export function OptionsTab({ plans, hasPaymentMethods }: OptionsTabProps) {
   const shown = [...groups.values()].map((group) => group.find((plan) => plan.label === "BALANCED") ?? group[0]!);
   const merged = plans.length - shown.length;
 
+  // Las aclaraciones van dentro del botón "i", no sueltas en la pantalla.
+  const infoLines = [
+    "De menos a más desvío. En cada una, lo más barato con las promos de tus medios de pago.",
+    PRICE_DISCLOSURE_NOTICE,
+    ...(merged > 0
+      ? [
+          shown.length === 1
+            ? `Hoy las ${plans.length} opciones dan lo mismo: el mismo comercio es el más barato y el más cercano.`
+            : "Las opciones que coinciden (mismos comercios y mismo costo) se muestran una sola vez.",
+        ]
+      : []),
+    ...(!hasPaymentMethods || !noPromos ? [] : ["Sin promos de tus medios de pago, los precios van sin descuento."]),
+  ];
+
   return (
     <>
-      <Text style={styles.intro}>
-        Tres formas de comprar, de menos a más desvío. En cada una, lo más barato con las promos de tus medios de pago.
-      </Text>
-      <PriceDisclosureBanner />
+      <View style={styles.header}>
+        <Text style={styles.intro}>Tres formas de comprar</Text>
+        <InfoButton title="Sobre estas opciones" lines={infoLines} />
+      </View>
 
       {!hasPaymentMethods ? (
         <AnimatedPressable
@@ -53,15 +68,7 @@ export function OptionsTab({ plans, hasPaymentMethods }: OptionsTabProps) {
           <Ionicons name="chevron-forward" size={18} color={colors.text.secondary} />
         </AnimatedPressable>
       ) : noPromos ? (
-        <Text style={styles.meta}>Hoy no encontramos promos de tus medios de pago en estos comercios, así que los precios van sin descuento.</Text>
-      ) : null}
-
-      {merged > 0 ? (
-        <Text style={styles.meta}>
-          {shown.length === 1
-            ? `Hoy las ${plans.length} opciones dan lo mismo: el mismo comercio es el más barato y el más cercano.`
-            : "Algunas opciones coinciden y se muestran una sola vez."}
-        </Text>
+        <Text style={styles.meta}>No encontramos promos de tus medios de pago.</Text>
       ) : null}
 
       {shown.map((plan) => (
@@ -92,7 +99,8 @@ export function OptionsTab({ plans, hasPaymentMethods }: OptionsTabProps) {
 const useStyles = makeStyles((colors) =>
   StyleSheet.create({
     flex: { flex: 1 },
-    intro: { fontFamily: typography.body.fontFamily, fontSize: 15, lineHeight: 22, color: colors.text.secondary },
+    header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+    intro: { fontFamily: typography.itemTitle.fontFamily, fontSize: 16, color: colors.text.primary },
     meta: { fontFamily: typography.caption.fontFamily, fontSize: 12, color: colors.text.secondary },
     hintTitle: { fontFamily: typography.itemTitle.fontFamily, fontSize: 15, color: colors.text.primary },
     promoHint: {

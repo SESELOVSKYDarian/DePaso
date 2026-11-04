@@ -5,6 +5,7 @@ import { createPrismaAuthProvider } from "@/lib/auth/authProvider";
 import { setSessionCookie } from "@/lib/auth/cookies";
 import { getClientIp } from "@/lib/auth/request";
 import { ensureAdminRole } from "@/lib/auth/adminEmails";
+import { recordLogin } from "@/lib/auth/recordLogin";
 import { toUserPayload } from "@/lib/auth/userPayload";
 import { checkRateLimit } from "@/lib/auth/rateLimit";
 
@@ -46,6 +47,7 @@ export async function POST(request: NextRequest) {
 
   const role = await ensureAdminRole(user);
   const session = await authProvider.createSession(user.id);
+  await recordLogin(request, user.id);
 
   const response = NextResponse.json({
     user: toUserPayload(user, user.profile?.marketingOptIn ?? false, role),

@@ -1,4 +1,4 @@
-import { AD_DURATIONS, MAX_ACTIVE_ADS, minAdAmount, type AdKind, type AdResponse, type MerchantPriceResponse } from "@depaso/validation";
+import { AD_DURATIONS, AD_PRICE_PER_DAY, MAX_ACTIVE_ADS, minAdAmount, type AdKind, type AdPrices, type AdResponse, type MerchantPriceResponse } from "@depaso/validation";
 import { useCallback, useEffect, useState } from "react";
 import { useToast } from "@/components/common/Toast";
 import { adsClient, merchantClient } from "@/lib/apiClient";
@@ -11,6 +11,8 @@ export function useMerchantAds() {
   const { show: showToast } = useToast();
   const [ads, setAds] = useState<AdResponse[]>([]);
   const [products, setProducts] = useState<MerchantPriceResponse[]>([]);
+  // precio base por día que fijó el administrador (hasta que llega, los de fábrica)
+  const [prices, setPrices] = useState<AdPrices>(AD_PRICE_PER_DAY);
   const [loading, setLoading] = useState(true);
   const [kind, setKind] = useState<AdKind>("FEATURED_PRODUCT");
   const [title, setTitle] = useState("");
@@ -25,9 +27,10 @@ export function useMerchantAds() {
 
   const load = useCallback(async () => {
     try {
-      const [mine, prices] = await Promise.all([adsClient.merchant.list(), merchantClient.prices.list({})]);
+      const [mine, catalog, basePrices] = await Promise.all([adsClient.merchant.list(), merchantClient.prices.list({}), adsClient.prices()]);
       setAds(mine.ads);
-      setProducts(prices.prices);
+      setProducts(catalog.prices);
+      setPrices(basePrices);
     } catch {
       showToast("No pudimos cargar tu publicidad.", "error");
     } finally {
@@ -40,10 +43,10 @@ export function useMerchantAds() {
   }, [load]);
 
   // cuántas publicidades ocupan lugar: las que esperan respuesta y las que siguen vigentes
-  const used = ads.filter((ad) => ad.status === "PENDING" || ad.active).length;
+  const used = ads.filter((ad) => ad.status === "PENDING" || ad.status === "COUNTER" || ad.active).length;
   const slotsLeft = Math.max(0, MAX_ACTIVE_ADS - used);
   // el precio base del formato elegido por los días elegidos; si no escribe nada, ofrece eso
-  const baseAmount = minAdAmount(kind, days);
+  const baseAmount = minAdAmount(kind, days, prices);
 
   const chooseKind = (next: AdKind) => {
     setKind(next);
@@ -52,7 +55,7 @@ export function useMerchantAds() {
 
   const pickImage = async () => {
     try {
-      const picked = await pickAnnouncementImage([4, 5]);
+      const picked = await pickAnnouncementImage(kind === "BANNER" ? [16, 9] : [4, 5]);
       if (picked) setImageData(picked.imageData);
     } catch (reason) {
       showToast(reason instanceof Error ? reason.message : "No pudimos usar esa imagen.", "error");
@@ -77,7 +80,7 @@ export function useMerchantAds() {
         offeredAmount: typed,
         ...(message.trim() ? { message } : {}),
         ...(kind === "FEATURED_PRODUCT" && productId ? { productId } : {}),
-        ...(kind === "IMAGE" && imageData ? { imageData } : {}),
+        ...((kind === "IMAGE" || kind === "BANNER") && imageData ? { imageData } : {}),
         ...(kind === "VIDEO" ? { videoUrl: videoUrl.trim() } : {}),
       });
       setAds((current) => [created, ...current]);
@@ -88,10 +91,31 @@ export function useMerchantAds() {
       setImageData(null);
       setVideoUrl("");
       showToast("Pedido enviado. Te avisamos cuando lo revisemos.", "success");
-    } catch {
-      showToast("No pudimos enviar el pedido. Probá de nuevo.", "error");
+    } catch (reason) {
+      // el servidor puede haber cambiado el precio base mientras tanto
+      const tooLow = reason instanceof Error && /AMOUNT_TOO_LOW/.test(reason.message);
+      showToast(tooLow ? "El precio base cambió. Actualizá la pantalla y revisá el monto." : "No pudimos enviar el pedido. Probá de nuevo.", "error");
     } finally {
       setSending(false);
+    }
+  };
+
+  // respuesta a la contraoferta del equipo: aceptar, rechazar o proponer otro monto
+  const reply = async (ad: AdResponse, answer: "ACCEPT" | "DECLINE" | "PROPOSE", amountText?: string) => {
+    const amount = amountText ? Number(amountText.replace(/\./g, "").replace(",", ".")) : undefined;
+    const minimum = minAdAmount(ad.kind, ad.durationDays, prices);
+    if (answer === "PROPOSE" && (!amount || !Number.isFinite(amount) || amount < minimum)) {
+      showToast(`El monto mínimo para ${ad.durationDays} días es $${minimum.toLocaleString("es-AR")}.`, "error");
+      return false;
+    }
+    try {
+      const updated = await adsClient.merchant.reply(ad.id, { reply: answer, ...(amount ? { amount } : {}) });
+      setAds((current) => current.map((entry) => (entry.id === ad.id ? updated : entry)));
+      showToast(answer === "ACCEPT" ? "Aceptaste: tu publicidad ya se muestra." : answer === "DECLINE" ? "Rechazaste la propuesta." : "Enviamos tu propuesta al equipo.", "success");
+      return true;
+    } catch {
+      showToast("No pudimos enviar tu respuesta. Probá de nuevo.", "error");
+      return false;
     }
   };
 
@@ -106,8 +130,8 @@ export function useMerchantAds() {
   };
 
   return {
-    ads, products, loading, kind, chooseKind, title, setTitle, message, setMessage, productId, setProductId,
+    ads, products, prices, loading, kind, chooseKind, title, setTitle, message, setMessage, productId, setProductId,
     imageData, pickImage, clearImage: () => setImageData(null), videoUrl, setVideoUrl,
-    amount, setAmount, days, setDays, baseAmount, slotsLeft, error, sending, send, cancel,
+    amount, setAmount, days, setDays, baseAmount, slotsLeft, error, sending, send, cancel, reply,
   };
 }

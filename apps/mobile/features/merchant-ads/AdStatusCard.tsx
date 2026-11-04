@@ -18,6 +18,7 @@ const KIND_INFO: Record<AdResponse["kind"], { label: string; icon: keyof typeof 
 
 const STATUS_LABEL: Record<AdResponse["status"], string> = {
   PENDING: "En revisión",
+  COUNTER: "Propuesta de monto",
   APPROVED: "Aprobada",
   REJECTED: "No aprobada",
   CANCELLED: "Cancelada",
@@ -41,7 +42,7 @@ export function AdStatusCard({ ad, showMerchant = false, children }: { ad: AdRes
           <Ionicons name={KIND_INFO[ad.kind].icon} size={16} color={colors.brand.route} />
           <Text style={styles.kindText}>{KIND_INFO[ad.kind].label}</Text>
         </View>
-        <Text style={[styles.status, ad.status === "APPROVED" ? styles.statusOk : ad.status === "PENDING" ? styles.statusWait : null]}>{STATUS_LABEL[ad.status]}</Text>
+        <Text style={[styles.status, ad.status === "APPROVED" ? styles.statusOk : ad.status === "PENDING" || ad.status === "COUNTER" ? styles.statusWait : null]}>{STATUS_LABEL[ad.status]}</Text>
       </View>
       <Text style={styles.title}>{ad.title}</Text>
       {ad.productName ? <Text style={styles.line}>Producto: {ad.productName}</Text> : null}
@@ -53,7 +54,9 @@ export function AdStatusCard({ ad, showMerchant = false, children }: { ad: AdRes
         </Text>
       ) : null}
       <Text style={styles.money}>
-        {ad.agreedAmount !== null && ad.agreedAmount !== ad.offeredAmount
+        {ad.status === "COUNTER" && ad.counterAmount !== null
+          ? `Ofreció ${pesos(ad.offeredAmount)} · el equipo propone ${pesos(ad.counterAmount)} · ${ad.durationDays} días`
+          : ad.agreedAmount !== null && ad.agreedAmount !== ad.offeredAmount
           ? `Ofreció ${pesos(ad.offeredAmount)} · acordado ${pesos(ad.agreedAmount)} · ${ad.durationDays} días`
           : `${ad.status === "APPROVED" ? "Acordado" : "Ofrece"} ${pesos(ad.agreedAmount ?? ad.offeredAmount)} · ${ad.durationDays} días`}
       </Text>

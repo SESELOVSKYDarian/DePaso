@@ -13,8 +13,9 @@ interface AdRow {
   videoUrl: string | null;
   offeredAmount: Prisma.Decimal;
   agreedAmount: Prisma.Decimal | null;
+  counterAmount: Prisma.Decimal | null;
   durationDays: number;
-  status: "PENDING" | "APPROVED" | "REJECTED" | "CANCELLED";
+  status: "PENDING" | "COUNTER" | "APPROVED" | "REJECTED" | "CANCELLED";
   adminNote: string | null;
   startsAt: Date | null;
   endsAt: Date | null;
@@ -45,6 +46,7 @@ export function toAdResponse(row: AdRow, extras: Extras, now: Date = new Date())
     videoUrl: row.videoUrl,
     offeredAmount: Number(row.offeredAmount),
     agreedAmount: row.agreedAmount === null ? null : Number(row.agreedAmount),
+    counterAmount: row.counterAmount === null ? null : Number(row.counterAmount),
     durationDays: row.durationDays,
     status: row.status,
     adminNote: row.adminNote,
@@ -70,16 +72,19 @@ export async function loadProductNames(rows: Pick<AdRow, "productId">[]): Promis
  * pagó) y las tarjetas. Un destacado sin precio vigente en ese comercio no se muestra.
  */
 export async function loadActiveAds(now: Date = new Date()): Promise<{ featured: HomeProduct[]; ads: HomeAd[] }> {
-  const rows = await prisma.adRequest.findMany({
+  const approved = await prisma.adRequest.findMany({
     where: { status: "APPROVED", startsAt: { lte: now }, endsAt: { gte: now } },
     orderBy: { startsAt: "desc" },
     take: 20,
   });
-  if (rows.length === 0) return { featured: [], ads: [] };
+  if (approved.length === 0) return { featured: [], ads: [] };
 
-  const branchIds = [...new Set(rows.map((row: (typeof rows)[number]) => row.storeBranchId))];
-  const branches = await prisma.storeBranch.findMany({ where: { id: { in: branchIds } }, select: { id: true, store: { select: { name: true } } } });
+  // solo se muestra la publicidad de comercios habilitados
+  const branchIds = [...new Set(approved.map((row: (typeof approved)[number]) => row.storeBranchId))];
+  const branches = await prisma.storeBranch.findMany({ where: { id: { in: branchIds }, status: "ACTIVE" }, select: { id: true, store: { select: { name: true } } } });
   const storeName = new Map(branches.map((branch: (typeof branches)[number]) => [branch.id, branch.store.name]));
+  const rows = approved.filter((row: (typeof approved)[number]) => storeName.has(row.storeBranchId));
+  if (rows.length === 0) return { featured: [], ads: [] };
 
   // banner, imagen y video: cada uno con lo suyo; el tope por tipo evita llenar Inicio
   const ads: HomeAd[] = [];

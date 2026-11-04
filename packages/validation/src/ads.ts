@@ -17,9 +17,18 @@ export const MAX_ACTIVE_ADS = 3;
 /** Opciones de duración que ofrece la app. */
 export const AD_DURATIONS = [7, 15, 30];
 
-/** Monto mínimo para un formato y una cantidad de días. */
-export function minAdAmount(kind: AdKind, days: number): number {
-  return AD_PRICE_PER_DAY[kind] * days;
+/** Precio base por día de cada formato, tal como lo fija el administrador. */
+export const adPricesSchema = z.object({
+  FEATURED_PRODUCT: z.number().int().min(0).max(9_999_999),
+  BANNER: z.number().int().min(0).max(9_999_999),
+  IMAGE: z.number().int().min(0).max(9_999_999),
+  VIDEO: z.number().int().min(0).max(9_999_999),
+});
+export type AdPrices = z.infer<typeof adPricesSchema>;
+
+/** Monto mínimo para un formato y una cantidad de días (con los precios vigentes o, si no se pasan, los de fábrica). */
+export function minAdAmount(kind: AdKind, days: number, prices: Record<AdKind, number> = AD_PRICE_PER_DAY): number {
+  return prices[kind] * days;
 }
 
 const imageDataUri = z
@@ -27,7 +36,7 @@ const imageDataUri = z
   .max(700_000, "La imagen es muy pesada.")
   .regex(/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/, "Imagen inválida.");
 
-export const adStatusSchema = z.enum(["PENDING", "APPROVED", "REJECTED", "CANCELLED"]);
+export const adStatusSchema = z.enum(["PENDING", "COUNTER", "APPROVED", "REJECTED", "CANCELLED"]);
 export type AdStatus = z.infer<typeof adStatusSchema>;
 
 /** Lo que pide el comercio: qué quiere publicitar, cuánto ofrece y por cuántos días. */
@@ -38,7 +47,7 @@ export const adRequestInputSchema = z
     message: z.string().trim().max(280).optional(),
     /** Solo para un producto destacado. */
     productId: z.string().min(1).optional(),
-    /** Solo para la publicidad con imagen (ya comprimida). */
+    /** Imagen ya comprimida: obligatoria en la publicidad con imagen, opcional en el banner. */
     imageData: imageDataUri.optional(),
     /** Solo para la publicidad con video: enlace https a un archivo de video (.mp4). */
     videoUrl: z.string().trim().url("Pegá un enlace válido.").max(500).optional(),
@@ -56,9 +65,7 @@ export const adRequestInputSchema = z
     if (value.kind === "VIDEO" && (!value.videoUrl || !/^https:\/\//i.test(value.videoUrl))) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["videoUrl"], message: "Pegá el enlace https de tu video." });
     }
-    if (value.offeredAmount < minAdAmount(value.kind, value.durationDays)) {
-      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["offeredAmount"], message: "El monto no llega al precio base por día." });
-    }
+    // el monto mínimo lo controla el servidor con los precios que fijó el administrador
   });
 export type AdRequestInput = z.infer<typeof adRequestInputSchema>;
 
@@ -73,6 +80,8 @@ export const adResponseSchema = z.object({
   videoUrl: z.string().nullable().default(null),
   offeredAmount: z.number(),
   agreedAmount: z.number().nullable(),
+  /** Monto que propuso el equipo mientras espera la respuesta del comercio. */
+  counterAmount: z.number().nullable().default(null),
   durationDays: z.number(),
   status: adStatusSchema,
   adminNote: z.string().nullable(),
@@ -93,17 +102,35 @@ export type AdsResponse = z.infer<typeof adsResponseSchema>;
 /** Decisión del administrador. Al aprobar puede cambiar el monto y los días respecto de lo ofrecido. */
 export const adDecisionSchema = z
   .object({
-    decision: z.enum(["APPROVE", "REJECT"]),
+    decision: z.enum(["APPROVE", "COUNTER", "REJECT"]),
     agreedAmount: z.number().nonnegative().max(99_999_999).optional(),
+    /** Solo al contraofertar: el monto que propone el equipo. */
+    counterAmount: z.number().positive("Poné el monto que proponés.").max(99_999_999).optional(),
     durationDays: z.number().int().min(1).max(90).optional(),
     note: z.string().trim().max(300).optional(),
   })
   .superRefine((value, ctx) => {
+    if (value.decision === "COUNTER" && value.counterAmount === undefined) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["counterAmount"], message: "Poné el monto que proponés." });
+    }
     if (value.decision === "REJECT" && !value.note) {
       ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["note"], message: "Contale al comercio por qué no se aprueba." });
     }
   });
 export type AdDecision = z.infer<typeof adDecisionSchema>;
+
+/** Respuesta del comercio a la contraoferta del equipo: aceptarla, rechazarla o proponer otro monto. */
+export const adReplySchema = z
+  .object({
+    reply: z.enum(["ACCEPT", "DECLINE", "PROPOSE"]),
+    amount: z.number().positive("Poné el monto que proponés.").max(99_999_999).optional(),
+  })
+  .superRefine((value, ctx) => {
+    if (value.reply === "PROPOSE" && value.amount === undefined) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["amount"], message: "Poné el monto que proponés." });
+    }
+  });
+export type AdReply = z.infer<typeof adReplySchema>;
 
 /** Publicidad (banner, imagen o video) que se muestra en Inicio. */
 export const homeAdSchema = z.object({

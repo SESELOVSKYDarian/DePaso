@@ -27,13 +27,15 @@ async function handleDecision(request: NextRequest, { params }: RouteParams) {
   if (!existing) return NextResponse.json({ error: "NOT_FOUND" }, { status: 404 });
   if (existing.status !== "PENDING") return NextResponse.json({ error: "ALREADY_RESOLVED" }, { status: 409 });
 
-  const { decision, agreedAmount, durationDays, note } = parsed.data;
+  const { decision, agreedAmount, counterAmount, durationDays, note } = parsed.data;
   const now = new Date();
   const days = durationDays ?? existing.durationDays;
   const updated = await prisma.adRequest.update({
     where: { id },
     data:
-      decision === "APPROVE"
+      decision === "COUNTER"
+        ? { status: "COUNTER", counterAmount: counterAmount ?? null, durationDays: days, adminNote: note || null, reviewedById: admin.userId }
+        : decision === "APPROVE"
         ? {
             status: "APPROVED",
             agreedAmount: agreedAmount ?? existing.offeredAmount,
@@ -52,8 +54,13 @@ async function handleDecision(request: NextRequest, { params }: RouteParams) {
     notifyUsers({
       category: "news",
       userIds: [existing.userId],
-      title: decision === "APPROVE" ? "Aprobamos tu publicidad" : "Tu pedido de publicidad no se aprobó",
-      body: decision === "APPROVE" ? `"${updated.title}" ya se muestra en la app por ${days} días.` : (note ?? "Mirá el motivo en tu panel."),
+      title: decision === "COUNTER" ? "Te proponemos otro monto" : decision === "APPROVE" ? "Aprobamos tu publicidad" : "Tu pedido de publicidad no se aprobó",
+      body:
+        decision === "COUNTER"
+          ? `Por "${updated.title}" proponemos $${Math.round(counterAmount ?? 0).toLocaleString("es-AR")}. Entrá a Publicidad para responder.`
+          : decision === "APPROVE"
+            ? `"${updated.title}" ya se muestra en la app por ${days} días.`
+            : (note ?? "Mirá el motivo en tu panel."),
       data: { type: "ad" },
     }),
   );

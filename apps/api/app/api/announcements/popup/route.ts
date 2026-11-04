@@ -5,7 +5,7 @@ import { postAsQuery } from "@/lib/http/postAdapter";
 
 export const dynamic = "force-dynamic";
 
-/** Un anuncio para la ventana emergente solo vale unos días: después ya es noticia vieja. */
+/** Un anuncio sin fecha de vencimiento solo vale unos días como ventana: después ya es noticia vieja. */
 const POPUP_WINDOW_DAYS = 14;
 
 /**
@@ -16,9 +16,15 @@ async function handle(request: NextRequest) {
   const current = await getCurrentUser(request);
   if (!current) return NextResponse.json({ error: "UNAUTHORIZED" }, { status: 401 });
 
-  const since = new Date(Date.now() - POPUP_WINDOW_DAYS * 24 * 60 * 60 * 1000);
+  const now = new Date();
+  const since = new Date(now.getTime() - POPUP_WINDOW_DAYS * 24 * 60 * 60 * 1000);
   const row = await prisma.announcement.findFirst({
-    where: { active: true, showPopup: true, createdAt: { gte: since } },
+    where: {
+      active: true,
+      showPopup: true,
+      // con vencimiento rige hasta esa fecha; sin vencimiento, los últimos días
+      OR: [{ expiresAt: { gt: now } }, { expiresAt: null, createdAt: { gte: since } }],
+    },
     orderBy: { createdAt: "desc" },
   });
   if (!row) return NextResponse.json({ announcement: null });

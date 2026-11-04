@@ -44,6 +44,7 @@ export function BottomBanners({ ads }: { ads: HomeAd[] }) {
     <View style={styles.group}>
       {banners.map((ad) => (
         <View key={ad.id} accessibilityLabel={`Publicidad de ${ad.storeName}: ${ad.title}`} style={[styles.card, styles.banner]}>
+          {ad.imageData ? <Image source={{ uri: ad.imageData }} accessibilityLabel={ad.title} style={styles.bannerImage} contentFit="cover" /> : null}
           <AdCaption ad={ad} />
         </View>
       ))}
@@ -56,6 +57,7 @@ const useStyles = makeStyles((colors) =>
     group: { gap: spacing.sm },
     card: { overflow: "hidden", borderRadius: radii.xl, backgroundColor: colors.surface.primary, borderWidth: 1, borderColor: colors.border.subtle },
     banner: { backgroundColor: colors.tint.blue.bg, borderColor: colors.tint.blue.border },
+    bannerImage: { width: "100%", aspectRatio: 16 / 9, backgroundColor: colors.surface.input },
     media: { width: "100%", aspectRatio: 4 / 5, maxHeight: 420, backgroundColor: colors.surface.input },
     caption: { gap: 4, padding: spacing.md },
     tag: { fontFamily: typography.caption.fontFamily, fontSize: 11, letterSpacing: 1, color: colors.brand.route },

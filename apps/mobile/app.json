@@ -13,7 +13,10 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "La usamos para calcular rutas, desvíos y comercios cercanos mientras usás DePaso. No te seguimos fuera de la app."
+          "locationWhenInUsePermission": "La usamos para calcular rutas, desvíos y comercios cercanos mientras usás DePaso.",
+          "locationAlwaysAndWhenInUsePermission": "Solo si activás el aviso de cercanía, DePaso te avisa cuando pasás cerca de un comercio de tu compra, aunque la app esté cerrada. No guardamos tu recorrido.",
+          "isAndroidBackgroundLocationEnabled": true,
+          "isIosBackgroundLocationEnabled": true
         }
       ],
       "./plugins/withMonorepoBuildFix.js",

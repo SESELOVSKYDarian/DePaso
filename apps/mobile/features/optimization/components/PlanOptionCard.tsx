@@ -3,6 +3,7 @@ import type { OptimizationPlanResponse } from "@depaso/validation";
 import { StyleSheet, Text, View } from "react-native";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
+import { InfoButton } from "@/components/common/InfoButton";
 import { makeStyles, useColors } from "@/lib/theme";
 import { useCountUp } from "@/lib/useCountUp";
 import { PLAN_LABELS, extraDistance, money } from "../helpers";
@@ -26,6 +27,15 @@ export function PlanOptionCard({ plan, onStart, onMap }: PlanOptionCardProps) {
   const boughtCount = plan.stops.reduce((sum, stop) => sum + stop.items.length, 0);
   const costLabel = missingCount > 0 ? `Costo de ${boughtCount} de ${boughtCount + missingCount} productos` : "Costo de toda tu lista";
 
+  // El detalle y las aclaraciones van en el botón "i", no sueltos en la tarjeta.
+  const infoLines = [
+    plan.explanation,
+    ...(missingCount > 0
+      ? ["Ningún comercio a este nivel de desvío tiene los productos que faltan con precio vigente, por eso este total es más bajo: no los incluye. Vas a tener que comprarlos en otro lado."]
+      : []),
+    ...plan.appliedPromos.map((promo) => `${promo.retailer}: ${promo.label}. ${promo.disclaimer}`),
+  ];
+
   return (
     <View style={[styles.card, recommended ? styles.recommended : null]}>
       <View style={styles.head}>
@@ -39,6 +49,7 @@ export function PlanOptionCard({ plan, onStart, onMap }: PlanOptionCardProps) {
           </View>
           <Text style={styles.meta}>{meta.subtitle}</Text>
         </View>
+        <InfoButton title={meta.title} lines={infoLines} />
       </View>
 
       <View style={styles.costRow}>
@@ -63,21 +74,14 @@ export function PlanOptionCard({ plan, onStart, onMap }: PlanOptionCardProps) {
           <Text style={styles.promoTitle}>
             {promo.retailer}: {promo.label}
           </Text>
-          <Text style={styles.promoText}>
-            Descuento {money(promo.discountAmount)}. {promo.disclaimer}
-          </Text>
+          <Text style={styles.promoText}>Descuento {money(promo.discountAmount)}</Text>
         </View>
       ))}
-
-      <Text style={styles.explanation}>{plan.explanation}</Text>
 
       {missingCount > 0 ? (
         <View style={styles.missingBox}>
           <Text style={styles.missingTitle}>
             {missingCount === 1 ? "Falta 1 producto" : `Faltan ${missingCount} productos`}: {plan.missingProductNames.join(", ")}
-          </Text>
-          <Text style={styles.missingText}>
-            Ningún comercio a este nivel de desvío los tiene con precio vigente, por eso este total es más bajo: no los incluye. Vas a tener que comprarlos en otro lado.
           </Text>
         </View>
       ) : null}

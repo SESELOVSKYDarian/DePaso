@@ -9,14 +9,17 @@ describe("reglas de la publicidad", () => {
     expect(MAX_ACTIVE_ADS).toBe(3);
   });
 
-  it("rechaza ofrecer menos que el precio base", () => {
-    const result = adRequestInputSchema.safeParse({ ...base, kind: "BANNER", offeredAmount: minAdAmount("BANNER", 7) - 1 });
-    expect(result.success).toBe(false);
+  it("el mínimo sale de los precios que fije el administrador", () => {
+    const custom = { ...AD_PRICE_PER_DAY, BANNER: 1000 };
+    expect(minAdAmount("BANNER", 7, custom)).toBe(7000);
+    expect(minAdAmount("BANNER", 7)).toBe(AD_PRICE_PER_DAY.BANNER * 7);
   });
 
-  it("acepta el precio base exacto y ofrecer más", () => {
-    expect(adRequestInputSchema.safeParse({ ...base, kind: "BANNER", offeredAmount: minAdAmount("BANNER", 7) }).success).toBe(true);
-    expect(adRequestInputSchema.safeParse({ ...base, kind: "BANNER", offeredAmount: minAdAmount("BANNER", 7) * 2 }).success).toBe(true);
+  it("el banner puede llevar imagen o no", () => {
+    const offeredAmount = minAdAmount("BANNER", 7);
+    expect(adRequestInputSchema.safeParse({ ...base, kind: "BANNER", offeredAmount }).success).toBe(true);
+    const imageData = "data:image/jpeg;base64,AAAA";
+    expect(adRequestInputSchema.safeParse({ ...base, kind: "BANNER", offeredAmount, imageData }).success).toBe(true);
   });
 
   it("la imagen necesita su imagen", () => {

@@ -5,6 +5,7 @@ import { getCurrentUser } from "./currentUser";
 export interface CurrentMerchant {
   userId: string;
   branchId: string;
+  displayName: string | null;
 }
 
 /** Sólo cuentas con `role === "MERCHANT"` que además tengan una sucursal propia asignada. */
@@ -21,5 +22,5 @@ export async function requireMerchant(request: NextRequest): Promise<CurrentMerc
   const branch = user.ownedBranches[0];
   if (!branch) return null;
 
-  return { userId: user.id, branchId: branch.id };
+  return { userId: user.id, branchId: branch.id, displayName: user.displayName };
 }

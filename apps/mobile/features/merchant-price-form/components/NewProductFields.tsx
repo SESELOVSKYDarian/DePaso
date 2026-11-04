@@ -1,3 +1,4 @@
+import { CategoryPicker } from "@/components/common/CategoryPicker";
 import { FormField } from "@/components/common/FormField";
 
 interface NewProductFieldsProps {
@@ -19,7 +20,7 @@ export function NewProductFields(props: NewProductFieldsProps) {
   return (
     <>
       <FormField label="Nombre del producto" value={props.name} onChangeText={props.onChangeName} autoCapitalize="sentences" />
-      <FormField label="Categoría" value={props.category} onChangeText={props.onChangeCategory} placeholder="Almacén, Verdulería..." autoCapitalize="sentences" />
+      <CategoryPicker value={props.category} onChange={props.onChangeCategory} />
       <FormField label="Marca (opcional)" value={props.brandName} onChangeText={props.onChangeBrandName} autoCapitalize="words" />
       <FormField label="Unidad" value={props.unit} onChangeText={props.onChangeUnit} placeholder="kg, l, u, g, ml" />
       <FormField
