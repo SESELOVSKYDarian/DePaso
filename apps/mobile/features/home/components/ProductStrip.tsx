@@ -1,13 +1,12 @@
-import { StoreBadge } from "@/components/stores/StoreBadge";
-import { Ionicons } from "@expo/vector-icons";
 import type { HomeProduct } from "@depaso/validation";
+import { useRef, useState, type ComponentRef } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { radii, spacing, typography } from "@depaso/design-tokens";
-import { AnimatedPressable } from "@/components/common/AnimatedPressable";
 import { Skeleton } from "@/components/common/Skeleton";
-import { ProductThumb } from "@/components/lists/ProductThumb";
-import { makeStyles, useColors } from "@/lib/theme";
-import { money } from "../helpers";
+import { useBreakpoint } from "@/lib/responsive/useBreakpoint";
+import { makeStyles } from "@/lib/theme";
+import { ProductCard } from "./ProductCard";
+import { StripArrows } from "./StripArrows";
 
 interface ProductStripProps {
   title: string;
@@ -22,57 +21,56 @@ interface ProductStripProps {
 
 const SKELETONS = [0, 1, 2];
 
-/** Tira horizontal de productos sugeridos (baratos hoy o recomendados), con un botón para sumarlos a la lista. */
+/**
+ * Tira horizontal de productos sugeridos (baratos hoy o recomendados), con un botón para sumarlos a
+ * la lista. En computadora las tarjetas son más grandes y se recorre con flechas, que mueven
+ * la tira de a una "página".
+ */
 export function ProductStrip({ title, subtitle, products, showSaving = false, onAdd }: ProductStripProps) {
   const styles = useStyles();
-  const colors = useColors();
+  const { contentWidth } = useBreakpoint();
+  const large = contentWidth >= 980;
+  const scroller = useRef<ComponentRef<typeof ScrollView>>(null);
+  // dónde está la tira y cuánto mide, para saber si las flechas tienen a dónde ir
+  const [offset, setOffset] = useState(0);
+  const [viewWidth, setViewWidth] = useState(0);
+  const [contentSize, setContentSize] = useState(0);
   if (products !== null && products.length === 0) return null;
 
+  const page = Math.max(240, viewWidth * 0.8);
+  const goTo = (x: number) => scroller.current?.scrollTo({ x: Math.max(0, x), animated: true });
+
   return (
-    <View style={styles.section}>
-      <View>
-        <Text accessibilityRole="header" style={styles.title}>
-          {title}
-        </Text>
-        <Text style={styles.subtitle}>{subtitle}</Text>
+    <View style={[styles.section, large ? styles.sectionLarge : null]}>
+      <View style={styles.head}>
+        <View style={styles.headText}>
+          <Text accessibilityRole="header" style={[styles.title, large ? styles.titleLarge : null]}>
+            {title}
+          </Text>
+          <Text style={styles.subtitle}>{subtitle}</Text>
+        </View>
+        {large ? (
+          <StripArrows
+            canGoBack={offset > 4}
+            canGoForward={offset + viewWidth < contentSize - 4}
+            onBack={() => goTo(offset - page)}
+            onForward={() => goTo(offset + page)}
+          />
+        ) : null}
       </View>
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.row}>
+      <ScrollView
+        ref={scroller}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={[styles.row, large ? styles.rowLarge : null]}
+        scrollEventThrottle={32}
+        onScroll={(event) => setOffset(event.nativeEvent.contentOffset.x)}
+        onLayout={(event) => setViewWidth(event.nativeEvent.layout.width)}
+        onContentSizeChange={(width) => setContentSize(width)}
+      >
         {products === null
-          ? SKELETONS.map((index) => <Skeleton key={index} width={156} height={190} borderRadius={radii.lg} />)
-          : products.map((product) => (
-              <View key={product.productId} style={styles.card}>
-                <View style={styles.photoRow}>
-                  <ProductThumb imageUrl={product.imageUrl} name={product.name} size={84} />
-                  {showSaving && product.savingPercent >= 5 ? (
-                    <View style={styles.savingChip}>
-                      <Text style={styles.savingChipText}>-{Math.round(product.savingPercent)}%</Text>
-                    </View>
-                  ) : null}
-                </View>
-                <Text style={styles.name} numberOfLines={2}>
-                  {product.name}
-                </Text>
-                <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
-                  <StoreBadge storeName={product.storeName} size={18} />
-                  <Text style={[styles.store, { flex: 1 }]} numberOfLines={1}>
-                    {product.storeName}
-                  </Text>
-                </View>
-                <View style={styles.priceRow}>
-                  <View>
-                    <Text style={styles.price}>{money(product.price)}</Text>
-                  </View>
-                  <AnimatedPressable
-                    accessibilityLabel={`Sumar ${product.name} a mi lista`}
-                    haptic={false}
-                    onPress={() => onAdd(product)}
-                    style={styles.add}
-                  >
-                    <Ionicons name="add" size={20} color={colors.text.onNavy} />
-                  </AnimatedPressable>
-                </View>
-              </View>
-            ))}
+          ? SKELETONS.map((index) => <Skeleton key={index} width={large ? 224 : 156} height={large ? 280 : 190} borderRadius={radii.lg} />)
+          : products.map((product) => <ProductCard key={product.productId} product={product} showSaving={showSaving} large={large} onAdd={onAdd} />)}
       </ScrollView>
     </View>
   );
@@ -81,40 +79,13 @@ export function ProductStrip({ title, subtitle, products, showSaving = false, on
 const useStyles = makeStyles((colors) =>
   StyleSheet.create({
     section: { gap: spacing.md },
+    sectionLarge: { gap: spacing.lg },
+    head: { flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", gap: spacing.md },
+    headText: { flex: 1 },
     title: { fontFamily: typography.screenTitle.fontFamily, fontSize: 20, color: colors.text.primary },
+    titleLarge: { fontSize: 26, lineHeight: 32 },
     subtitle: { fontFamily: typography.body.fontFamily, fontSize: 13, color: colors.text.secondary, marginTop: 2 },
     row: { gap: spacing.md, paddingRight: spacing.lg },
-    card: {
-      width: 164,
-      gap: spacing.xs,
-      padding: spacing.md,
-      borderRadius: radii.xl,
-      backgroundColor: colors.surface.primary,
-      borderWidth: 1,
-      borderColor: colors.border.subtle,
-    },
-    name: { fontFamily: typography.itemTitle.fontFamily, fontSize: 14, color: colors.text.primary, minHeight: 36 },
-    store: { fontFamily: typography.body.fontFamily, fontSize: 12, color: colors.text.secondary },
-    priceRow: { flexDirection: "row", alignItems: "flex-end", justifyContent: "space-between", marginTop: spacing.xs },
-    price: { fontFamily: typography.screenTitle.fontFamily, fontSize: 18, color: colors.text.primary },
-    photoRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
-    // chip verde de ahorro, como en el diseño
-    savingChip: {
-      paddingHorizontal: spacing.xs,
-      paddingVertical: 2,
-      borderRadius: radii.full,
-      backgroundColor: colors.tint.green.bg,
-      borderWidth: 1,
-      borderColor: colors.tint.green.border,
-    },
-    savingChipText: { fontFamily: typography.itemTitle.fontFamily, fontSize: 12, color: colors.state.successStrong },
-    add: {
-      width: 44,
-      height: 44,
-      borderRadius: radii.full,
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: colors.brand.navy,
-    },
+    rowLarge: { gap: spacing.lg },
   }),
 );

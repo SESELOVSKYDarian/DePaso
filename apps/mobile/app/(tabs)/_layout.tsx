@@ -2,9 +2,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useActivitySummary } from "@/lib/activity/useActivitySummary";
+import { SideNav, type SideNavProps } from "@/components/navigation/SideNav";
 import { StartupExtras } from "@/features/announcement-popup/StartupExtras";
 import { typography } from "@depaso/design-tokens";
-import { SIDE_NAV_WIDTH, useBreakpoint } from "@/lib/responsive/useBreakpoint";
+import { useBreakpoint } from "@/lib/responsive/useBreakpoint";
 import { useColors } from "@/lib/theme";
 
 /**
@@ -22,38 +23,25 @@ export default function TabsLayout() {
     <>
     <StartupExtras />
     <Tabs
+      // en pantallas anchas y con el celular acostado el menú lo dibuja DePaso (SideNav); abajo, el de siempre
+      tabBar={hasSideNav ? (props) => <SideNav {...(props as unknown as Omit<SideNavProps, "compact">)} compact={!isDesktop} /> : undefined}
       screenOptions={{
         headerShown: false,
         tabBarPosition: hasSideNav ? "left" : "bottom",
-        // escritorio: ícono con el texto al lado; celular acostado: una barra angosta solo de íconos
-        tabBarVariant: hasSideNav ? "material" : "uikit",
-        tabBarShowLabel: !hasSideNav || isDesktop,
         // Las pestañas son pares, no una jerarquía: un fundido corto, nunca un deslizamiento.
         animation: "fade",
         // Fondo del tema detrás de cada pestaña: sin esto el fundido pasaba por blanco.
         sceneStyle: { backgroundColor: colors.surface.base },
         tabBarActiveTintColor: colors.brand.accentDark,
         tabBarInactiveTintColor: colors.text.secondary,
-        tabBarStyle: hasSideNav
-          ? {
-              backgroundColor: colors.surface.primary,
-              borderRightColor: colors.border.subtle,
-              borderRightWidth: 1,
-              paddingTop: insets.top + 12,
-              paddingBottom: insets.bottom + 12,
-              paddingHorizontal: isDesktop ? 12 : 4,
-              // el menú lateral trae un ancho mínimo de 360: se lo baja al que corresponde
-              width: isDesktop ? SIDE_NAV_WIDTH : 76,
-              minWidth: isDesktop ? SIDE_NAV_WIDTH : 76,
-            }
-          : {
-              backgroundColor: colors.surface.primary,
-              borderTopColor: colors.border.subtle,
-              // alto fijo + la barra del sistema (botones o gestos de Android): sin esto la tapa
-              height: 62 + insets.bottom,
-              paddingTop: 6,
-              paddingBottom: 6 + insets.bottom,
-            },
+        tabBarStyle: {
+          backgroundColor: colors.surface.primary,
+          borderTopColor: colors.border.subtle,
+          // alto fijo + la barra del sistema (botones o gestos de Android): sin esto la tapa
+          height: 62 + insets.bottom,
+          paddingTop: 6,
+          paddingBottom: 6 + insets.bottom,
+        },
         tabBarLabelStyle: {
           fontFamily: typography.body.fontFamily,
           fontSize: 11,

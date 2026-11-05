@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { StyleSheet, Text, View } from "react-native";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { Button } from "@/components/common/Button";
+import { useBreakpoint } from "@/lib/responsive/useBreakpoint";
 import { makeStyles, useColors } from "@/lib/theme";
 
 interface StartRouteCardProps {
@@ -16,9 +17,10 @@ interface StartRouteCardProps {
 export function StartRouteCard({ routeNames, label, hint, onPress }: StartRouteCardProps) {
   const styles = useStyles();
   const colors = useColors();
+  const { contentWidth } = useBreakpoint();
 
   return (
-    <View style={styles.card}>
+    <View style={[styles.card, contentWidth >= 980 ? styles.cardWide : null]}>
       {routeNames.length > 0 ? (
         <View style={styles.route}>
           <Ionicons name="navigate-outline" size={18} color={colors.text.secondary} />
@@ -43,6 +45,7 @@ const useStyles = makeStyles((colors) =>
       borderWidth: 1,
       borderColor: colors.border.subtle,
     },
+    cardWide: { gap: spacing.lg, padding: spacing.xl, borderRadius: 28 },
     route: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
     routeText: { flex: 1, fontFamily: typography.body.fontFamily, fontSize: 14, color: colors.text.secondary },
     hint: { fontFamily: typography.body.fontFamily, fontSize: 13, color: colors.text.secondary, textAlign: "center" },

@@ -54,6 +54,7 @@ Monorepo pnpm + Turborepo. Todo lo de un tema vive en una sola carpeta.
 | `lib/apiClient.ts` | Clientes de la API y renovación automática del access token. |
 | `lib/theme/` | Tema claro / oscuro. |
 | `lib/responsive/` | Tamaño de pantalla (celular, tablet, escritorio), giro del dispositivo, cuántas columnas entran (`columnsFor`) y cuándo el menú pasa a la izquierda. |
+| `components/navigation/` | `SideNav`: el menú lateral de la versión para computadora (logo, secciones, cuenta). |
 | `lib/web/` | Retoques solo de la web: barras de desplazamiento y escala de la interfaz según el ancho de la pantalla (`webScale`). |
 | `lib/notifications/` | Avisos del celular: permiso, token, avisos locales y el aviso de cercanía a los comercios de la compra (`nearby`). |
 | `lib/activity/` | Los numeritos de la app (Actividad y Administración). |

@@ -45,7 +45,7 @@ export default function ListsScreen() {
     <SafeAreaView style={styles.container} edges={["top"]}>
       <ScreenFrame wide>
       <View style={styles.headerRow}>
-        <Text accessibilityRole="header" style={styles.title}>
+        <Text accessibilityRole="header" style={[styles.title, contentWidth >= 980 ? styles.titleWide : null]}>
           Mis listas
         </Text>
         <AnimatedPressable
@@ -112,6 +112,7 @@ const useStyles = makeStyles((colors) =>
       paddingBottom: spacing.md,
     },
     title: { fontFamily: typography.heroTitle.fontFamily, fontSize: 32, lineHeight: 38, color: colors.text.primary },
+    titleWide: { fontSize: 42, lineHeight: 48 },
     addButton: {
       width: 44,
       height: 44,
@@ -120,7 +121,7 @@ const useStyles = makeStyles((colors) =>
       alignItems: "center",
       justifyContent: "center",
     },
-    gridRow: { gap: spacing.md },
+    gridRow: { gap: spacing.lg },
     cell: { flex: 1 },
     filters: { paddingHorizontal: spacing.lg, gap: spacing.xs },
     list: { paddingHorizontal: spacing.lg, paddingTop: spacing.sm, paddingBottom: spacing.xxl, gap: spacing.md },

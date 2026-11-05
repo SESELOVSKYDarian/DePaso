@@ -159,18 +159,17 @@ export default function HomeScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      <BackToTopScrollView wide contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+      <BackToTopScrollView wide contentContainerStyle={twoColumns ? [styles.content, styles.contentWide] : styles.content} showsVerticalScrollIndicator={false}>
         {twoColumns ? (
-          <View style={styles.columns}>
-            <View style={styles.sideColumn}>
-              {introBlock}
-              {newsBlock}
+          <>
+            {/* arriba, lo tuyo y lo que cambió; abajo, los sliders a todo el ancho */}
+            <View style={styles.topRow}>
+              <View style={styles.heroColumn}>{introBlock}</View>
+              <View style={styles.newsColumn}>{newsBlock}</View>
             </View>
-            <View style={styles.mainColumn}>
-              {dealsBlock}
-              {recommendedBlock}
-            </View>
-          </View>
+            {dealsBlock}
+            {recommendedBlock}
+          </>
         ) : (
           <>
             {introBlock}

@@ -41,7 +41,7 @@ export default function ProfileScreen() {
         {twoColumns ? (
           <View style={styles.columns}>
             <View style={styles.column}>
-            <Text accessibilityRole="header" style={styles.title}>
+            <Text accessibilityRole="header" style={[styles.title, twoColumns ? styles.titleWide : null]}>
               Mi perfil
             </Text>
 
@@ -92,7 +92,7 @@ export default function ProfileScreen() {
           </View>
         ) : (
           <>
-          <Text accessibilityRole="header" style={styles.title}>
+          <Text accessibilityRole="header" style={[styles.title, twoColumns ? styles.titleWide : null]}>
             Mi perfil
           </Text>
 
@@ -162,8 +162,9 @@ const useStyles = makeStyles((colors) =>
   StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.surface.base },
     content: { paddingHorizontal: spacing.lg, paddingTop: spacing.md, paddingBottom: spacing.xxl, gap: spacing.lg },
-    columns: { flexDirection: "row", alignItems: "flex-start", gap: spacing.lg },
-    column: { flex: 1, minWidth: 0, gap: spacing.lg },
+    columns: { flexDirection: "row", alignItems: "flex-start", gap: spacing.xl },
+    column: { flex: 1, minWidth: 0, gap: spacing.xl },
+    titleWide: { fontSize: 42, lineHeight: 48 },
     title: { fontFamily: typography.heroTitle.fontFamily, fontSize: 28, lineHeight: 34, color: colors.text.primary },
   }),
 );

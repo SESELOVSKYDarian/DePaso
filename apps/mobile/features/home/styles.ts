@@ -12,9 +12,13 @@ export const useStyles = makeStyles((colors) =>
       gap: spacing.xl,
     },
     // dos columnas en pantallas anchas
-    columns: { flexDirection: "row", alignItems: "flex-start", gap: spacing.xl },
-    sideColumn: { width: 420, gap: spacing.xl },
-    mainColumn: { flex: 1, minWidth: 0, gap: spacing.xl },
+    topRow: { flexDirection: "row", alignItems: "flex-start", gap: spacing.xxl },
+    heroColumn: { flex: 1.25, minWidth: 0, gap: spacing.xl },
+    newsColumn: { flex: 1, minWidth: 0, gap: spacing.xl },
+    // pantalla ancha: más aire alrededor y entre bloques
+    contentWide: { paddingHorizontal: spacing.xxl, paddingTop: spacing.xxl, gap: spacing.xxl },
+    greetingWide: { fontSize: 42, lineHeight: 48 },
+    questionWide: { fontSize: 18, lineHeight: 26 },
     headerRow: {
       flexDirection: "row",
       alignItems: "flex-start",

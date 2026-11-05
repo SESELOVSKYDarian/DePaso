@@ -4,8 +4,11 @@ import { useBreakpoint } from "@/lib/responsive/useBreakpoint";
 import { makeStyles } from "@/lib/theme";
 import { BrandPanel } from "./BrandPanel";
 
-/** Ancho de la columna del formulario. */
-const FORM_WIDTH = 520;
+/** Ancho de la tarjeta centrada (tablet). */
+const CARD_WIDTH = 520;
+/** Ancho y alto del formulario cuando comparte la pantalla con el panel de la marca: una columna angosta, centrada en la altura. */
+const FORM_WIDTH = 400;
+const FORM_MAX_HEIGHT = 660;
 
 /**
  * Pantallas de una sola tarea (ingresar, registrarse, el código del mail, la bienvenida, los
@@ -40,13 +43,13 @@ export function NarrowScreen({ children }: { children: ReactNode }) {
 const useStyles = makeStyles((colors) =>
   StyleSheet.create({
     split: { flex: 1, flexDirection: "row", backgroundColor: colors.surface.base },
-    formSide: { flex: 1, alignItems: "center", backgroundColor: colors.surface.base },
-    formColumn: { flex: 1, width: "100%", maxWidth: FORM_WIDTH },
+    formSide: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.surface.base },
+    formColumn: { flex: 1, width: "100%", maxWidth: FORM_WIDTH, maxHeight: FORM_MAX_HEIGHT },
     centered: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.surface.secondary },
     card: {
       flex: 1,
       width: "100%",
-      maxWidth: FORM_WIDTH,
+      maxWidth: CARD_WIDTH,
       backgroundColor: colors.surface.base,
       borderLeftWidth: 1,
       borderRightWidth: 1,

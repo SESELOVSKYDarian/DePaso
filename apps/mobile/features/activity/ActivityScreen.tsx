@@ -80,7 +80,7 @@ export default function ActivityScreen() {
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <ScreenFrame wide={sideBySide}>
-        <Text accessibilityRole="header" style={styles.title}>
+        <Text accessibilityRole="header" style={[styles.title, sideBySide ? styles.titleWide : null]}>
           Actividad
         </Text>
         {sideBySide ? (
@@ -116,6 +116,7 @@ const useStyles = makeStyles((colors) =>
       paddingHorizontal: spacing.lg,
       paddingTop: spacing.md,
     },
+    titleWide: { fontSize: 42, lineHeight: 48, paddingTop: spacing.xl, paddingBottom: spacing.md },
     loading: { flex: 1, alignItems: "center", justifyContent: "center" },
     list: {
       marginHorizontal: spacing.lg,
@@ -127,7 +128,7 @@ const useStyles = makeStyles((colors) =>
       overflow: "hidden",
     },
     // una al lado de la otra: cada lista es una tarjeta dentro de su panel
-    panels: { flex: 1, flexDirection: "row", gap: spacing.lg, paddingHorizontal: spacing.lg, paddingTop: spacing.sm },
+    panels: { flex: 1, flexDirection: "row", gap: spacing.xl, paddingHorizontal: spacing.lg, paddingTop: spacing.sm },
     panel: { flex: 1, minWidth: 0 },
     panelTitle: { fontFamily: typography.itemTitle.fontFamily, fontSize: 18, color: colors.text.primary, marginBottom: spacing.sm },
     panelBody: { flex: 1 },
