@@ -10,6 +10,7 @@ import { Button } from "@/components/common/Button";
 import { PillInput } from "@/components/common/PillInput";
 import { SocialAuthButtons } from "@/components/auth/SocialAuthButtons";
 import { useAuth } from "@/lib/auth/AuthContext";
+import { useBreakpoint } from "@/lib/responsive/useBreakpoint";
 
 function loginErrorMessage(error: unknown): string {
   if (error instanceof ApiError && error.status === 401) {
@@ -24,6 +25,8 @@ function loginErrorMessage(error: unknown): string {
 export default function LoginScreen() {
   const styles = useStyles();
   const { login } = useAuth();
+  // en computadora el formulario es compacto y entra sin scroll
+  const { hasBrandPanel } = useBreakpoint();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -49,7 +52,7 @@ export default function LoginScreen() {
   return (
     <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
       <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={!hasBrandPanel}>
           <AuthHero title="Iniciá sesión" subtitle="Ahorrá en el camino, en serio." />
 
           <PillInput
@@ -82,12 +85,12 @@ export default function LoginScreen() {
             label={isSubmitting ? "Ingresando..." : "Ingresar"}
             onPress={() => void handleSubmit()}
             disabled={isSubmitting}
-            style={styles.pillButton}
+            style={[styles.pillButton, hasBrandPanel ? styles.pillButtonCompact : null]}
           />
 
           <SocialAuthButtons mode="login" withDivider />
 
-          <Link href="/(auth)/register" style={styles.link}>
+          <Link href="/(auth)/register" style={[styles.link, hasBrandPanel ? styles.linkCompact : null]}>
             ¿No tenés cuenta? Registrate
           </Link>
         </ScrollView>
@@ -122,6 +125,8 @@ const useStyles = makeStyles((colors) => StyleSheet.create({
   pillButton: {
     borderRadius: radii.full,
   },
+  pillButtonCompact: { minHeight: 46 },
+  linkCompact: { marginTop: spacing.lg, fontSize: 13 },
   divider: {
     flexDirection: "row",
     alignItems: "center",

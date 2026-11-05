@@ -15,6 +15,9 @@ export function installWebStyles(): void {
   style.textContent = `
     html, body { overscroll-behavior: none; }
     * { scrollbar-width: thin; scrollbar-color: rgba(128,128,128,0.45) transparent; }
+    /* el navegador dibuja un recuadro blanco alrededor del campo enfocado: DePaso ya marca el foco con su borde */
+    input, textarea, select { outline: none !important; box-shadow: none !important; }
+    input:focus, textarea:focus { outline: none !important; }
     *::-webkit-scrollbar { width: 6px; height: 6px; }
     *::-webkit-scrollbar-thumb { background: rgba(128,128,128,0.45); border-radius: 3px; }
     *::-webkit-scrollbar-track { background: transparent; }

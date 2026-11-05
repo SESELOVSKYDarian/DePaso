@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { spacing } from "@depaso/design-tokens";
 import { authClient } from "@/lib/apiClient";
+import { useBreakpoint } from "@/lib/responsive/useBreakpoint";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { SocialButton, type SocialProvider } from "./SocialButton";
 import { useToast } from "../common/Toast";
@@ -42,6 +43,8 @@ function errorMessage(error: unknown, label: string): string {
 /** Google, Meta y Discord. La misma lógica sirve para iniciar sesión y para crear la cuenta. */
 export function SocialAuthButtons({ mode, consent, onConsentMissing, onSelect, only, withDivider = false }: SocialAuthButtonsProps) {
   const styles = useStyles();
+  // en computadora los tres van juntos, en una fila de íconos
+  const { hasBrandPanel } = useBreakpoint();
   const { loginWithOAuth } = useAuth();
   const { show: showToast } = useToast();
   const [providers, setProviders] = useState<Record<string, ProviderInfo> | null>(null);
@@ -126,9 +129,9 @@ export function SocialAuthButtons({ mode, consent, onConsentMissing, onSelect, o
   if (visible.length === 0) return null;
 
   return (
-    <View style={styles.group}>
+    <View style={[styles.group, hasBrandPanel ? styles.row : null]}>
       {withDivider ? (
-        <View style={styles.divider}>
+        <View style={[styles.divider, hasBrandPanel ? styles.dividerCompact : null]}>
           <View style={styles.dividerLine} />
           <Text style={styles.dividerLabel}>o</Text>
           <View style={styles.dividerLine} />
@@ -138,6 +141,7 @@ export function SocialAuthButtons({ mode, consent, onConsentMissing, onSelect, o
         <SocialButton
           key={id}
           provider={id}
+          iconOnly={hasBrandPanel}
           loading={busy === id}
           disabled={busy !== null && busy !== id}
           onPress={() => void handlePress(id)}
@@ -152,6 +156,8 @@ const styles = StyleSheet.create({
   group: {
     gap: spacing.sm,
   },
+  row: { flexDirection: "row", flexWrap: "wrap" },
+  dividerCompact: { marginVertical: spacing.md, width: "100%" },
   divider: { flexDirection: "row", alignItems: "center", gap: spacing.sm, marginVertical: spacing.lg },
   dividerLine: { flex: 1, height: 1, backgroundColor: "rgba(128,128,128,0.35)" },
   dividerLabel: { fontSize: 13, color: "#8a8f9a" },

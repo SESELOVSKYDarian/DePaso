@@ -11,6 +11,8 @@ interface SocialButtonProps {
   onPress: () => void;
   loading?: boolean;
   disabled?: boolean;
+  /** Solo el ícono, en un círculo (para ponerlos todos en una fila). */
+  iconOnly?: boolean;
 }
 
 const PROVIDER_META: Record<SocialProvider, { label: string; icon: keyof typeof Ionicons.glyphMap }> = {
@@ -25,7 +27,7 @@ const PROVIDER_META: Record<SocialProvider, { label: string; icon: keyof typeof 
  * Botón de ingreso/registro. Los íconos van en el color de texto del tema (no en el color de
  * cada marca) para que la fila se vea como un solo sistema, en claro y en oscuro.
  */
-export function SocialButton({ provider, onPress, loading = false, disabled = false }: SocialButtonProps) {
+export function SocialButton({ provider, onPress, loading = false, disabled = false, iconOnly = false }: SocialButtonProps) {
   const colors = useColors();
   const styles = useStyles();
   const meta = PROVIDER_META[provider];
@@ -35,14 +37,14 @@ export function SocialButton({ provider, onPress, loading = false, disabled = fa
       accessibilityLabel={meta.label}
       haptic={false}
       onPress={disabled || loading ? () => undefined : onPress}
-      style={[styles.base, disabled ? styles.disabled : null]}
+      style={[styles.base, iconOnly ? styles.iconOnly : null, disabled ? styles.disabled : null]}
     >
       {loading ? (
         <ActivityIndicator size="small" color={colors.text.primary} />
       ) : (
         <Ionicons name={meta.icon} size={18} color={colors.text.primary} />
       )}
-      <Text style={styles.label}>{meta.label}</Text>
+      {iconOnly ? null : <Text style={styles.label}>{meta.label}</Text>}
     </AnimatedPressable>
   );
 }
@@ -61,6 +63,7 @@ const useStyles = makeStyles((colors) =>
       borderWidth: 1,
       borderColor: colors.border.subtle,
     },
+    iconOnly: { flex: 1, minHeight: 48, paddingHorizontal: 0 },
     disabled: {
       opacity: 0.5,
     },

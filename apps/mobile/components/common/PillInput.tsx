@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRef, useState, type ComponentRef } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View, type TextInputProps } from "react-native";
 import { radii, spacing, typography } from "@depaso/design-tokens";
+import { useBreakpoint } from "@/lib/responsive/useBreakpoint";
 import { makeStyles, useColors } from "@/lib/theme";
 
 interface PillInputProps extends TextInputProps {
@@ -18,22 +19,34 @@ interface PillInputProps extends TextInputProps {
 export function PillInput({ icon, error, isPassword = false, secureTextEntry, style, ...inputProps }: PillInputProps) {
   const colors = useColors();
   const styles = useStyles();
+  // en computadora (formulario junto al panel de la marca) los campos son más finos
+  const { hasBrandPanel } = useBreakpoint();
   const [reveal, setReveal] = useState(false);
+  // el campo enfocado se marca con un borde más fuerte (reemplaza al recuadro del navegador)
+  const [focused, setFocused] = useState(false);
   const inputRef = useRef<ComponentRef<typeof TextInput>>(null);
 
   return (
     <View style={styles.container}>
       {/* tocar cualquier parte de la píldora (ícono, bordes) lleva el cursor al campo */}
-      <Pressable accessible={false} onPress={() => inputRef.current?.focus()} style={[styles.pill, error ? styles.pillError : null]}>
+      <Pressable accessible={false} onPress={() => inputRef.current?.focus()} style={[styles.pill, hasBrandPanel ? styles.pillCompact : null, focused ? styles.pillFocused : null, error ? styles.pillError : null]}>
         <Ionicons name={icon} size={18} color={colors.text.muted} style={styles.leftIcon} />
         <TextInput
           ref={inputRef}
-          style={[styles.input, style]}
+          style={[styles.input, hasBrandPanel ? styles.inputCompact : null, style]}
           placeholderTextColor={colors.text.muted}
           autoCapitalize="none"
           autoCorrect={false}
           secureTextEntry={isPassword ? !reveal : secureTextEntry}
           {...inputProps}
+          onFocus={(event) => {
+            setFocused(true);
+            inputProps.onFocus?.(event);
+          }}
+          onBlur={(event) => {
+            setFocused(false);
+            inputProps.onBlur?.(event);
+          }}
         />
         {isPassword ? (
           <Pressable
@@ -65,6 +78,8 @@ const useStyles = makeStyles((colors) => StyleSheet.create({
     backgroundColor: colors.surface.primary,
     paddingHorizontal: spacing.md,
   },
+  pillCompact: { minHeight: 44 },
+  pillFocused: { borderColor: colors.text.secondary },
   pillError: {
     borderColor: colors.state.error,
   },
@@ -84,6 +99,7 @@ const useStyles = makeStyles((colors) => StyleSheet.create({
     alignSelf: "stretch",
     minHeight: 48,
   },
+  inputCompact: { fontSize: 14, minHeight: 42 },
   error: {
     fontFamily: typography.caption.fontFamily,
     fontSize: 12,

@@ -17,16 +17,16 @@ export function AuthHero({ title, subtitle }: AuthHeroProps) {
   const styles = useStyles();
   const { hasBrandPanel } = useBreakpoint();
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, hasBrandPanel ? styles.containerCompact : null]}>
       {hasBrandPanel ? null : (
         <View style={styles.badge}>
           <BrandLogo variant="mark" style={styles.logo} />
         </View>
       )}
-      <Text accessibilityRole="header" style={styles.title}>
+      <Text accessibilityRole="header" style={[styles.title, hasBrandPanel ? styles.titleCompact : null]}>
         {title}
       </Text>
-      <Text style={styles.subtitle}>{subtitle}</Text>
+      <Text style={[styles.subtitle, hasBrandPanel ? styles.subtitleCompact : null]}>{subtitle}</Text>
     </View>
   );
 }
@@ -37,6 +37,9 @@ const useStyles = makeStyles((colors) =>
       alignItems: "center",
       marginBottom: spacing.xl,
     },
+    containerCompact: { marginBottom: spacing.lg },
+    titleCompact: { fontSize: 24 },
+    subtitleCompact: { fontSize: 13 },
     badge: {
       width: 84,
       height: 84,
