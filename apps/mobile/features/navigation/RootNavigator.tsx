@@ -88,6 +88,7 @@ export function RootNavigator() {
         {/* perfil y ajustes */}
         <Stack.Screen name="preferences/index" options={{ headerShown: true, title: "Mis preferencias" }} />
         <Stack.Screen name="preferences/product-form" options={{ headerShown: true, title: "Preferencia de marca", presentation: "modal" }} />
+        <Stack.Screen name="preferences/custom-store" options={{ headerShown: true, title: "Agregar un comercio" }} />
         <Stack.Screen name="preferences/store-form" options={{ headerShown: true, title: "Preferencia de comercio", presentation: "modal" }} />
         <Stack.Screen name="detour" options={{ headerShown: true, title: "Cuánto me desvío", ...sheet([0.5]) }} />
         <Stack.Screen name="payment-methods" options={{ headerShown: true, title: "Métodos de pago", ...sheet([0.75, 1]) }} />

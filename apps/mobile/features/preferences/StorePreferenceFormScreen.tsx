@@ -7,6 +7,7 @@ import { FlatList, StyleSheet, Text, View } from "react-native";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
 import { Button } from "@/components/common/Button";
 import { CategoryPicker } from "@/components/common/CategoryPicker";
+import { SearchField } from "@/components/common/SearchField";
 import { useToast } from "@/components/common/Toast";
 import { preferencesClient, storesClient } from "@/lib/apiClient";
 import { LIST_PERFORMANCE } from "@/lib/listPerformance";
@@ -26,6 +27,8 @@ export default function StorePreferenceFormScreen() {
   const [selectedBranchId, setSelectedBranchId] = useState<string | null>(null);
   const [categoryError, setCategoryError] = useState<string | undefined>();
   const [isLoadingBranches, setIsLoadingBranches] = useState(true);
+  // buscador de la lista de comercios
+  const [branchQuery, setBranchQuery] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -35,6 +38,20 @@ export default function StorePreferenceFormScreen() {
       .catch(() => showToast("No pudimos cargar los comercios.", "error"))
       .finally(() => setIsLoadingBranches(false));
   }, [showToast]);
+
+  // el comercio no está en la lista: se lo agrega a mano marcándolo en el mapa
+  const goAddByHand = () => {
+    if (!category.trim()) {
+      setCategoryError("Elegí una categoría.");
+      return;
+    }
+    router.push({ pathname: "/preferences/custom-store", params: { category, type } });
+  };
+
+  const needle = branchQuery.trim().toLowerCase();
+  const shownBranches = needle
+    ? branches.filter((branch) => `${branch.storeName} ${branch.name} ${branch.address}`.toLowerCase().includes(needle))
+    : branches;
 
   const handleSave = async () => {
     if (!category.trim()) {
@@ -81,12 +98,13 @@ export default function StorePreferenceFormScreen() {
       </View>
 
       <Text style={styles.label}>Comercio</Text>
+      <SearchField value={branchQuery} onChangeText={setBranchQuery} placeholder="Buscar por nombre o dirección" />
       {isLoadingBranches ? (
         <Text style={styles.rowMeta}>Cargando comercios...</Text>
       ) : (
         <FlatList
           {...LIST_PERFORMANCE}
-          data={branches}
+          data={shownBranches}
           keyExtractor={(item) => item.id}
           style={styles.branchList}
           renderItem={({ item }) => (
@@ -105,6 +123,7 @@ export default function StorePreferenceFormScreen() {
         />
       )}
 
+      <Button label="No está mi comercio: agregarlo en el mapa" variant="secondary" onPress={goAddByHand} />
       <Button
         label={isSubmitting ? "Guardando..." : "Guardar preferencia"}
         onPress={() => void handleSave()}

@@ -24,3 +24,4 @@ export * from "./notifications";
 export * from "./ads";
 export * from "./adminMerchants";
 export * from "./nearbyPrices";
+export * from "./customPreferences";

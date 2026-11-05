@@ -1,56 +1,43 @@
 import type { ProductPreferenceInput, ProductSearchResult } from "@depaso/validation";
-import { radii, spacing, typography } from "@depaso/design-tokens";
-import { makeStyles, useColors } from "@/lib/theme";
 import { router } from "expo-router";
-import { useRef, useState } from "react";
-import { FlatList, StyleSheet, Text, TextInput, View } from "react-native";
-import { AnimatedPressable } from "@/components/common/AnimatedPressable";
+import { useState } from "react";
+import { StyleSheet, Text, View } from "react-native";
+import { radii, spacing, typography } from "@depaso/design-tokens";
 import { Button } from "@/components/common/Button";
-import { EmptyState } from "@/components/common/EmptyState";
+import { FormField } from "@/components/common/FormField";
 import { useToast } from "@/components/common/Toast";
-import { preferencesClient, productsClient } from "@/lib/apiClient";
-import { LIST_PERFORMANCE } from "@/lib/listPerformance";
+import { preferencesClient } from "@/lib/apiClient";
+import { makeStyles } from "@/lib/theme";
+import { PreferenceTypeOptions } from "./components/PreferenceTypeOptions";
+import { ProductFinder } from "./components/ProductFinder";
 
-const TYPE_OPTIONS: { value: ProductPreferenceInput["type"]; label: string; hint: string }[] = [
-  { value: "EXACT", label: "Marca exacta", hint: "Nunca la reemplaces por otra." },
-  { value: "PREFERRED", label: "Marca preferida", hint: "Priorizala, pero puede cambiar si conviene mucho." },
-  { value: "ANY", label: "Cualquier marca", hint: "Sin restricción — elegí siempre la más conveniente." },
-];
+type Type = ProductPreferenceInput["type"];
 
-/** Elegir un producto y decir qué tan estricta es la preferencia de marca (Fase 10). */
+/**
+ * Preferencia de marca para un producto. Se busca el producto exacto con las cajas de categorías o
+ * escribiendo; si no está en el catálogo, se puede nombrar a mano.
+ */
 export default function ProductPreferenceFormScreen() {
-  const colors = useColors();
   const styles = useStyles();
   const { show: showToast } = useToast();
-  const [query, setQuery] = useState("");
-  const [results, setResults] = useState<ProductSearchResult[]>([]);
   const [selected, setSelected] = useState<ProductSearchResult | null>(null);
-  const [type, setType] = useState<ProductPreferenceInput["type"]>("PREFERRED");
+  // "nombrarlo": el producto no está en el catálogo
+  const [naming, setNaming] = useState(false);
+  const [name, setName] = useState("");
+  const [nameError, setNameError] = useState<string | undefined>();
+  const [type, setType] = useState<Type>("PREFERRED");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const searchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleChangeText = (text: string) => {
-    setQuery(text);
-    if (searchTimer.current) clearTimeout(searchTimer.current);
-    if (!text.trim()) {
-      setResults([]);
+  const save = async () => {
+    if (naming && name.trim().length < 2) {
+      setNameError("Escribí cómo se llama el producto.");
       return;
     }
-    searchTimer.current = setTimeout(async () => {
-      try {
-        const { results: found } = await productsClient.search(text.trim());
-        setResults(found);
-      } catch {
-        setResults([]);
-      }
-    }, 300);
-  };
-
-  const handleSave = async () => {
-    if (!selected) return;
+    if (!naming && !selected) return;
     setIsSubmitting(true);
     try {
-      await preferencesClient.products.set({ productId: selected.id, type });
+      if (naming) await preferencesClient.customProducts.create({ name: name.trim(), type });
+      else await preferencesClient.products.set({ productId: selected!.id, type });
       router.back();
     } catch {
       showToast("No pudimos guardar la preferencia.", "error");
@@ -59,160 +46,64 @@ export default function ProductPreferenceFormScreen() {
     }
   };
 
-  if (!selected) {
+  // 1) buscar el producto
+  if (!selected && !naming) {
     return (
       <View style={styles.container}>
-        <TextInput
-          value={query}
-          onChangeText={handleChangeText}
-          placeholder="Buscar producto"
-          placeholderTextColor={colors.text.muted}
-          autoFocus
-          autoCapitalize="none"
-          style={styles.input}
+        <ProductFinder
+          onPick={setSelected}
+          footer={<Button label="No lo encuentro: escribirlo yo" variant="secondary" onPress={() => setNaming(true)} />}
         />
-        {results.length === 0 ? (
-          <EmptyState emoji="🔎" title="Buscá un producto" description="Escribí el nombre o la marca que querés configurar." />
-        ) : (
-          <FlatList
-          {...LIST_PERFORMANCE}
-            data={results}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.list}
-            renderItem={({ item }) => (
-              <AnimatedPressable
-                accessibilityLabel={`Elegir ${item.name}`}
-                haptic={false}
-                onPress={() => setSelected(item)}
-                style={styles.row}
-              >
-                <Text style={styles.rowName}>{item.name}</Text>
-                <Text style={styles.rowMeta}>{item.category}</Text>
-              </AnimatedPressable>
-            )}
-          />
-        )}
       </View>
     );
   }
 
+  // 2) qué tan estricta es la preferencia (con el producto elegido, o con el nombre escrito)
   return (
     <View style={styles.container}>
-      <View style={styles.selectedCard}>
-        <Text style={styles.selectedTitle}>{selected.name}</Text>
-        <Text style={styles.rowMeta}>{selected.category}</Text>
-      </View>
+      {naming ? (
+        <FormField
+          label="¿Cómo se llama el producto?"
+          value={name}
+          onChangeText={(text) => {
+            setName(text);
+            setNameError(undefined);
+          }}
+          placeholder="Ej.: Yerba Playadito 1 kg"
+          autoCapitalize="sentences"
+          maxLength={120}
+          error={nameError}
+          hint="Queda anotado para vos. Todavía no lo tenemos en el catálogo, así que no entra en la comparación de precios."
+        />
+      ) : (
+        <View style={styles.selectedCard}>
+          <Text style={styles.selectedTitle}>{selected!.name}</Text>
+          <Text style={styles.selectedMeta}>{selected!.category}</Text>
+        </View>
+      )}
 
       <Text style={styles.label}>¿Qué tan estricta es tu preferencia?</Text>
-      <View style={styles.options}>
-        {TYPE_OPTIONS.map((opt) => (
-          <AnimatedPressable
-            key={opt.value}
-            accessibilityLabel={opt.label}
-            haptic={false}
-            onPress={() => setType(opt.value)}
-            style={[styles.option, type === opt.value ? styles.optionSelected : null]}
-          >
-            <Text style={[styles.optionLabel, type === opt.value ? styles.optionLabelSelected : null]}>{opt.label}</Text>
-            <Text style={styles.optionHint}>{opt.hint}</Text>
-          </AnimatedPressable>
-        ))}
-      </View>
+      <PreferenceTypeOptions value={type} onChange={setType} />
 
-      <Button label={isSubmitting ? "Guardando..." : "Guardar preferencia"} onPress={() => void handleSave()} loading={isSubmitting} />
-      <Button label="Elegir otro producto" variant="ghost" onPress={() => setSelected(null)} />
+      <Button label={isSubmitting ? "Guardando..." : "Guardar preferencia"} onPress={() => void save()} loading={isSubmitting} />
+      <Button
+        label={naming ? "Buscarlo en el catálogo" : "Elegir otro producto"}
+        variant="ghost"
+        onPress={() => {
+          setSelected(null);
+          setNaming(false);
+        }}
+      />
     </View>
   );
 }
 
-const useStyles = makeStyles((colors) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.surface.base,
-    padding: spacing.lg,
-    gap: spacing.md,
-  },
-  input: {
-    minHeight: 48,
-    borderRadius: radii.md,
-    borderWidth: 1,
-    borderColor: colors.border.subtle,
-    backgroundColor: colors.surface.input,
-    paddingHorizontal: spacing.md,
-    fontFamily: typography.subtitle.fontFamily,
-    fontSize: 14,
-    color: colors.text.primary,
-  },
-  list: {
-    gap: spacing.sm,
-    paddingTop: spacing.sm,
-  },
-  row: {
-    backgroundColor: colors.surface.primary,
-    borderRadius: radii.md,
-    borderWidth: 1,
-    borderColor: colors.border.subtle,
-    padding: spacing.sm,
-    minHeight: 44,
-  },
-  rowName: {
-    fontFamily: typography.body.fontFamily,
-    fontWeight: "600",
-    fontSize: 15,
-    color: colors.text.primary,
-  },
-  rowMeta: {
-    fontFamily: typography.caption.fontFamily,
-    fontSize: 12,
-    color: colors.text.muted,
-    marginTop: 1,
-  },
-  selectedCard: {
-    backgroundColor: colors.surface.primary,
-    borderRadius: radii.md,
-    borderWidth: 1,
-    borderColor: colors.border.subtle,
-    padding: spacing.md,
-  },
-  selectedTitle: {
-    fontFamily: typography.title.fontFamily,
-    fontWeight: "600",
-    fontSize: 16,
-    color: colors.text.primary,
-  },
-  label: {
-    fontFamily: typography.caption.fontFamily,
-    fontSize: 13,
-    fontWeight: "600",
-    color: colors.text.secondary,
-  },
-  options: {
-    gap: spacing.sm,
-  },
-  option: {
-    borderRadius: radii.md,
-    borderWidth: 1,
-    borderColor: colors.border.subtle,
-    backgroundColor: colors.surface.primary,
-    padding: spacing.sm,
-  },
-  optionSelected: {
-    borderColor: colors.brand.navy,
-    backgroundColor: colors.brand.mint,
-  },
-  optionLabel: {
-    fontFamily: typography.body.fontFamily,
-    fontWeight: "600",
-    fontSize: 14,
-    color: colors.text.primary,
-  },
-  optionLabelSelected: {
-    color: colors.brand.navy,
-  },
-  optionHint: {
-    fontFamily: typography.caption.fontFamily,
-    fontSize: 12,
-    color: colors.text.secondary,
-    marginTop: 2,
-  },
-}));
+const useStyles = makeStyles((colors) =>
+  StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.surface.base, padding: spacing.lg, gap: spacing.md },
+    selectedCard: { backgroundColor: colors.surface.primary, borderRadius: radii.md, borderWidth: 1, borderColor: colors.border.subtle, padding: spacing.md },
+    selectedTitle: { fontFamily: typography.body.fontFamily, fontWeight: "600", fontSize: 16, color: colors.text.primary },
+    selectedMeta: { fontFamily: typography.caption.fontFamily, fontSize: 12, color: colors.text.muted, marginTop: 1 },
+    label: { fontFamily: typography.caption.fontFamily, fontSize: 13, fontWeight: "600", color: colors.text.secondary },
+  }),
+);

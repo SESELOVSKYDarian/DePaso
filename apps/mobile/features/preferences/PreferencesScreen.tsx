@@ -1,4 +1,4 @@
-import type { ProductPreferenceResponse, StorePreferenceResponse } from "@depaso/validation";
+import type { CustomProductPreferenceResponse, CustomStorePreferenceResponse, ProductPreferenceResponse, StorePreferenceResponse } from "@depaso/validation";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles } from "@/lib/theme";
 import { router, useFocusEffect } from "expo-router";
@@ -9,6 +9,7 @@ import { AnimatedPressable } from "@/components/common/AnimatedPressable";
 import { EmptyState } from "@/components/common/EmptyState";
 import { useToast } from "@/components/common/Toast";
 import { preferencesClient } from "@/lib/apiClient";
+import { PreferenceRow } from "./components/PreferenceRow";
 
 const PRODUCT_TYPE_LABEL: Record<ProductPreferenceResponse["type"], string> = {
   EXACT: "Marca exacta",
@@ -30,17 +31,24 @@ export default function PreferencesScreen() {
   const { show: showToast } = useToast();
   const [productPrefs, setProductPrefs] = useState<ProductPreferenceResponse[]>([]);
   const [storePrefs, setStorePrefs] = useState<StorePreferenceResponse[]>([]);
+  // lo que la persona agregó a mano (productos sin catálogo y comercios marcados en el mapa)
+  const [customProducts, setCustomProducts] = useState<CustomProductPreferenceResponse[]>([]);
+  const [customStores, setCustomStores] = useState<CustomStorePreferenceResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   const load = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [{ preferences: products }, { preferences: stores }] = await Promise.all([
+      const [{ preferences: products }, { preferences: stores }, { preferences: customP }, { preferences: customS }] = await Promise.all([
         preferencesClient.products.list(),
         preferencesClient.stores.list(),
+        preferencesClient.customProducts.list(),
+        preferencesClient.customStores.list(),
       ]);
       setProductPrefs(products);
       setStorePrefs(stores);
+      setCustomProducts(customP);
+      setCustomStores(customS);
     } catch {
       showToast("No pudimos cargar tus preferencias.", "error");
     } finally {
@@ -69,6 +77,24 @@ export default function PreferencesScreen() {
     }
   };
 
+  const handleRemoveCustomProduct = async (id: string) => {
+    try {
+      await preferencesClient.customProducts.remove(id);
+      setCustomProducts((prev) => prev.filter((p) => p.id !== id));
+    } catch {
+      showToast("No pudimos quitar esa preferencia.", "error");
+    }
+  };
+
+  const handleRemoveCustomStore = async (id: string) => {
+    try {
+      await preferencesClient.customStores.remove(id);
+      setCustomStores((prev) => prev.filter((p) => p.id !== id));
+    } catch {
+      showToast("No pudimos quitar esa preferencia.", "error");
+    }
+  };
+
   const handleRemoveStore = async (id: string) => {
     try {
       await preferencesClient.stores.remove(id);
@@ -84,25 +110,27 @@ export default function PreferencesScreen() {
       <Text style={styles.sectionHint}>
         "Marca exacta" nunca se reemplaza, "preferida" la priorizamos y "cualquiera" no restringe.
       </Text>
-      {!isLoading && productPrefs.length === 0 ? (
+      {!isLoading && productPrefs.length + customProducts.length === 0 ? (
         <EmptyState emoji="🏷️" title="Sin preferencias de marca" description="Elegí un producto y decile a DePaso si querés siempre la misma marca." />
       ) : (
         <View style={styles.list}>
           {productPrefs.map((pref) => (
-            <View key={pref.id} style={styles.row}>
-              <View style={styles.rowText}>
-                <Text style={styles.rowTitle}>{pref.productName}</Text>
-                <Text style={styles.rowMeta}>{PRODUCT_TYPE_LABEL[pref.type]}</Text>
-              </View>
-              <AnimatedPressable
-                accessibilityLabel={`Quitar preferencia de ${pref.productName}`}
-                haptic={false}
-                onPress={() => void handleRemoveProduct(pref.productId)}
-                style={styles.removeButton}
-              >
-                <Text style={styles.removeLabel}>✕</Text>
-              </AnimatedPressable>
-            </View>
+            <PreferenceRow
+              key={pref.id}
+              title={pref.productName}
+              meta={PRODUCT_TYPE_LABEL[pref.type]}
+              removeLabel={`Quitar preferencia de ${pref.productName}`}
+              onRemove={() => void handleRemoveProduct(pref.productId)}
+            />
+          ))}
+          {customProducts.map((pref) => (
+            <PreferenceRow
+              key={pref.id}
+              title={pref.name}
+              meta={`${PRODUCT_TYPE_LABEL[pref.type]} · anotado por vos`}
+              removeLabel={`Quitar preferencia de ${pref.name}`}
+              onRemove={() => void handleRemoveCustomProduct(pref.id)}
+            />
           ))}
         </View>
       )}
@@ -118,27 +146,27 @@ export default function PreferencesScreen() {
       <Text style={styles.sectionHint}>
         "Obligatorio" fija el comercio; "preferido" lo prioriza sin descartar otras opciones.
       </Text>
-      {!isLoading && storePrefs.length === 0 ? (
+      {!isLoading && storePrefs.length + customStores.length === 0 ? (
         <EmptyState emoji="🏬" title="Sin preferencias de comercio" description="Ej.: siempre la carnicería de siempre, aunque haya otra más barata." />
       ) : (
         <View style={styles.list}>
           {storePrefs.map((pref) => (
-            <View key={pref.id} style={styles.row}>
-              <View style={styles.rowText}>
-                <Text style={styles.rowTitle}>{pref.category}</Text>
-                <Text style={styles.rowMeta}>
-                  {STORE_TYPE_LABEL[pref.type]} · {pref.storeName} — {pref.storeBranchName}
-                </Text>
-              </View>
-              <AnimatedPressable
-                accessibilityLabel={`Quitar preferencia de ${pref.category}`}
-                haptic={false}
-                onPress={() => void handleRemoveStore(pref.id)}
-                style={styles.removeButton}
-              >
-                <Text style={styles.removeLabel}>✕</Text>
-              </AnimatedPressable>
-            </View>
+            <PreferenceRow
+              key={pref.id}
+              title={pref.category}
+              meta={`${STORE_TYPE_LABEL[pref.type]} · ${pref.storeName} — ${pref.storeBranchName}`}
+              removeLabel={`Quitar preferencia de ${pref.category}`}
+              onRemove={() => void handleRemoveStore(pref.id)}
+            />
+          ))}
+          {customStores.map((pref) => (
+            <PreferenceRow
+              key={pref.id}
+              title={pref.category}
+              meta={`${STORE_TYPE_LABEL[pref.type]} · ${pref.name}${pref.address ? ` — ${pref.address}` : ""}`}
+              removeLabel={`Quitar preferencia de ${pref.category}`}
+              onRemove={() => void handleRemoveCustomStore(pref.id)}
+            />
           ))}
         </View>
       )}

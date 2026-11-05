@@ -188,6 +188,8 @@ model User {
   pushTokens           PushToken[]
   adRequests           AdRequest[]
   loginEvents          LoginEvent[]
+  customProductPreferences CustomProductPreference[]
+  customStorePreferences   CustomStorePreference[]
   reviewedAdRequests   AdRequest[] @relation("AdRequestReviewer")
   notificationSettings NotificationSettings?
 
@@ -1096,4 +1098,35 @@ model LoginEvent {
 
   @@index([userId, createdAt(sort: Desc)])
   @@map("login_events")
+}
+
+/// Preferencia de un producto que no está en el catálogo: la persona lo nombra a mano. Queda anotada
+/// para ella (no entra en la comparación de precios porque no hay datos de ese producto).
+model CustomProductPreference {
+  id        String                @id @default(uuid())
+  userId    String
+  user      User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name      String                @db.VarChar(120)
+  type      ProductPreferenceType
+  createdAt DateTime              @default(now())
+
+  @@index([userId])
+  @@map("custom_product_preferences")
+}
+
+/// Preferencia de un comercio que no está en la lista: la persona lo marcó a mano en el mapa.
+model CustomStorePreference {
+  id        String              @id @default(uuid())
+  userId    String
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category  String              @db.VarChar(60)
+  type      StorePreferenceType
+  name      String              @db.VarChar(120)
+  address   String?             @db.VarChar(255)
+  latitude  Float
+  longitude Float
+  createdAt DateTime            @default(now())
+
+  @@index([userId, category])
+  @@map("custom_store_preferences")
 }
