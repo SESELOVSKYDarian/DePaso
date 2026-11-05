@@ -113,7 +113,9 @@ export function StartupExtras() {
   const closePopup = () => {
     if (popup) void setStoredValue(seenKey, popup.id);
     setPopup(null);
-    void askIfNeeded();
+    // Un segundo modal no puede abrirse mientras el primero se está cerrando: en Android deja
+    // la pantalla congelada. Se espera a que la ventana termine de irse.
+    setTimeout(() => void askIfNeeded(), 600);
   };
 
   const accept = async () => {
@@ -123,6 +125,8 @@ export function StartupExtras() {
       void Linking.openSettings();
       return;
     }
+    // el cartel del sistema también espera a que se cierre este
+    await new Promise((resolve) => setTimeout(resolve, 350));
     const state = await requestPermission();
     if (state === "granted") void registerPushToken();
   };

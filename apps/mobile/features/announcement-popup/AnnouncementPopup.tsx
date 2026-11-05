@@ -15,7 +15,8 @@ interface AnnouncementPopupProps {
 export function AnnouncementPopup({ announcement, onClose }: AnnouncementPopupProps) {
   return (
     <Modal visible={announcement !== null} transparent animationType="fade" statusBarTranslucent onRequestClose={onClose}>
-      <ModalBackdrop style={styles.backdrop}>
+      {/* tocar afuera también cierra: siempre hay una salida */}
+      <ModalBackdrop style={styles.backdrop} onPress={onClose}>
         {announcement ? (
           <Animated.View entering={ZoomIn.springify().damping(16).stiffness(180)} style={styles.holder}>
             <AnnouncementCard title={announcement.title} body={announcement.body} emoji={announcement.emoji} imageUri={announcement.imageData} onClose={onClose} />

@@ -29,7 +29,8 @@ interface AuthContextValue {
   postSignupDone: boolean;
   completeOnboarding: () => Promise<void>;
   completePostSignup: () => void;
-  register: (body: RegisterRequest) => Promise<void>;
+  /** Crea la cuenta y devuelve el usuario (dice si falta confirmar el mail). */
+  register: (body: RegisterRequest) => Promise<AuthUserResponse>;
   login: (body: LoginRequest) => Promise<void>;
   /** Login/alta con Google, Meta o Discord. Si es una cuenta nueva corre el setup inicial. */
   loginWithOAuth: (provider: OAuthProviderId, body: OAuthLoginRequest) => Promise<void>;
@@ -93,6 +94,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await setStoredSession(result.token, result.refreshToken);
     setPostSignupDone(false);
     setUser(result.user);
+    return result.user;
   }, []);
 
   const login = useCallback(async (body: LoginRequest) => {

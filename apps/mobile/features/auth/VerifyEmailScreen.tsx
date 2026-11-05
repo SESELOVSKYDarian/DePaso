@@ -1,5 +1,6 @@
+import * as Clipboard from "expo-clipboard";
 import { useEffect, useRef, useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
+import { AppState, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { authClient } from "@/lib/apiClient";
@@ -62,6 +63,33 @@ export default function VerifyEmailScreen() {
     if (value.length === CODE_LENGTH && value !== lastTried.current) void verify(value);
   };
 
+  // Si la persona copió el código del mail, se completa solo: al abrir la pantalla y al volver a la app.
+  const fillFromClipboard = async (): Promise<boolean> => {
+    try {
+      const text = await Clipboard.getStringAsync();
+      // ocho dígitos seguidos (o con espacios en el medio, como a veces llegan en el mail)
+      const found = text.replace(/(\d)\s(?=\d)/g, "$1").match(/\b\d{8}\b/)?.[0];
+      if (!found || found === lastTried.current) return false;
+      handleChange(found);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    void fillFromClipboard();
+    const subscription = AppState.addEventListener("change", (state) => {
+      if (state === "active") void fillFromClipboard();
+    });
+    return () => subscription.remove();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handlePaste = async () => {
+    if (!(await fillFromClipboard())) showToast("No encontramos un código de 8 dígitos copiado.", "info");
+  };
+
   const handleResend = async () => {
     if (secondsLeft > 0 || isResending) return;
     setIsResending(true);
@@ -101,6 +129,7 @@ export default function VerifyEmailScreen() {
           ) : null}
 
           <View style={styles.actions}>
+            <Button label="Pegar código copiado" variant="secondary" onPress={() => void handlePaste()} />
             <Button
               label={isResending ? "Enviando..." : secondsLeft > 0 ? `Reenviar código (${secondsLeft} s)` : "Reenviar código"}
               variant="ghost"

@@ -30,7 +30,7 @@ export function Dialog({
   const styles = useStyles();
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
-      <ModalBackdrop style={styles.backdrop}>
+      <ModalBackdrop style={styles.backdrop} onPress={onCancel}>
         <View style={styles.card}>
           <Text style={styles.title}>{title}</Text>
           {description ? <Text style={styles.description}>{description}</Text> : null}

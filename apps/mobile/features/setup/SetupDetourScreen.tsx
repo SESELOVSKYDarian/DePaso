@@ -13,7 +13,7 @@ import { makeStyles } from "@/lib/theme";
  */
 export default function DetourSetupScreen() {
   const styles = useStyles();
-  const goNext = () => router.push("/(setup)/done");
+  const goNext = () => router.push("/(setup)/guide");
 
   return (
     <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
