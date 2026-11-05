@@ -11,10 +11,12 @@ import { usePurchase } from "@/lib/purchase/PurchaseContext";
 import { useTodayRoute, type TodayWaypoint } from "@/lib/routeContext/TodayRouteContext";
 import { findBrandLogo } from "@/lib/stores/matchBrandLogo";
 import { useBrandLogos } from "@/lib/stores/useBrandLogos";
+import { useBreakpoint } from "@/lib/responsive/useBreakpoint";
 import { makeStyles, useColors } from "@/lib/theme";
 import { ExploreMap } from "./components/ExploreMap";
 import { MapControls } from "./components/MapControls";
 import { MapSheet, PEEK_VISIBLE } from "./components/MapSheet";
+import { MapSidePanel } from "./components/MapSidePanel";
 import { NearbyStoresList, SelectedStoreCard } from "./components/NearbyStores";
 import { NoRouteCard } from "./components/NoRouteCard";
 import { PlanCard } from "./components/PlanCard";
@@ -49,6 +51,9 @@ export default function MapScreen() {
   const [containerHeight, setContainerHeight] = useState(0);
   const [expandSignal, setExpandSignal] = useState(0);
 
+  // en pantallas anchas (o con el celular acostado) los comercios van en un panel a la izquierda y el mapa ocupa el resto
+  const { contentWidth } = useBreakpoint();
+  const sidePanel = contentWidth >= 820;
   const hasRoute = waypoints.length >= 2;
   const search = useMapSearch();
   const exploreToken = useMapToken();
@@ -158,9 +163,9 @@ export default function MapScreen() {
     </View>
     );
 
-  return (
-    <View style={s.container} onLayout={(event) => setContainerHeight(event.nativeEvent.layout.height)}>
-      {/* el mapa ocupa todo el fondo */}
+  // el mapa con su buscador y sus botones flotando arriba
+  const mapLayer = (
+    <>
       <View style={StyleSheet.absoluteFill}>
         {!hasRoute ? (
           <ExploreMap token={exploreToken} onPick={(point) => void search.choosePoint(point)} focus={search.focus} userLocation={search.userLocation} placePin={search.pinFocus} />
@@ -177,8 +182,7 @@ export default function MapScreen() {
         )}
       </View>
 
-      {/* buscador y botones flotando arriba */}
-      <View style={[s.searchLayer, { top: insets.top + spacing.sm }]}>
+      <View style={[s.searchLayer, { top: insets.top + spacing.sm }, sidePanel ? s.searchLayerSide : null]}>
         <PlaceSearchBox near={search.userLocation} onSelect={search.chooseResult} placeholder="Buscar un lugar: Shell, Técnica 5, Colón 1234…" />
       </View>
       <View style={[s.controlsLayer, { top: insets.top + TOP_OVERLAY }]}>
@@ -187,45 +191,70 @@ export default function MapScreen() {
           onEditRoute={hasRoute ? () => router.push("/route-builder") : undefined}
         />
       </View>
+    </>
+  );
 
+  // los comercios y el plan: van en la hoja deslizable (celular) o en el panel lateral (pantalla grande)
+  const sheetBody = (
+    <>
+      {search.place ? (
+        <SearchResultCard
+          place={search.place}
+          actionLabel={hasRoute ? "Sumar como parada" : "Usar en mi recorrido"}
+          onAdd={addPlaceToRoute}
+          onClose={search.clearPlace}
+        />
+      ) : null}
+
+      {!hasRoute ? <NoRouteCard stopCount={waypoints.length} /> : null}
+
+      {hasRoute && selected && !selectedStop ? <SelectedStoreCard store={selected} /> : null}
+
+      {hasRoute ? (
+        plan ? (
+          <PlanCard stops={planStops} selectedId={selectedId} hasPlanLine={Boolean(planPolyline)} onSelectStop={setSelectedId} />
+        ) : (
+          <PlanCta hasOldPlan={routePlan !== null} />
+        )
+      ) : null}
+
+      {hasRoute && plan ? <Text style={s.sheetSection}>Comercios de paso</Text> : null}
+      {hasRoute ? (
+        <NearbyStoresList stores={stores} selectedId={selectedId} isLoading={isLoadingRoute} hasMap={Boolean(mapboxToken)} onSelect={setSelectedId} />
+      ) : null}
+
+      {waypoints.length > 0 ? <RouteStops waypoints={waypoints} /> : null}
+    </>
+  );
+
+  if (sidePanel) {
+    return (
+      <View style={[s.container, s.row]}>
+        <MapSidePanel header={sheetHeader} topInset={insets.top}>
+          {sheetBody}
+        </MapSidePanel>
+        <View style={s.mapArea}>{mapLayer}</View>
+      </View>
+    );
+  }
+
+  return (
+    <View style={s.container} onLayout={(event) => setContainerHeight(event.nativeEvent.layout.height)}>
+      {mapLayer}
       {/* hoja deslizable con los comercios y el plan */}
       <MapSheet containerHeight={containerHeight} topGap={insets.top + TOP_OVERLAY} header={sheetHeader} expandSignal={expandSignal}>
-        {search.place ? (
-          <SearchResultCard
-            place={search.place}
-            actionLabel={hasRoute ? "Sumar como parada" : "Usar en mi recorrido"}
-            onAdd={addPlaceToRoute}
-            onClose={search.clearPlace}
-          />
-        ) : null}
-
-        {!hasRoute ? <NoRouteCard stopCount={waypoints.length} /> : null}
-
-        {hasRoute && selected && !selectedStop ? <SelectedStoreCard store={selected} /> : null}
-
-        {hasRoute ? (
-          plan ? (
-            <PlanCard stops={planStops} selectedId={selectedId} hasPlanLine={Boolean(planPolyline)} onSelectStop={setSelectedId} />
-          ) : (
-            <PlanCta hasOldPlan={routePlan !== null} />
-          )
-        ) : null}
-
-        {hasRoute && plan ? <Text style={s.sheetSection}>Comercios de paso</Text> : null}
-        {hasRoute ? (
-          <NearbyStoresList stores={stores} selectedId={selectedId} isLoading={isLoadingRoute} hasMap={Boolean(mapboxToken)} onSelect={setSelectedId} />
-        ) : null}
-
-        {waypoints.length > 0 ? <RouteStops waypoints={waypoints} /> : null}
+        {sheetBody}
       </MapSheet>
     </View>
   );
 }
-
 const useStyles = makeStyles((colors) =>
   StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.surface.base },
     mapLoading: { flex: 1, alignItems: "center", justifyContent: "center", padding: spacing.lg, backgroundColor: colors.surface.secondary },
+    row: { flexDirection: "row" },
+    mapArea: { flex: 1 },
+    searchLayerSide: { maxWidth: 560 },
     searchLayer: { position: "absolute", left: spacing.md, right: spacing.md, zIndex: 30 },
     controlsLayer: { position: "absolute", right: spacing.md, zIndex: 20 },
     sheetHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: spacing.md, paddingHorizontal: spacing.lg, paddingBottom: spacing.sm },

@@ -10,7 +10,9 @@ import { EmptyState } from "@/components/common/EmptyState";
 import { FilterChips } from "@/components/common/FilterChips";
 import { SearchField } from "@/components/common/SearchField";
 import { Skeleton } from "@/components/common/Skeleton";
+import { ScreenFrame } from "@/components/common/ScreenFrame";
 import { useLists } from "@/lib/lists/ListsContext";
+import { columnsFor, padForGrid, useBreakpoint } from "@/lib/responsive/useBreakpoint";
 import { makeStyles, useColors } from "@/lib/theme";
 import { ListCard } from "./components/ListCard";
 import { LIST_PERFORMANCE } from "@/lib/listPerformance";
@@ -30,6 +32,9 @@ export default function ListsScreen() {
   const { lists, isLoading, error } = useLists();
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
+  // en pantallas anchas las listas van en columnas
+  const { contentWidth } = useBreakpoint();
+  const columns = columnsFor(contentWidth, 360, 3);
 
   const active = lists.filter((list) => !list.archivedAt);
   const visible = active
@@ -38,6 +43,7 @@ export default function ListsScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
+      <ScreenFrame wide>
       <View style={styles.headerRow}>
         <Text accessibilityRole="header" style={styles.title}>
           Mis listas
@@ -77,13 +83,19 @@ export default function ListsScreen() {
       ) : (
         <BackToTopFlatList
           {...LIST_PERFORMANCE}
-          data={visible}
-          keyExtractor={(item) => item.id}
+          wide
+          // al cambiar la cantidad de columnas hay que rearmar la lista
+          key={columns}
+          numColumns={columns}
+          columnWrapperStyle={columns > 1 ? styles.gridRow : undefined}
+          data={padForGrid(visible, columns)}
+          keyExtractor={(item, index) => item?.id ?? `hueco-${index}`}
           contentContainerStyle={styles.list}
           showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => <ListCard list={item} />}
+          renderItem={({ item }) => (item ? <View style={styles.cell}><ListCard list={item} /></View> : <View style={styles.cell} />)}
         />
       )}
+      </ScreenFrame>
     </SafeAreaView>
   );
 }
@@ -108,6 +120,8 @@ const useStyles = makeStyles((colors) =>
       alignItems: "center",
       justifyContent: "center",
     },
+    gridRow: { gap: spacing.md },
+    cell: { flex: 1 },
     filters: { paddingHorizontal: spacing.lg, gap: spacing.xs },
     list: { paddingHorizontal: spacing.lg, paddingTop: spacing.sm, paddingBottom: spacing.xxl, gap: spacing.md },
   }),

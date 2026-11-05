@@ -53,7 +53,11 @@ Monorepo pnpm + Turborepo. Todo lo de un tema vive en una sola carpeta.
 | `lib/auth/` | `AuthContext` (estado global del login) y `secureStore` (tokens guardados en el celular). |
 | `lib/apiClient.ts` | Clientes de la API y renovación automática del access token. |
 | `lib/theme/` | Tema claro / oscuro. |
-| `lib/responsive/` | Tamaño de pantalla (celular, tablet, escritorio) y giro del dispositivo. |
+| `lib/responsive/` | Tamaño de pantalla (celular, tablet, escritorio), giro del dispositivo, cuántas columnas entran (`columnsFor`) y cuándo el menú pasa a la izquierda. |
+| `lib/web/` | Retoques solo de la web: barras de desplazamiento y escala de la interfaz según el ancho de la pantalla (`webScale`). |
+| `lib/notifications/` | Avisos del celular: permiso, token, avisos locales y el aviso de cercanía a los comercios de la compra (`nearby`). |
+| `lib/activity/` | Los numeritos de la app (Actividad y Administración). |
+| `components/common/` (adaptables) | `ScreenFrame` y `useWideContent` centran el contenido en pantallas grandes; `NarrowScreen` deja en una columna las pantallas de una sola tarea; `InfoButton`, `PromptModal` y `CategoryPicker` son piezas de uso general. |
 | `features/route-choice/` | "Elegí tu recorrido": elegir una ruta guardada y salir en un toque (`/route-context`). |
 | `features/route-context/` | "Armar ruta" (`/route-builder`): paradas, búsqueda de lugares y guardar la ruta con nombre. |
 | `lib/routeContext/` | Recorrido de hoy: se guarda en el celular y se reinicia a las 00:00 (`todayRouteStorage`, `dayStamp`, `useMidnightReset`). |
@@ -72,7 +76,7 @@ Todas las pantallas viven en `features/`, agrupadas por área:
 | `auth`, `onboarding`, `setup` | Ingreso, registro, recuperar contraseña, bienvenida y primeros pasos. |
 | `profile`, `activity`, `notifications`, `privacy`, `help`, `legal` | Perfil, reportes de la comunidad, avisos, datos personales, ayuda y textos legales. |
 | `merchant-request`, `merchant-panel`, `merchant-price-form`, `admin`, `report-price` | Comercio, administración y reporte de precios. |
-| `navigation` | Las pantallas registradas en la raíz (`RootNavigator`). |
+| `navigation` | Las pantallas registradas en la raíz (`RootNavigator`) y `useOrphanScreenRedirect`, que saca de las pantallas sueltas (manual, textos legales) a quien aparece en ellas sin una anterior. |
 
 ## Paquetes (`packages/`)
 

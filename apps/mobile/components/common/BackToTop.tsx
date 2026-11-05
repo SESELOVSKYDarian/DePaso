@@ -14,6 +14,7 @@ import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { spacing } from "@depaso/design-tokens";
 import { makeStyles, useColors } from "@/lib/theme";
 import { AnimatedPressable } from "./AnimatedPressable";
+import { useWideContent } from "./useWideContent";
 
 /** Cuánto hay que bajar para que aparezca el botón. */
 const SHOW_AFTER_PX = 480;
@@ -48,12 +49,18 @@ function useShowAfterScroll(onScroll?: ScrollHandler) {
   return { visible, handle };
 }
 
+/** Las pantallas de este tipo usan todo el ancho disponible (tableros, listas en columnas); el resto se centra en un ancho cómodo de lectura. */
+interface WidthProps {
+  wide?: boolean;
+}
+
 /**
  * `ScrollView` con botón de volver arriba incluido: se usa igual que el de React Native. Los
  * horizontales pasan de largo (no tiene sentido volver "arriba" en una tira).
  */
-export const BackToTopScrollView = forwardRef<ComponentRef<typeof ScrollView>, ScrollViewProps & { children?: ReactNode }>(function BackToTopScrollView(props, forwardedRef) {
+export const BackToTopScrollView = forwardRef<ComponentRef<typeof ScrollView>, ScrollViewProps & WidthProps & { children?: ReactNode }>(function BackToTopScrollView({ wide, ...props }, forwardedRef) {
   const styles = useStyles();
+  const content = useWideContent(wide, props.contentContainerStyle);
   const innerRef = useRef<ComponentRef<typeof ScrollView> | null>(null);
   const { visible, handle } = useShowAfterScroll(props.onScroll as ScrollHandler | undefined);
 
@@ -66,24 +73,25 @@ export const BackToTopScrollView = forwardRef<ComponentRef<typeof ScrollView>, S
   };
 
   return (
-    <View style={styles.fill}>
-      <ScrollView {...props} ref={setRef} onScroll={handle} scrollEventThrottle={props.scrollEventThrottle ?? 16} />
+    <View style={styles.fill} onLayout={content.onLayout}>
+      <ScrollView {...props} contentContainerStyle={content.style} ref={setRef} onScroll={handle} scrollEventThrottle={props.scrollEventThrottle ?? 16} />
       <BackToTopButton visible={visible} onPress={() => innerRef.current?.scrollTo({ y: 0, animated: true })} />
     </View>
   );
 });
 
 /** `FlatList` con botón de volver arriba incluido. */
-export function BackToTopFlatList<T>(props: FlatListProps<T>) {
+export function BackToTopFlatList<T>({ wide, ...props }: FlatListProps<T> & WidthProps) {
   const styles = useStyles();
+  const content = useWideContent(wide, props.contentContainerStyle);
   const ref = useRef<FlatList<T> | null>(null);
   const { visible, handle } = useShowAfterScroll(props.onScroll as ScrollHandler | undefined);
 
   if (props.horizontal) return <FlatList {...props} />;
 
   return (
-    <View style={styles.fill}>
-      <FlatList {...props} ref={ref} onScroll={handle} scrollEventThrottle={props.scrollEventThrottle ?? 16} />
+    <View style={styles.fill} onLayout={content.onLayout}>
+      <FlatList {...props} contentContainerStyle={content.style} ref={ref} onScroll={handle} scrollEventThrottle={props.scrollEventThrottle ?? 16} />
       <BackToTopButton visible={visible} onPress={() => ref.current?.scrollToOffset({ offset: 0, animated: true })} />
     </View>
   );

@@ -1,4 +1,5 @@
 import { Stack } from "expo-router";
+import { NarrowScreen } from "@/components/common/NarrowScreen";
 import { useColors } from "@/lib/theme";
 
 /** Setup posterior al registro (verificación de email → ubicación → lugares → intereses →
@@ -10,11 +11,13 @@ export const unstable_settings = { initialRouteName: "location" };
 export default function SetupLayout() {
   const colors = useColors();
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-        contentStyle: { backgroundColor: colors.surface.base },
-      }}
-    />
+    <NarrowScreen>
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.surface.base },
+        }}
+      />
+    </NarrowScreen>
   );
 }

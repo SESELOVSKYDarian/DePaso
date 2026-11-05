@@ -5,6 +5,7 @@ import { typography } from "@depaso/design-tokens";
 import { SplashScreen } from "@/components/common/SplashScreen";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { sheet } from "@/lib/navigation/sheetOptions";
+import { homeForStage, useOrphanScreenRedirect } from "./useOrphanScreenRedirect";
 import { useColors } from "@/lib/theme";
 
 /**
@@ -19,6 +20,9 @@ export function RootNavigator() {
   const { isBootstrapping, onboardingSeen, isAuthenticated, postSignupDone, user } = useAuth();
   // cuenta nueva con el mail sin confirmar (y el servidor puede mandar mails): primero el código
   const needsEmail = isAuthenticated && Boolean(user?.emailVerificationRequired);
+
+  // Si una pantalla suelta (manual, textos legales) aparece sin ninguna anterior, se vuelve a donde corresponde.
+  useOrphanScreenRedirect(homeForStage({ onboardingSeen, isAuthenticated, needsEmail, postSignupDone }), isBootstrapping);
 
   if (isBootstrapping) return <SplashScreen />;
 

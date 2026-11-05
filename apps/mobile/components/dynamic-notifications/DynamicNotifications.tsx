@@ -1,5 +1,6 @@
 import { useMemo, type ReactNode } from "react";
-import { StyleSheet, useWindowDimensions, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import { useEffectiveWindow } from "@/lib/web/webScale";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { getLayout } from "@/lib/notifications/geometry";
 import { Card } from "./Card";
@@ -19,7 +20,7 @@ interface DynamicNotificationsProps {
  * Requiere `GestureHandlerRootView` y `SafeAreaProvider` por encima.
  */
 export function DynamicNotifications({ children, duration }: DynamicNotificationsProps) {
-  const { width } = useWindowDimensions();
+  const { width } = useEffectiveWindow();
   const insets = useSafeAreaInsets();
   const layout = useMemo(() => getLayout(width, insets.top), [width, insets.top]);
   const timeline = useNotificationTimeline(duration);

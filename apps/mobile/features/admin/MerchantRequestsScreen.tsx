@@ -14,6 +14,7 @@ import { SearchField } from "@/components/common/SearchField";
 import { useToast } from "@/components/common/Toast";
 import { adminMerchantClient } from "@/lib/apiClient";
 import { LIST_PERFORMANCE } from "@/lib/listPerformance";
+import { columnsFor, padForGrid, useBreakpoint } from "@/lib/responsive/useBreakpoint";
 
 /** Bandeja del admin: solicitudes de usuarios que quieren pasar a rol comercio. */
 export default function AdminMerchantRequestsScreen() {
@@ -23,6 +24,9 @@ export default function AdminMerchantRequestsScreen() {
   const [isLoading, setIsLoading] = useState(true);
   const [requests, setRequests] = useState<AdminMerchantRequestResponse[]>([]);
   const [search, setSearch] = useState("");
+  // en pantallas anchas las solicitudes van en columnas
+  const { width } = useBreakpoint();
+  const columns = columnsFor(width, 480, 3);
   const [rejectingId, setRejectingId] = useState<string | null>(null);
   const [reason, setReason] = useState("");
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -86,8 +90,12 @@ export default function AdminMerchantRequestsScreen() {
   return (
     <BackToTopFlatList
           {...LIST_PERFORMANCE}
-      data={visible}
-      keyExtractor={(item) => item.id}
+      wide
+      key={columns}
+      numColumns={columns}
+      columnWrapperStyle={columns > 1 ? styles.gridRow : undefined}
+      data={padForGrid(visible, columns)}
+      keyExtractor={(item, index) => item?.id ?? `hueco-${index}`}
       style={styles.container}
       contentContainerStyle={styles.list}
       keyboardShouldPersistTaps="handled"
@@ -108,8 +116,11 @@ export default function AdminMerchantRequestsScreen() {
       ListEmptyComponent={
         <EmptyState emoji="✅" title="Sin solicitudes pendientes" description="Cuando un usuario pida ser comercio va a aparecer acá." />
       }
-      renderItem={({ item }) => (
-        <View style={styles.card}>
+      renderItem={({ item }) =>
+        item === null ? (
+          <View style={styles.cell} />
+        ) : (
+        <View style={[styles.card, styles.cell]}>
           <Text style={styles.name}>{item.businessName}</Text>
           <Text style={styles.meta}>{item.address}</Text>
           <Text style={styles.meta}>{item.storeBranchId ? "Sucursal existente (importada)" : "Comercio nuevo"}</Text>
@@ -162,7 +173,8 @@ export default function AdminMerchantRequestsScreen() {
             </>
           )}
         </View>
-      )}
+        )
+      }
     />
   );
 }
@@ -171,6 +183,8 @@ const useStyles = makeStyles((colors) => StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.surface.base },
   searchRow: { flexDirection: "row", alignItems: "center", gap: spacing.xs, marginBottom: spacing.sm },
   searchBox: { flex: 1 },
+  gridRow: { gap: spacing.md, alignItems: "flex-start" },
+  cell: { flex: 1 },
   center: { flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.surface.base },
   list: { padding: spacing.lg, gap: spacing.md },
   card: {

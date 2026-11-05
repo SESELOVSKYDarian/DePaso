@@ -1,12 +1,10 @@
 import type { HomeFeedResponse, HomeListSummary, HomeProduct } from "@depaso/validation";
-import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
-import { Text, View } from "react-native";
+import { View } from "react-native";
 import { BackToTopScrollView } from "@/components/common/BackToTop";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { AnimatedPressable } from "@/components/common/AnimatedPressable";
 import { useToast } from "@/components/common/Toast";
 import { homeClient } from "@/lib/apiClient";
 import { useAuth } from "@/lib/auth/AuthContext";
@@ -14,19 +12,20 @@ import { useLists } from "@/lib/lists/ListsContext";
 import { usePlaces } from "@/lib/places/PlacesContext";
 import { usePurchase } from "@/lib/purchase/PurchaseContext";
 import { useTodayRoute } from "@/lib/routeContext/TodayRouteContext";
-import { useColors, useTheme } from "@/lib/theme";
+import { useBreakpoint } from "@/lib/responsive/useBreakpoint";
+import { useTheme } from "@/lib/theme";
 import { findMatchingPreset } from "@/lib/routeContext/routeMatches";
 import { SavePresetForm } from "../route-context/components/SavePresetForm";
 import { SavedRoutesRow } from "../route-context/components/SavedRoutesRow";
 import { useSavedRoutes } from "../route-context/useSavedRoutes";
 import { DeleteRouteDialog } from "../route-context/components/DeleteRouteDialog";
 import { AddToListSheet } from "./components/AddToListSheet";
-import { BottomBanners, TopAds } from "./components/HomeAds";
+import { HomeDeals } from "./components/HomeDeals";
+import { HomeHeader } from "./components/HomeHeader";
+import { HomeNews } from "./components/HomeNews";
+import { HomeRecommended } from "./components/HomeRecommended";
 import { StartRouteCard } from "./components/StartRouteCard";
 import { ListSummaryCard } from "./components/ListSummaryCard";
-import { PriceChanges } from "./components/PriceChanges";
-import { ProductStrip } from "./components/ProductStrip";
-import { PromosToday } from "./components/PromosToday";
 import { useStyles } from "./styles";
 
 /**
@@ -36,8 +35,10 @@ import { useStyles } from "./styles";
  * nunca quede vacío.
  */
 export default function HomeScreen() {
-  const colors = useColors();
   const styles = useStyles();
+  // en pantallas anchas Inicio se parte en dos columnas: a la izquierda lo tuyo, a la derecha las novedades
+  const { contentWidth } = useBreakpoint();
+  const twoColumns = contentWidth >= 980;
   const { user } = useAuth();
   const { waypoints, setWaypoints } = useTodayRoute();
   const { places } = usePlaces();
@@ -116,76 +117,69 @@ export default function HomeScreen() {
     }
   };
 
+  // lo propio: saludo, recorrido y rutas guardadas
+  const introBlock = (
+    <>
+      <HomeHeader firstName={firstName} isDark={isDark} onToggleTheme={() => setMode(isDark ? "light" : "dark")} />
+
+      {listSummary && hasRoute ? (
+        <ListSummaryCard
+          list={listSummary}
+          routeNames={waypoints.map((waypoint) => waypoint.name)}
+          actionLabel={action.label}
+          actionHint={action.hint}
+          onAction={action.onPress}
+        />
+      ) : (
+        <StartRouteCard
+          routeNames={waypoints.map((waypoint) => waypoint.name)}
+          label={action.label}
+          hint={action.hint}
+          onPress={action.onPress}
+        />
+      )}
+
+      <SavedRoutesRow presets={saved.presets} onApply={saved.apply} onDelete={saved.requestRemove} />
+      <SavePresetForm
+        stopCount={waypoints.length}
+        savedName={findMatchingPreset(saved.presets, waypoints)?.name ?? null}
+        name={saved.savingName}
+        isSaving={saved.isSaving}
+        onOpen={() => saved.setSavingName("")}
+        onChangeName={saved.setSavingName}
+        onCancel={() => saved.setSavingName(null)}
+        onSave={() => void saved.save()}
+      />
+    </>
+  );
+
+  const dealsBlock = <HomeDeals feed={feed} onAdd={addSuggested} />;
+  const newsBlock = <HomeNews feed={feed} />;
+  const recommendedBlock = <HomeRecommended feed={feed} onAdd={addSuggested} />;
+
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
-      <BackToTopScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.headerRow}>
-          <View style={styles.header}>
-            <Text accessibilityRole="header" style={styles.greeting} numberOfLines={1}>
-              Hola{firstName ? `, ${firstName}` : ""}
-            </Text>
-            <Text style={styles.question}>¿Qué te queda de paso hoy?</Text>
+      <BackToTopScrollView wide contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        {twoColumns ? (
+          <View style={styles.columns}>
+            <View style={styles.sideColumn}>
+              {introBlock}
+              {newsBlock}
+            </View>
+            <View style={styles.mainColumn}>
+              {dealsBlock}
+              {recommendedBlock}
+            </View>
           </View>
-          <AnimatedPressable
-            accessibilityLabel={isDark ? "Pasar a modo claro" : "Pasar a modo oscuro"}
-            onPress={() => setMode(isDark ? "light" : "dark")}
-            style={styles.themeButton}
-          >
-            <Ionicons name={isDark ? "sunny-outline" : "moon-outline"} size={22} color={colors.text.primary} />
-          </AnimatedPressable>
-        </View>
-
-        {listSummary && hasRoute ? (
-          <ListSummaryCard
-            list={listSummary}
-            routeNames={waypoints.map((waypoint) => waypoint.name)}
-            actionLabel={action.label}
-            actionHint={action.hint}
-            onAction={action.onPress}
-          />
         ) : (
-          <StartRouteCard
-            routeNames={waypoints.map((waypoint) => waypoint.name)}
-            label={action.label}
-            hint={action.hint}
-            onPress={action.onPress}
-          />
+          <>
+            {introBlock}
+            {dealsBlock}
+            {newsBlock}
+            {recommendedBlock}
+          </>
         )}
-
-        <SavedRoutesRow presets={saved.presets} onApply={saved.apply} onDelete={saved.requestRemove} />
-        <SavePresetForm
-          stopCount={waypoints.length}
-          savedName={findMatchingPreset(saved.presets, waypoints)?.name ?? null}
-          name={saved.savingName}
-          isSaving={saved.isSaving}
-          onOpen={() => saved.setSavingName("")}
-          onChangeName={saved.setSavingName}
-          onCancel={() => saved.setSavingName(null)}
-          onSave={() => void saved.save()}
-        />
-
-        <TopAds ads={feed?.ads ?? []} />
-        {feed && feed.featured.length > 0 ? (
-          <ProductStrip title="Destacados" subtitle="Publicidad de comercios de tu zona." products={feed.featured} onAdd={addSuggested} />
-        ) : null}
-        <ProductStrip
-          title="Barato hoy"
-          subtitle="Productos con el precio más bajo comparado con el resto."
-          products={feed ? feed.cheapToday : null}
-          showSaving
-          onAdd={addSuggested}
-        />
-        <PriceChanges changes={feed?.priceChanges ?? []} />
-        <PromosToday promos={feed?.promos ?? []} />
-        <ProductStrip
-          title="Recomendados"
-          subtitle="Lo que más se busca, con su mejor precio."
-          products={feed ? feed.popular : null}
-          onAdd={addSuggested}
-        />
-        <BottomBanners ads={feed?.ads ?? []} />
       </BackToTopScrollView>
-
       <DeleteRouteDialog route={saved.toDelete} onConfirm={() => void saved.confirmRemove()} onCancel={saved.cancelRemove} />
       <AddToListSheet
         product={pending}

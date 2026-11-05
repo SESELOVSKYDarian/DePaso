@@ -11,6 +11,10 @@ export const useStyles = makeStyles((colors) =>
       paddingBottom: spacing.xxl,
       gap: spacing.xl,
     },
+    // dos columnas en pantallas anchas
+    columns: { flexDirection: "row", alignItems: "flex-start", gap: spacing.xl },
+    sideColumn: { width: 420, gap: spacing.xl },
+    mainColumn: { flex: 1, minWidth: 0, gap: spacing.xl },
     headerRow: {
       flexDirection: "row",
       alignItems: "flex-start",

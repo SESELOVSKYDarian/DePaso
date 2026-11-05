@@ -10,6 +10,7 @@ import { SearchField } from "@/components/common/SearchField";
 import { useToast } from "@/components/common/Toast";
 import { adsClient } from "@/lib/apiClient";
 import { LIST_PERFORMANCE } from "@/lib/listPerformance";
+import { columnsFor, padForGrid, useBreakpoint } from "@/lib/responsive/useBreakpoint";
 import { makeStyles, useColors } from "@/lib/theme";
 
 const KIND_LABEL = { FEATURED_PRODUCT: "Producto destacado", BANNER: "Banner", IMAGE: "Imagen", VIDEO: "Video" } as const;
@@ -27,6 +28,9 @@ export default function AdminMerchantsScreen() {
   const [merchants, setMerchants] = useState<AdminMerchant[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  // en pantallas anchas los comercios van en columnas
+  const { width } = useBreakpoint();
+  const columns = columnsFor(width, 420, 3);
 
   const load = useCallback(
     async (query: string) => {
@@ -70,8 +74,12 @@ export default function AdminMerchantsScreen() {
   return (
     <BackToTopFlatList
       {...LIST_PERFORMANCE}
-      data={merchants}
-      keyExtractor={(item) => item.branchId}
+      wide
+      key={columns}
+      numColumns={columns}
+      columnWrapperStyle={columns > 1 ? styles.gridRow : undefined}
+      data={padForGrid(merchants, columns)}
+      keyExtractor={(item, index) => item?.branchId ?? `hueco-${index}`}
       style={styles.container}
       contentContainerStyle={styles.list}
       keyboardShouldPersistTaps="handled"
@@ -90,8 +98,11 @@ export default function AdminMerchantsScreen() {
           <EmptyState emoji="🏬" title={search ? "Ningún comercio coincide" : "Todavía no hay comercios"} description={search ? "Probá con otro nombre." : "Cuando apruebes una solicitud, el comercio aparece acá."} />
         )
       }
-      renderItem={({ item }) => (
-        <View style={[styles.card, item.enabled ? null : styles.cardOff]}>
+      renderItem={({ item }) =>
+        item === null ? (
+          <View style={styles.cell} />
+        ) : (
+        <View style={[styles.card, styles.cell, item.enabled ? null : styles.cardOff]}>
           <View style={styles.head}>
             <View style={styles.headText}>
               <Text style={styles.name}>{item.storeName}</Text>
@@ -123,7 +134,8 @@ export default function AdminMerchantsScreen() {
             <Text style={styles.meta}>Sin publicidad vigente.</Text>
           )}
         </View>
-      )}
+        )
+      }
     />
   );
 }
@@ -132,6 +144,8 @@ const useStyles = makeStyles((colors) =>
   StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.surface.base },
     list: { padding: spacing.lg, gap: spacing.md, paddingBottom: spacing.xxl },
+    gridRow: { gap: spacing.md },
+    cell: { flex: 1 },
     searchRow: { flexDirection: "row", alignItems: "center", gap: spacing.xs, marginBottom: spacing.sm },
     searchBox: { flex: 1 },
     card: { gap: spacing.xs, padding: spacing.md, borderRadius: radii.xl, backgroundColor: colors.surface.primary, borderWidth: 1, borderColor: colors.border.subtle },

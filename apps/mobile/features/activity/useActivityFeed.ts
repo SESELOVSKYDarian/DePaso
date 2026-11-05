@@ -17,7 +17,8 @@ const EMPTY = { items: [], loaded: false, failed: false };
  * listas compartidas, precios que bajaron y ofertas cerca). Se vuelve a pedir cada vez que se
  * muestra la pestaña y al tirar hacia abajo.
  */
-export function useActivityFeed() {
+/** `both`: en una pantalla ancha las dos listas se ven a la vez, así que se piden las dos. */
+export function useActivityFeed(both = false) {
   const [tab, setTab] = useState<ActivityTab>("news");
   const [news, setNews] = useState<FeedState<AnnouncementResponse>>(EMPTY);
   const [mine, setMine] = useState<FeedState<ActivityItem>>(EMPTY);
@@ -42,12 +43,13 @@ export function useActivityFeed() {
   useFocusEffect(
     useCallback(() => {
       void load(tab);
-    }, [load, tab]),
+      if (both) void load(tab === "news" ? "mine" : "news");
+    }, [load, tab, both]),
   );
 
   const refresh = async () => {
     setRefreshing(true);
-    await load(tab);
+    await Promise.all(both ? [load("news"), load("mine")] : [load(tab)]);
     setRefreshing(false);
   };
 
