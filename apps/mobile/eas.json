@@ -21,7 +21,9 @@
       "channel": "preview",
       "env": {
         "EXPO_PUBLIC_API_URL": "https://estanga-estanga-darian.evo4vr.easypanel.host",
-        "EXPO_PUBLIC_WEB_URL": "https://estanga-depaso-web.evo4vr.easypanel.host"
+        "EXPO_PUBLIC_WEB_URL": "https://estanga-depaso-web.evo4vr.easypanel.host",
+        "ORG_GRADLE_PROJECT_reactNativeArchitectures": "arm64-v8a",
+        "GRADLE_OPTS": "-Dorg.gradle.jvmargs=-Xmx3g -Dorg.gradle.parallel=false -Dorg.gradle.daemon=false -Dfile.encoding=UTF-8"
       }
     },
     "production": {
