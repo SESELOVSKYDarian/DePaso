@@ -57,7 +57,7 @@ Monorepo pnpm + Turborepo. Todo lo de un tema vive en una sola carpeta.
 | `lib/web/` | Retoques solo de la web: barras de desplazamiento y escala de la interfaz según el ancho de la pantalla (`webScale`). |
 | `lib/notifications/` | Avisos del celular: permiso, token, avisos locales y el aviso de cercanía a los comercios de la compra (`nearby`). |
 | `lib/activity/` | Los numeritos de la app (Actividad y Administración). |
-| `components/common/` (adaptables) | `ScreenFrame` y `useWideContent` centran el contenido en pantallas grandes; `NarrowScreen` deja en una columna las pantallas de una sola tarea; `InfoButton`, `PromptModal` y `CategoryPicker` son piezas de uso general. |
+| `components/common/` (adaptables) | `ScreenFrame` y `useWideContent` centran el contenido en pantallas grandes; `NarrowScreen` arma las pantallas de ingreso y registro (en computadora, la marca a un lado con `BrandPanel` y el formulario al otro; en tablet, una columna centrada); `InfoButton`, `PromptModal` y `CategoryPicker` son piezas de uso general. |
 | `features/route-choice/` | "Elegí tu recorrido": elegir una ruta guardada y salir en un toque (`/route-context`). |
 | `features/route-context/` | "Armar ruta" (`/route-builder`): paradas, búsqueda de lugares y guardar la ruta con nombre. |
 | `lib/routeContext/` | Recorrido de hoy: se guarda en el celular y se reinicia a las 00:00 (`todayRouteStorage`, `dayStamp`, `useMidnightReset`). |

@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 import { elevation, radii, spacing, typography } from "@depaso/design-tokens";
+import { useBreakpoint } from "@/lib/responsive/useBreakpoint";
 import { makeStyles } from "@/lib/theme";
 import { BrandLogo } from "../common/BrandLogo";
 
@@ -8,14 +9,20 @@ interface AuthHeroProps {
   subtitle: string;
 }
 
-/** Encabezado de las pantallas de auth: isotipo vectorial en una placa suave + título/subtítulo. */
+/**
+ * Encabezado de las pantallas de auth: isotipo vectorial en una placa suave + título/subtítulo.
+ * Con el panel de la marca al costado (computadora) la placa sobra: ya está el logo ahí.
+ */
 export function AuthHero({ title, subtitle }: AuthHeroProps) {
   const styles = useStyles();
+  const { hasBrandPanel } = useBreakpoint();
   return (
     <View style={styles.container}>
-      <View style={styles.badge}>
-        <BrandLogo variant="mark" style={styles.logo} />
-      </View>
+      {hasBrandPanel ? null : (
+        <View style={styles.badge}>
+          <BrandLogo variant="mark" style={styles.logo} />
+        </View>
+      )}
       <Text accessibilityRole="header" style={styles.title}>
         {title}
       </Text>

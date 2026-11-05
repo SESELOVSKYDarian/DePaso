@@ -7,6 +7,7 @@ import { AnimatedPressable } from "@/components/common/AnimatedPressable";
 import { BrandLogo } from "@/components/common/BrandLogo";
 import { Illustration } from "@/components/common/Illustration";
 import { useAuth } from "@/lib/auth/AuthContext";
+import { useBreakpoint } from "@/lib/responsive/useBreakpoint";
 
 /**
  * Bienvenida (depaso-bienvenida en Figma). El documento de producto pide un onboarding
@@ -16,6 +17,8 @@ import { useAuth } from "@/lib/auth/AuthContext";
 export default function OnboardingScreen() {
   const styles = useStyles();
   const { completeOnboarding } = useAuth();
+  // en computadora la marca ya está en el panel de al lado: acá solo va la invitación
+  const { hasBrandPanel } = useBreakpoint();
 
   const goTo = async (path: "/(auth)/register" | "/(auth)/login") => {
     await completeOnboarding();
@@ -25,17 +28,26 @@ export default function OnboardingScreen() {
   return (
     <SafeAreaView style={styles.container} edges={["top", "bottom"]}>
       <View style={styles.content}>
-        <BrandLogo variant="wordmark" style={styles.wordmark} />
-        <Illustration
-          source={require("@/assets/images/bienvenida.png")}
-          darkSource={require("@/assets/images/bienvenida-dark.png")}
-          style={styles.illustration}
-          resizeMode="contain"
-        />
-        <Text style={styles.title}>Tu compra,{"\n"}en el camino.</Text>
-        <Text style={styles.subtitle}>
-          Encontrá los mejores precios en los comercios que te quedan de paso.
-        </Text>
+        {hasBrandPanel ? (
+          <>
+            <Text style={styles.title}>Te damos la bienvenida</Text>
+            <Text style={styles.subtitle}>Creá tu cuenta o ingresá para armar tu primera compra de paso.</Text>
+          </>
+        ) : (
+          <>
+            <BrandLogo variant="wordmark" style={styles.wordmark} />
+            <Illustration
+              source={require("@/assets/images/bienvenida.png")}
+              darkSource={require("@/assets/images/bienvenida-dark.png")}
+              style={styles.illustration}
+              resizeMode="contain"
+            />
+            <Text style={styles.title}>Tu compra,{"\n"}en el camino.</Text>
+            <Text style={styles.subtitle}>
+              Encontrá los mejores precios en los comercios que te quedan de paso.
+            </Text>
+          </>
+        )}
       </View>
 
       <View style={styles.footer}>

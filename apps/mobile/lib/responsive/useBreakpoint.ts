@@ -8,6 +8,8 @@ export const DESKTOP_MIN_WIDTH = 1024;
 export const READING_MAX_WIDTH = 920;
 /** Ancho máximo del contenido en pantallas enormes (más allá, las líneas se vuelven ilegibles). */
 export const WIDE_MAX_WIDTH = 1600;
+/** Ancho desde el cual las pantallas de ingreso muestran el panel de la marca al costado del formulario. */
+export const BRAND_PANEL_MIN_WIDTH = 900;
 /** Ancho del menú lateral en escritorio. */
 export const SIDE_NAV_WIDTH = 240;
 
@@ -31,6 +33,8 @@ export function useBreakpoint() {
     height,
     isLandscape,
     isTablet: width >= TABLET_MIN_WIDTH,
+    /** Ingreso y registro en dos mitades: la marca a un lado y el formulario al otro. */
+    hasBrandPanel: width >= BRAND_PANEL_MIN_WIDTH,
     isDesktop,
     hasSideNav,
     /** Menú lateral ancho (con el texto al lado del ícono) o angosto (solo íconos con la etiqueta abajo). */
