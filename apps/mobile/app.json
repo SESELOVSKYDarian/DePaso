@@ -55,7 +55,15 @@
           "photosPermission": "DePaso usa tus fotos para que puedas subir la imagen de un anuncio o de la publicidad de tu comercio."
         }
       ],
-      "expo-video"
+      "expo-video",
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "DePaso usa el micrófono para escribir lo que decís mientras armás tu lista por voz.",
+          "speechRecognitionPermission": "DePaso usa el reconocimiento de voz del teléfono para pasar a texto lo que decís mientras hablás.",
+          "androidSpeechServicePackages": ["com.google.android.googlequicksearchbox"]
+        }
+      ]
     ],
     "ios": {
       "supportsTablet": false,

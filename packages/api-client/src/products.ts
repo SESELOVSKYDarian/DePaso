@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { productFacetsSchema, productSearchResultSchema } from "@depaso/validation";
+import { nearbyPricesResponseSchema, productFacetsSchema, productSearchResultSchema, type NearbyPricesInput } from "@depaso/validation";
 import type { DepasoApiClient } from "./client";
 
 const searchSchema = z.object({ results: z.array(productSearchResultSchema) });
@@ -25,5 +25,7 @@ export function createProductsClient(client: DepasoApiClient) {
       client.post("/api/products/search", toBody(q, filters), searchSchema),
     facets: (q: string, filters: ProductFilters = {}) =>
       client.post("/api/products/facets", toBody(q, filters), productFacetsSchema),
+    /** Dónde conviene conseguir un producto que no había: lo barato que queda cerca de un punto. */
+    nearbyPrices: (input: NearbyPricesInput) => client.post("/api/products/nearby-prices", input, nearbyPricesResponseSchema),
   };
 }

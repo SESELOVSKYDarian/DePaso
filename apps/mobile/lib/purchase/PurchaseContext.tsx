@@ -3,12 +3,17 @@ import { createContext, useContext, useMemo, useState, type ReactNode } from "re
 import { startNearbyAlerts, stopNearbyAlerts } from "@/lib/notifications/nearby";
 import { isRouteNotificationEnabled, showLocalNotification } from "@/lib/notifications/push";
 import { useMidnightReset } from "@/lib/routeContext/useMidnightReset";
+import { clampBought, type ItemProgress } from "./progress";
 
 type PurchaseContextValue = {
   plan: OptimizationPlanResponse | null;
-  checked: Record<string, boolean>;
+  /** Cómo va cada producto: cuánto se compró y si no había más. */
+  progress: Record<string, ItemProgress>;
   start: (plan: OptimizationPlanResponse) => void;
-  toggle: (key: string) => void;
+  /** Anota cuántas unidades se compraron de un producto (de las `quantity` pedidas). */
+  setBought: (key: string, quantity: number, bought: number) => void;
+  /** Marca que en el comercio no había más de ese producto (o lo desmarca). */
+  setSoldOut: (key: string, soldOut: boolean) => void;
   finish: () => void;
   /** Plan que se dibuja en el mapa del recorrido (elegido o en vista previa). */
   routePlan: OptimizationPlanResponse | null;
@@ -37,15 +42,22 @@ export function PurchaseProvider({ children }: { children: ReactNode }) {
   const [plan, setPlan] = useState<OptimizationPlanResponse | null>(null);
   const [routePlan, setRoutePlan] = useState<OptimizationPlanResponse | null>(null);
   const [routePlans, setRoutePlans] = useState<OptimizationPlanResponse[]>([]);
-  const [checked, setChecked] = useState<Record<string, boolean>>({});
+  const [progress, setProgress] = useState<Record<string, ItemProgress>>({});
   // a las 00:00 el recorrido de hoy se reinicia, y el plan armado sobre él también
-  useMidnightReset(() => { setPlan(null); setRoutePlan(null); setRoutePlans([]); setChecked({}); void stopNearbyAlerts(); });
+  useMidnightReset(() => { setPlan(null); setRoutePlan(null); setRoutePlans([]); setProgress({}); void stopNearbyAlerts(); });
   const value = useMemo(() => ({
-    plan, checked, routePlan, setRoutePlan, routePlans, setRoutePlans,
-    start: (next: OptimizationPlanResponse) => { setPlan(next); setRoutePlan(next); setChecked({}); void notifyRouteStarted(next); void startNearbyAlerts(next); },
-    toggle: (key: string) => setChecked((previous) => ({ ...previous, [key]: !previous[key] })),
-    finish: () => { setPlan(null); setRoutePlan(null); setChecked({}); void stopNearbyAlerts(); },
-  }), [plan, checked, routePlan, routePlans]);
+    plan, progress, routePlan, setRoutePlan, routePlans, setRoutePlans,
+    start: (next: OptimizationPlanResponse) => { setPlan(next); setRoutePlan(next); setProgress({}); void notifyRouteStarted(next); void startNearbyAlerts(next); },
+    setBought: (key: string, quantity: number, bought: number) =>
+      setProgress((previous) => {
+        const value = clampBought(bought, quantity);
+        // si ya se compró todo lo pedido, deja de contar como "sin stock"
+        return { ...previous, [key]: { bought: value, soldOut: value >= quantity ? false : (previous[key]?.soldOut ?? false) } };
+      }),
+    setSoldOut: (key: string, soldOut: boolean) =>
+      setProgress((previous) => ({ ...previous, [key]: { bought: previous[key]?.bought ?? 0, soldOut } })),
+    finish: () => { setPlan(null); setRoutePlan(null); setProgress({}); void stopNearbyAlerts(); },
+  }), [plan, progress, routePlan, routePlans]);
   return <PurchaseContext.Provider value={value}>{children}</PurchaseContext.Provider>;
 }
 export function usePurchase() { const value = useContext(PurchaseContext); if (!value) throw new Error("usePurchase debe usarse dentro de PurchaseProvider"); return value; }

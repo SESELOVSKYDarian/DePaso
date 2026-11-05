@@ -10,6 +10,7 @@ import { Button } from "@/components/common/Button";
 import { Dialog } from "@/components/common/Dialog";
 import { PriceDisclosureBanner } from "@/components/lists/PriceDisclosureBanner";
 import { usePurchase } from "@/lib/purchase/PurchaseContext";
+import { isItemDone } from "@/lib/purchase/progress";
 import { makeStyles, useColors } from "@/lib/theme";
 import { PurchaseFooter } from "./components/PurchaseFooter";
 import { PurchaseItemRow } from "./components/PurchaseItemRow";
@@ -23,7 +24,7 @@ import { itemKey } from "./helpers";
 export default function PurchaseScreen() {
   const colors = useColors();
   const styles = useStyles();
-  const { plan, checked, toggle, finish } = usePurchase();
+  const { plan, progress, setBought, setSoldOut, finish } = usePurchase();
   const [storeIndex, setStoreIndex] = useState(0);
   const [confirmFinish, setConfirmFinish] = useState(false);
 
@@ -42,9 +43,10 @@ export default function PurchaseScreen() {
   const stops = plan.stops;
   const stop = stops[Math.min(storeIndex, stops.length - 1)]!;
   const allItems = stops.flatMap((entry) => entry.items.map((item) => ({ entry, item })));
-  const completed = allItems.filter(({ entry, item }) => checked[itemKey(entry, item)]).length;
-  const doneAmount = allItems.reduce((sum, { entry, item }) => sum + (checked[itemKey(entry, item)] ? item.unitPrice * item.quantity : 0), 0);
-  const doneCounts = stops.map((entry) => entry.items.filter((item) => checked[itemKey(entry, item)]).length);
+  // resuelto = se compró todo lo pedido o en el comercio no había más; el importe suma solo lo que se compró
+  const completed = allItems.filter(({ entry, item }) => isItemDone(progress[itemKey(entry, item)], item.quantity)).length;
+  const doneAmount = allItems.reduce((sum, { entry, item }) => sum + item.unitPrice * (progress[itemKey(entry, item)]?.bought ?? 0), 0);
+  const doneCounts = stops.map((entry) => entry.items.filter((item) => isItemDone(progress[itemKey(entry, item)], item.quantity)).length);
   const isLastStore = storeIndex >= stops.length - 1;
   const endPurchase = () => {
     finish();
@@ -74,7 +76,14 @@ export default function PurchaseScreen() {
             {stop.storeName} <Text style={styles.branch}>({stop.address ?? stop.branchName})</Text>
           </Text>
           {stop.items.map((item) => (
-            <PurchaseItemRow key={itemKey(stop, item)} stop={stop} item={item} checked={!!checked[itemKey(stop, item)]} onToggle={() => toggle(itemKey(stop, item))} />
+            <PurchaseItemRow
+              key={itemKey(stop, item)}
+              stop={stop}
+              item={item}
+              progress={progress[itemKey(stop, item)]}
+              onSetBought={(bought) => setBought(itemKey(stop, item), item.quantity, bought)}
+              onSetSoldOut={(soldOut) => setSoldOut(itemKey(stop, item), soldOut)}
+            />
           ))}
         </View>
       </BackToTopScrollView>
@@ -92,7 +101,7 @@ export default function PurchaseScreen() {
       <Dialog
         visible={confirmFinish}
         title="¿Terminar la compra?"
-        description={`Quedaron ${allItems.length - completed} ${allItems.length - completed === 1 ? "producto" : "productos"} sin tildar. Podés terminar igual o seguir comprando.`}
+        description={`Quedaron ${allItems.length - completed} ${allItems.length - completed === 1 ? "producto" : "productos"} sin resolver. Podés terminar igual o seguir comprando.`}
         confirmLabel="Terminar igual"
         cancelLabel="Seguir comprando"
         onConfirm={() => {

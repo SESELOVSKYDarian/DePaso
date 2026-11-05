@@ -7,6 +7,7 @@ import { useToast } from "@/components/common/Toast";
 import { assistantClient, productsClient } from "@/lib/apiClient";
 import { useLists } from "@/lib/lists/ListsContext";
 import { transcribeRecording, TranscribeError } from "@/lib/voice/transcribe";
+import { useLiveSpeech } from "@/lib/voice/useLiveSpeech";
 import { useVoiceRecorder } from "@/lib/voice/useVoiceRecorder";
 import { ReviewView } from "./components/ReviewView";
 import { TypingView } from "./components/TypingView";
@@ -90,12 +91,26 @@ export default function ShoppingAssistantScreen() {
     [parseText],
   );
 
+  // Dictado en vivo: el teléfono escribe lo que entiende mientras se habla. Si el teléfono no lo
+  // soporta, se graba el audio y se pasa a texto al final, como siempre.
+  const handleSpoken = useCallback(
+    (spoken: string) => {
+      if (!spoken.trim()) {
+        setPhase("idle");
+        setError("No te escuché. Probá de nuevo o escribilo.");
+        return;
+      }
+      void parseText(spoken);
+    },
+    [parseText],
+  );
+  const live = useLiveSpeech(handleSpoken);
   const recorder = useVoiceRecorder(handleRecording);
 
   const startRecording = useCallback(async () => {
     setError(undefined);
     setMicDenied(false);
-    const result = await recorder.start();
+    const result = live.available ? await live.start() : await recorder.start();
     if (result === "started") {
       setPhase("recording");
     } else if (result === "denied") {
@@ -104,12 +119,18 @@ export default function ShoppingAssistantScreen() {
     } else {
       setError("No pudimos empezar a grabar. Probá de nuevo o escribilo.");
     }
-  }, [recorder]);
+  }, [recorder, live]);
 
   const stopRecording = useCallback(async () => {
+    if (live.available) {
+      // el texto final llega por `handleSpoken` cuando el teléfono termina de escuchar
+      setPhase("transcribing");
+      live.stop();
+      return;
+    }
     const uri = await recorder.stop();
     await handleRecording(uri);
-  }, [recorder, handleRecording]);
+  }, [recorder, live, handleRecording]);
 
   // Viene del botón de IA de la lista: arranca a escuchar sin un toque extra.
   useEffect(() => {
@@ -187,8 +208,9 @@ export default function ShoppingAssistantScreen() {
           <VoiceView
             title={voiceTitle}
             hint={voiceHint}
-            level={recorder.level}
-            durationMs={recorder.durationMs}
+            level={live.available ? live.level : recorder.level}
+            durationMs={live.available ? live.durationMs : recorder.durationMs}
+            transcript={live.available ? live.transcript : null}
             isRecording={isRecording}
             isBusy={isBusy}
             pulseStyle={pulseStyle}

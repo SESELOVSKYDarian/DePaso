@@ -86,6 +86,19 @@ export const useStyles = makeStyles((colors) =>
       color: colors.text.primary,
       minHeight: 28,
     },
+    // el texto que va entendiendo el teléfono mientras se habla
+    liveBox: {
+      alignSelf: "stretch",
+      minHeight: 88,
+      maxHeight: 180,
+      padding: spacing.md,
+      borderRadius: radii.xl,
+      backgroundColor: colors.surface.primary,
+      borderWidth: 1,
+      borderColor: colors.border.subtle,
+    },
+    liveText: { fontFamily: typography.body.fontFamily, fontSize: 17, lineHeight: 25, color: colors.text.primary },
+    livePlaceholder: { fontFamily: typography.body.fontFamily, fontSize: 15, lineHeight: 22, color: colors.text.muted },
     errorBox: {
       alignItems: "center",
       gap: spacing.xs,

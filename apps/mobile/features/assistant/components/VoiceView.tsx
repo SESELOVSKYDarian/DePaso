@@ -20,6 +20,8 @@ interface VoiceViewProps {
   micDenied: boolean;
   onToggleRecording: () => void;
   onWriteInstead: () => void;
+  /** Lo que va entendiendo el teléfono mientras se habla; `null` si este dispositivo no lo muestra en vivo. */
+  transcript: string | null;
 }
 
 /** Pantalla de "hablar": micrófono grande, onda de voz y el reloj de la grabación. */
@@ -57,6 +59,17 @@ export function VoiceView(props: VoiceViewProps) {
       </View>
 
       <Text style={styles.clock}>{isRecording ? formatClock(props.durationMs) : " "}</Text>
+
+      {/* el texto aparece a medida que se habla */}
+      {props.transcript !== null && (isRecording || props.transcript) ? (
+        <ScrollView style={styles.liveBox} accessibilityLiveRegion="polite" showsVerticalScrollIndicator={false}>
+          {props.transcript ? (
+            <Text style={styles.liveText}>{props.transcript}</Text>
+          ) : (
+            <Text style={styles.livePlaceholder}>Empezá a hablar: acá vas a ver lo que te entiendo.</Text>
+          )}
+        </ScrollView>
+      ) : null}
 
       {props.error ? (
         <View style={styles.errorBox}>

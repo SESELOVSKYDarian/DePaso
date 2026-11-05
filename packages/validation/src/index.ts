@@ -23,3 +23,4 @@ export * from "./activity";
 export * from "./notifications";
 export * from "./ads";
 export * from "./adminMerchants";
+export * from "./nearbyPrices";
