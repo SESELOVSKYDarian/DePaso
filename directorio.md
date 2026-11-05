@@ -77,7 +77,7 @@ Todas las pantallas viven en `features/`, agrupadas por área:
 | `auth`, `onboarding`, `setup` | Ingreso, registro, recuperar contraseña, bienvenida y primeros pasos. |
 | `profile`, `activity`, `notifications`, `privacy`, `help`, `legal` | Perfil, reportes de la comunidad, avisos, datos personales, ayuda y textos legales. |
 | `merchant-request`, `merchant-panel`, `merchant-price-form`, `admin`, `report-price` | Comercio, administración y reporte de precios. |
-| `navigation` | Las pantallas registradas en la raíz (`RootNavigator`) y `useOrphanScreenRedirect`, que saca de las pantallas sueltas (manual, textos legales) a quien aparece en ellas sin una anterior. |
+| `navigation` | Las pantallas registradas en la raíz (`RootNavigator`) y `useStageRedirect`, que lleva a donde corresponde cuando cambia la etapa de la sesión (confirmar el mail, cerrar sesión…) o se cae en una pantalla perdida o suelta (manual, textos legales). |
 
 ## Paquetes (`packages/`)
 
