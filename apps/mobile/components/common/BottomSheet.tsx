@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Modal, StyleSheet, View } from "react-native";
+import { KeyboardAvoidingView, Modal, StyleSheet, View } from "react-native";
 import { radii, spacing } from "@depaso/design-tokens";
 import { makeStyles } from "@/lib/theme";
 import { ModalBackdrop } from "./ModalBackdrop";
@@ -22,7 +22,10 @@ export function BottomSheet({ visible, onClose, children }: BottomSheetProps) {
     <Modal visible={visible} transparent animationType="fade" statusBarTranslucent onRequestClose={onClose}>
       {/* Tocar el fondo (oscuro y desenfocado) cierra la hoja. */}
       <ModalBackdrop onPress={onClose} style={styles.backdrop}>
-        <View style={styles.sheet}>{children}</View>
+        {/* un Modal es otra ventana: tiene que subir solo cuando aparece el teclado */}
+        <KeyboardAvoidingView behavior="padding">
+          <View style={styles.sheet}>{children}</View>
+        </KeyboardAvoidingView>
       </ModalBackdrop>
     </Modal>
   );

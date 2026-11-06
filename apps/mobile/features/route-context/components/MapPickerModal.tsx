@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { ActivityIndicator, Modal, Text, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Modal, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AnimatedPressable } from "@/components/common/AnimatedPressable";
 import { Button } from "@/components/common/Button";
@@ -42,6 +42,8 @@ export function MapPickerModal({ picking, center, name, onChangeName, onConfirm 
   return (
     <Modal visible={picking.isOpen} animationType="slide" onRequestClose={picking.close}>
       <SafeAreaView style={styles.mapModal} edges={["top", "bottom"]}>
+        {/* el Modal es otra ventana: sube solo con el teclado, así se ve el campo "Nombre" */}
+        <KeyboardAvoidingView behavior="padding" style={{ flex: 1 }}>
         <View style={styles.navHeader}>
           <AnimatedPressable accessibilityLabel="Cerrar el mapa" haptic={false} onPress={picking.close} style={styles.backButton}>
             <Ionicons name="close" size={22} color={colors.text.primary} />
@@ -77,6 +79,7 @@ export function MapPickerModal({ picking, center, name, onChangeName, onConfirm 
           <FormField label="Nombre (opcional)" value={name} onChangeText={onChangeName} placeholder="Médico, Shopping..." />
           <Button label="Agregar este lugar" onPress={onConfirm} disabled={!picked || picking.isResolving} />
         </View>
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </Modal>
   );

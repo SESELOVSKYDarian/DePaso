@@ -2,6 +2,7 @@ import { StatusBar } from "expo-status-bar";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ErrorFallback } from "@/components/common/ErrorFallback";
+import { KeyboardAvoidingRoot } from "@/components/common/KeyboardAvoidingRoot";
 import { SplashScreen } from "@/components/common/SplashScreen";
 import { ThemedRoot } from "@/components/common/ThemedRoot";
 import { RootNavigator } from "@/features/navigation/RootNavigator";
@@ -23,9 +24,11 @@ export default function RootLayout() {
         <ThemeProvider>
           <ThemedRoot>
             <StatusBar style="auto" />
-            <NavigationThemeBridge>
-              <AppProviders>{fontsLoaded ? <RootNavigator /> : <SplashScreen />}</AppProviders>
-            </NavigationThemeBridge>
+            <KeyboardAvoidingRoot>
+              <NavigationThemeBridge>
+                <AppProviders>{fontsLoaded ? <RootNavigator /> : <SplashScreen />}</AppProviders>
+              </NavigationThemeBridge>
+            </KeyboardAvoidingRoot>
           </ThemedRoot>
         </ThemeProvider>
       </SafeAreaProvider>

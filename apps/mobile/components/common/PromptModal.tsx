@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
+import { KeyboardAvoidingView, Modal, ScrollView, StyleSheet, Text, View } from "react-native";
 import { radii, spacing, typography } from "@depaso/design-tokens";
 import { makeStyles } from "@/lib/theme";
 import { Button } from "./Button";
@@ -24,7 +24,7 @@ export function PromptModal({ visible, title, description, children, confirmLabe
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
       <ModalBackdrop style={styles.backdrop}>
-        <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={styles.avoid}>
+        <KeyboardAvoidingView behavior="padding" style={styles.avoid}>
           <View style={styles.card}>
             <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.body}>
               <Text style={styles.title}>{title}</Text>
