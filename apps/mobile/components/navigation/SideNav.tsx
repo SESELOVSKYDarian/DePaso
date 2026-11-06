@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import type { ReactNode } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -22,7 +23,8 @@ export interface SideNavProps {
       };
     }
   >;
-  navigation: { navigate: (name: string) => void };
+  /** Puede no venir según la versión del navegador de pestañas: por eso se navega con el router. */
+  navigation?: { navigate: (name: string) => void };
   /** Barra angosta, solo íconos (celular acostado). */
   compact: boolean;
 }
@@ -34,7 +36,12 @@ const COMPACT_WIDTH = 84;
  * Menú lateral de la versión para computadora: el logo arriba, las secciones en una lista
  * limpia y la cuenta abajo. Con el celular acostado queda una barra angosta de íconos.
  */
-export function SideNav({ state, descriptors, navigation, compact }: SideNavProps) {
+/** Ir a una pestaña. Se usa el router de expo-router: la prop `navigation` llegaba vacía en la web. */
+function goToTab(name: string) {
+  router.navigate((name === "index" ? "/(tabs)" : `/(tabs)/${name}`) as never);
+}
+
+export function SideNav({ state, descriptors, compact }: SideNavProps) {
   const styles = useStyles();
   const colors = useColors();
   const insets = useSafeAreaInsets();
@@ -57,7 +64,7 @@ export function SideNav({ state, descriptors, navigation, compact }: SideNavProp
               key={route.key}
               accessibilityLabel={options.title ?? route.name}
               haptic={false}
-              onPress={() => navigation.navigate(route.name)}
+              onPress={() => goToTab(route.name)}
               style={[styles.item, compact ? styles.itemCompact : null, focused ? styles.itemActive : null]}
             >
               <View>
@@ -80,7 +87,7 @@ export function SideNav({ state, descriptors, navigation, compact }: SideNavProp
       </View>
 
       {compact ? null : (
-        <AnimatedPressable accessibilityLabel="Mi perfil" haptic={false} onPress={() => navigation.navigate("profile")} style={styles.account}>
+        <AnimatedPressable accessibilityLabel="Mi perfil" haptic={false} onPress={() => goToTab("profile")} style={styles.account}>
           <View style={styles.avatar}>
             <Ionicons name="person" size={16} color={colors.text.onNavy} />
           </View>
