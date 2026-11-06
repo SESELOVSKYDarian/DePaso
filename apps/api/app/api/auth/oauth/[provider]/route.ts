@@ -8,7 +8,7 @@ import { createPrismaAuthProvider } from "@/lib/auth/authProvider";
 import { setSessionCookie } from "@/lib/auth/cookies";
 import { exchangeCodeForProfile } from "@/lib/auth/oauthProviders";
 import { checkRateLimit } from "@/lib/auth/rateLimit";
-import { getClientIp } from "@/lib/auth/request";
+import { getClientIp, isOwnOAuthCallback } from "@/lib/auth/request";
 import { ensureAdminRole } from "@/lib/auth/adminEmails";
 import { toUserPayload } from "@/lib/auth/userPayload";
 
@@ -42,7 +42,8 @@ export async function POST(request: NextRequest, context: { params: Promise<{ pr
   const { code, redirectUri, codeVerifier, consent } = parsed.data;
 
   // La app sólo puede usar el callback de este mismo servidor (ver `oauth/callback`).
-  if (redirectUri !== `${request.nextUrl.origin}/api/auth/oauth/callback`) {
+  if (!isOwnOAuthCallback(request, redirectUri)) {
+    console.warn(`oauth ${providerId.data}: redirect_uri rechazado`, redirectUri);
     return NextResponse.json({ error: "INVALID_REDIRECT_URI" }, { status: 400 });
   }
 
