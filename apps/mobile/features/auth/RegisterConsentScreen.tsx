@@ -61,16 +61,16 @@ export default function RegisterConsentScreen() {
     setIsSubmitting(true);
     try {
       const displayName = [data.firstName.trim(), data.lastName.trim()].filter(Boolean).join(" ");
-      const created = await register({
+      await register({
         email: data.email,
         password: data.password,
         displayName: displayName || undefined,
         ...consent,
       });
       setPendingRegistration(null);
-      // Si falta confirmar el mail, la navegación lo lleva sola a ingresar el código. Mandarlo
-      // a la ubicación a mano lo dejaba en una pantalla suelta, sin salida.
-      if (!created.emailVerificationRequired) router.replace("/(setup)/location");
+      // No se navega a mano: al crearse la cuenta cambia la etapa y la navegación lleva sola al
+      // código del mail o a la ubicación. Hacerlo a mano corría antes de que esa pantalla existiera
+      // y mostraba "Unmatched Route".
     } catch (err) {
       setError(registerErrorMessage(err));
     } finally {
