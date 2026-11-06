@@ -22,8 +22,6 @@ export function useStageRedirect(home: string, isBootstrapping: boolean): void {
 
   const isLost = LOST_SEGMENTS.includes(segments[0] ?? "");
   const isInfoScreen = segments[0] === "how-to" || segments[0] === "legal";
-  // "sin ninguna anterior" = es la única pantalla de la pila
-  const isAlone = (navigationState?.routes.length ?? 0) === 1;
 
   // la etapa cambió mientras la app estaba abierta
   useEffect(() => {
@@ -44,13 +42,14 @@ export function useStageRedirect(home: string, isBootstrapping: boolean): void {
     if (!isBootstrapping && isLost) router.replace(home as never);
   }, [isBootstrapping, isLost, home]);
 
-  // manual o textos legales sueltos: solo se revisa UNA vez, al arrancar. Más tarde la persona los
-  // abre a propósito (ej. "Términos" desde el registro) y el estado de la navegación puede tardar
-  // en reflejar la pantalla anterior, lo que la mandaba al login sin querer.
-  const startChecked = useRef(false);
+  // manual o textos legales sueltos (sin ninguna pantalla anterior a la que volver). Se revisa con
+  // una pausa y preguntándole al router en ese momento: si se abren a propósito (ej. "Términos"
+  // desde el registro) la pantalla anterior ya está en la pila y no se toca.
   useEffect(() => {
-    if (isBootstrapping || startChecked.current) return;
-    startChecked.current = true;
-    if (isInfoScreen && isAlone) router.replace(home as never);
-  }, [isBootstrapping, isInfoScreen, isAlone, home]);
+    if (isBootstrapping || !isInfoScreen) return;
+    const timer = setTimeout(() => {
+      if (!router.canGoBack()) router.replace(home as never);
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [isBootstrapping, isInfoScreen, home]);
 }
