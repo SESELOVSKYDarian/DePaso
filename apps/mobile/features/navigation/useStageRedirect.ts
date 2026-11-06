@@ -39,9 +39,18 @@ export function useStageRedirect(home: string, isBootstrapping: boolean): void {
     return () => clearTimeout(timer);
   }, [home, isBootstrapping]);
 
-  // pantalla perdida o suelta
+  // pantalla perdida: siempre se corrige
   useEffect(() => {
-    if (isBootstrapping) return;
-    if (isLost || (isInfoScreen && isAlone)) router.replace(home as never);
-  }, [isBootstrapping, isLost, isInfoScreen, isAlone, home]);
+    if (!isBootstrapping && isLost) router.replace(home as never);
+  }, [isBootstrapping, isLost, home]);
+
+  // manual o textos legales sueltos: solo se revisa UNA vez, al arrancar. Más tarde la persona los
+  // abre a propósito (ej. "Términos" desde el registro) y el estado de la navegación puede tardar
+  // en reflejar la pantalla anterior, lo que la mandaba al login sin querer.
+  const startChecked = useRef(false);
+  useEffect(() => {
+    if (isBootstrapping || startChecked.current) return;
+    startChecked.current = true;
+    if (isInfoScreen && isAlone) router.replace(home as never);
+  }, [isBootstrapping, isInfoScreen, isAlone, home]);
 }
