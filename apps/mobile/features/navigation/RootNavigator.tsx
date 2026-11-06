@@ -5,7 +5,7 @@ import { typography } from "@depaso/design-tokens";
 import { SplashScreen } from "@/components/common/SplashScreen";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { sheet } from "@/lib/navigation/sheetOptions";
-import { homeForStage } from "@/lib/navigation/stageRoutes";
+import { useStageHome } from "./useStageHome";
 import { useStageRedirect } from "./useStageRedirect";
 import { useColors } from "@/lib/theme";
 
@@ -23,7 +23,7 @@ export function RootNavigator() {
   const needsEmail = isAuthenticated && Boolean(user?.emailVerificationRequired);
 
   // Si la etapa de la sesión cambia, o se cae en una pantalla perdida o suelta, se va a donde corresponde.
-  useStageRedirect(homeForStage({ onboardingSeen, isAuthenticated, needsEmail, postSignupDone }), isBootstrapping);
+  useStageRedirect(useStageHome(), isBootstrapping);
 
   if (isBootstrapping) return <SplashScreen />;
 
